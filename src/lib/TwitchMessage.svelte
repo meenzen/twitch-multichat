@@ -1,29 +1,29 @@
 <script lang="ts">
     import type {PrivateMessages} from "twitch-js";
-    import {type MessagePart, MessagePartType, parseMessage} from "$lib/MessageParser";
+    import {isAction, type MessagePart, MessagePartType, parseMessage} from "$lib/MessageParser";
     import TwitchEmote from "$lib/TwitchEmote.svelte";
     import {onMount} from "svelte";
     import TwitchUsername from "$lib/TwitchUsername.svelte";
+    import FormattedMessage from "$lib/FormattedMessage.svelte";
 
     let {message} = $props<{ message: PrivateMessages }>();
 
-    let parts = $state([] as MessagePart[]);
-
-    onMount(() => {
-        parts = parseMessage(message);
-    });
+    let parts = parseMessage(message);
+    let isActionMessage = isAction(message);
 </script>
 
 
 <div class="message">
-    <TwitchUsername message="{message}"/>
-    {#each parts as part}
-        {#if part.type === MessagePartType.Text}
-            <span>{part.content}</span>
-        {:else if part.type === MessagePartType.Emote}
-            <TwitchEmote id="{part.content}" name="{part.emoteName}"/>
-        {/if}
-    {/each}
+    <TwitchUsername message="{message}" isAction="{isActionMessage}"/>
+    <FormattedMessage italicized="{isActionMessage}">
+        {#each parts as part}
+            {#if part.type === MessagePartType.Text}
+                <span>{part.content}</span>
+            {:else if part.type === MessagePartType.Emote}
+                <TwitchEmote id="{part.content}" name="{part.emoteName}"/>
+            {/if}
+        {/each}
+    </FormattedMessage>
 </div>
 
 <style>

@@ -1,14 +1,18 @@
 <script lang="ts">
     import type {PrivateMessages} from "twitch-js";
 
-    const spacer = ": "
+    const normalSpacer = ": ";
+    const actionSpacer = " ";
 
-    let {message} = $props<{ message: PrivateMessages }>();
+    let {message, isAction} = $props<{ message: PrivateMessages, isAction: boolean }>();
 
-    let color = $state("white");
+    let c = "white";
     if ("color" in message.tags && message.tags.color) {
-        color = message.tags.color;
+        c = message.tags.color;
     }
+    
+    let spacer = $state(isAction ? actionSpacer : normalSpacer);
+    let color = $state(c);
 </script>
 
 <span class="username" style="color: {color}">{message.username}</span><span>{spacer}</span>
