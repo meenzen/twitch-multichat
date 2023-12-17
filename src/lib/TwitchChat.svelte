@@ -6,7 +6,7 @@
     let limit = $state(100);
     let messages = $state([] as PrivateMessages[])
     let endDiv = $state(null as HTMLElement | null);
-    let channels = $state(['the_red_doctor', 'cheshires_wonderland', 'kimmymode', 'jemima91']);
+    let channels = $state(['gronkh']);
 
     const chat = new Chat({
         username: 'justinfan9999',
@@ -67,9 +67,12 @@
 
 <style>
     .twitch-chat {
-        overflow-y: scroll;
+        overflow-y: auto;
         height: 100%;
         width: 100%;
+        padding-left: 5px;
+        padding-right: 5px;
+        box-sizing: border-box;
         font-size: 13px;
     }
 
