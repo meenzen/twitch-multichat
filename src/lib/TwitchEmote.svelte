@@ -27,7 +27,6 @@
 
 <style>
     img {
-        width: 28px;
         height: 28px;
         display: inline-block;
     }
