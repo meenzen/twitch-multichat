@@ -2,8 +2,9 @@
     import {Chat, type PrivateMessages} from "twitch-js";
     import {onDestroy, onMount} from 'svelte';
     import TwitchMessage from "$lib/TwitchMessage.svelte";
+    import TwitchChannelList from "$lib/TwitchChannelList.svelte";
 
-    let limit = $state(100);
+    let limit = $state(500);
     let messages = $state([] as PrivateMessages[])
     let endDiv = $state(null as HTMLElement | null);
     let channels = $state(['gronkh']);
@@ -46,17 +47,7 @@
     });
 </script>
 
-<div class="channel-list">
-    <table>
-        <tbody>
-        {#each channels as channel}
-            <tr>
-                <td>{channel}</td>
-            </tr>
-        {/each}
-        </tbody>
-    </table>
-</div>
+<TwitchChannelList channels="{channels}"/>
 
 <div class="twitch-chat">
     {#each messages as message (message._raw)}
@@ -74,11 +65,6 @@
         padding-right: 5px;
         box-sizing: border-box;
         font-size: 13px;
-    }
-
-    .channel-list {
-        width: 100%;
-        background-color: rgba(0, 0, 0, 0.2);
     }
 
     :global(.message-text) {
