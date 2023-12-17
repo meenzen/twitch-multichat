@@ -13,9 +13,10 @@
     
     let spacer = $state(isAction ? actionSpacer : normalSpacer);
     let color = $state(c);
+    let username = $state(message.tags.displayName);
 </script>
 
-<span class="username" style="color: {color}">{message.username}</span><span>{spacer}</span>
+<span class="username" style="color: {color}">{username}</span><span>{spacer}</span>
 
 <style>
     .username {
