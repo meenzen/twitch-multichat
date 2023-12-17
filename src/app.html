@@ -7,9 +7,23 @@
 		%sveltekit.head%
 		
 		<style>
+			::-webkit-scrollbar-track {
+				background-color: #000000;
+			}
+
+			::-webkit-scrollbar {
+				width: 10px;
+				background-color: #000000;
+			}
+
+			::-webkit-scrollbar-thumb {
+				background-color: #F5F5F5;
+			}
+
 			html {
 				height: 100%;
 			}
+
 			body {
 				color: #efeff1;
 				background-color: #0e0e10;
@@ -17,9 +31,6 @@
 				margin: 0;
 				padding: 0;
 				box-sizing: border-box;
-			}
-			.message-text {
-				white-space: pre-wrap;
 			}
 		</style>
 	</head>

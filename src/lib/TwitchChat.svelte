@@ -13,22 +13,28 @@
         log: {enabled: true, level: 'info'},
     });
 
-    chat.on(Chat.Events.PRIVATE_MESSAGE, (message) => {
-        console.log("Message received: ", message.message);
+    function clearMessages() {
+        messages = [];
+    }
+
+    function addMessage(message: PrivateMessages) {
         messages.push(message);
         while (messages.length > limit) {
             messages.shift();
         }
-
-        console.log("Scrolling to end", endDiv);
-        endDiv?.scrollIntoView({block: "end"});
-    });
-
-    chat.on(Chat.Events.CLEAR_MESSAGE, (message) => {
-        console.error("Clearing message: ", message);
-    });
+        messages = messages;
+    }
 
     onMount(async () => {
+        chat.on(Chat.Events.PRIVATE_MESSAGE, (message) => {
+            console.log("Message received:", message.message);
+            addMessage(message);
+        });
+
+        chat.on(Chat.Events.CLEAR_MESSAGE, (message) => {
+            console.warn("todo: clear message:", message);
+        });
+
         await chat.connect();
         for (const channel of channels) {
             await chat.join(channel);
@@ -53,7 +59,7 @@
 </div>
 
 <div class="twitch-chat">
-    {#each messages as message}
+    {#each messages as message (message._raw)}
         <TwitchMessage {message}/>
     {/each}
     <div class="chat-end-marker" bind:this={endDiv}/>
@@ -67,13 +73,22 @@
         font-size: 13px;
     }
 
-    .chat-end-marker {
-        height: 1px;
-        width: 1px;
-    }
-
     .channel-list {
         width: 100%;
         background-color: rgba(0, 0, 0, 0.2);
+    }
+
+    :global(.message-text) {
+        white-space: pre-wrap;
+    }
+
+    /* https://css-tricks.com/books/greatest-css-tricks/pin-scrolling-to-bottom/ */
+    :global(.twitch-chat *) {
+        overflow-anchor: none;
+    }
+
+    :global(.chat-end-marker) {
+        overflow-anchor: auto;
+        height: 1px;
     }
 </style>
