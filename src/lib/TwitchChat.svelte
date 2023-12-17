@@ -5,8 +5,9 @@
     import TwitchChannelList from "$lib/TwitchChannelList.svelte";
 
     let limit = $state(500);
-    let messages = $state([] as PrivateMessages[])
+    let messages = $state([] as PrivateMessages[]);
     let channels = $state(['gronkh']);
+    let anchor = $state(null as HTMLDivElement | null);
 
     const chat = new Chat({
         username: 'justinfan9999',
@@ -23,6 +24,11 @@
             messages.shift();
         }
         messages = messages;
+    }
+
+    function scrollToBottom() {
+        console.log("scrolling to bottom");
+        anchor?.scrollIntoView({behavior: "instant", block: "end"});
     }
 
     onMount(async () => {
@@ -48,11 +54,11 @@
 
 <TwitchChannelList channels="{channels}"/>
 
-<div class="twitch-chat">
+<div class="twitch-chat" role="button" tabindex="0" on:click={scrollToBottom} on:keydown={scrollToBottom}>
     {#each messages as message (message._raw)}
         <TwitchMessage {message}/>
     {/each}
-    <div class="chat-end-marker"/>
+    <div class="chat-end-marker" bind:this={anchor}/>
 </div>
 
 <style>
