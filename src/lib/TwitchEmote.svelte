@@ -23,7 +23,7 @@
     })
 </script>
 
-<img src={src} alt="{name}"/>
+<img src={src} alt="{name}" class="twitch-emote"/>
 
 <style>
     img {

@@ -16,14 +16,10 @@
     let username = $state(message.tags.displayName);
 </script>
 
-<span class="username" style="color: {color}">{username}</span><span>{spacer}</span>
+<span class="username message-text" style="color: {color}">{username}</span><span class="message-text">{spacer}</span>
 
 <style>
     .username {
         font-weight: bold;
-    }
-
-    span {
-        white-space: pre-wrap;
     }
 </style>

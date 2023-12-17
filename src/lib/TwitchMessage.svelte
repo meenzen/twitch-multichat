@@ -18,7 +18,7 @@
     <FormattedMessage italicized="{isActionMessage}">
         {#each parts as part}
             {#if part.type === MessagePartType.Text}
-                <span>{part.content}</span>
+                <span class="message-text">{part.content}</span>
             {:else if part.type === MessagePartType.Emote}
                 <TwitchEmote id="{part.content}" name="{part.emoteName}"/>
             {/if}
@@ -29,13 +29,8 @@
 <style>
     .message {
         font-family: Inter, Roobert, "Helvetica Neue", Helvetica, Arial, sans-serif;
-        align-items: center;
         margin-top: 2px;
         margin-bottom: 5px;
         overflow-wrap: break-word;
-    }
-
-    span {
-        white-space: pre-wrap;
     }
 </style>
