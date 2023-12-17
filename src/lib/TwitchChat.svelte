@@ -6,7 +6,6 @@
 
     let limit = $state(500);
     let messages = $state([] as PrivateMessages[])
-    let endDiv = $state(null as HTMLElement | null);
     let channels = $state(['gronkh']);
 
     const chat = new Chat({
@@ -53,7 +52,7 @@
     {#each messages as message (message._raw)}
         <TwitchMessage {message}/>
     {/each}
-    <div class="chat-end-marker" bind:this={endDiv}/>
+    <div class="chat-end-marker"/>
 </div>
 
 <style>
