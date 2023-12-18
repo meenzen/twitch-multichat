@@ -127,9 +127,9 @@
         });
 
         chat.on(Chat.Events.CLEAR_CHAT, (message) => {
-            if ("user" in message) {
+            if ("username" in message) {
                 console.log("Clearing user:", message);
-                const username = message.user as string;
+                const username = message.username as string;
                 deleteUserMessages(username);
             } else if ("channel" in message) {
                 console.log("Clearing channel:", message);
