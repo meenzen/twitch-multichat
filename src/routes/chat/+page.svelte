@@ -12,6 +12,10 @@
     }
 </script>
 
+<svelte:head>
+    <title>Twitch Multichat: {selectedChannels.join(", ")}</title>
+</svelte:head>
+
 {#if shouldConnect}
     <TwitchChannelList channels="{selectedChannels}"/>
     <TwitchChat channels="{selectedChannels}"/>

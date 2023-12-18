@@ -41,6 +41,12 @@
     let valid = $derived(isValid());
 </script>
 
+<svelte:head>
+    <title>Twitch Multichat</title>
+    <meta name="description" content="Combine multiple Twitch chats into one window.">
+    <meta name="keywords" content="Twitch, chat, multichat">
+</svelte:head>
+
 <form>
     <textarea bind:value="{channels}" placeholder="{randomChannelsString}" rows="10" cols="50"/>
 
