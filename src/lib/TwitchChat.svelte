@@ -28,6 +28,17 @@
         messages = messages;
     }
 
+    function deleteMessage(id: string) {
+        messages = messages.filter(message => {
+            if ("tags" in message && "id" in message.tags) {
+                const messageId = message.tags.id as string;
+                return messageId.toLowerCase() !== id.toLowerCase();
+            }
+
+            return true;
+        });
+    }
+
     function scrollToBottom() {
         console.log("scrolling to bottom");
         anchor?.scrollIntoView({behavior: "instant", block: "end"});
@@ -40,7 +51,12 @@
         });
 
         chat.on(Chat.Events.CLEAR_MESSAGE, (message) => {
-            console.warn("todo: clear message:", message);
+            console.log("Clearing message:", message);
+
+            if ("targetMessageId" in message) {
+                const id = message.targetMessageId as string;
+                deleteMessage(id);
+            }
         });
 
         await chat.connect();
