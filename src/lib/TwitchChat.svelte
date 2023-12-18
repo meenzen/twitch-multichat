@@ -2,7 +2,7 @@
     import {Chat, type PrivateMessages} from "twitch-js";
     import {onDestroy, onMount} from 'svelte';
     import TwitchMessage from "$lib/TwitchMessage.svelte";
-    import { dev } from '$app/environment';
+    import {dev} from '$app/environment';
 
     let {channels} = $props<{ channels: string[] }>()
 
@@ -10,7 +10,7 @@
     let messages = $state([] as PrivateMessages[]);
     let chatContainer = $state(null as HTMLDivElement | null);
     let anchor = $state(null as HTMLDivElement | null);
-    
+
     let logLevel = dev ? 'info' : 'warn';
 
     const chat = new Chat({
@@ -110,7 +110,11 @@
 
     onMount(async () => {
         chat.on(Chat.Events.PRIVATE_MESSAGE, (message) => {
-            console.log("Message received:", message.message);
+            if (dev) {
+                console.log("Message received:", message);
+            } else {
+                console.debug("Message received:", message);
+            }
             addMessage(message);
         });
 
