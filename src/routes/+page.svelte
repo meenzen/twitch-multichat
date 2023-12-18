@@ -43,7 +43,7 @@
 
 <svelte:head>
     <title>Twitch Multichat</title>
-    <meta name="description" content="Combine multiple Twitch chats into one window.">
+    <meta name="description" content="Combines multiple Twitch chats into one window.">
     <meta name="keywords" content="Twitch, chat, multichat">
 </svelte:head>
 
