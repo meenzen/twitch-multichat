@@ -2,16 +2,18 @@
     import {Chat, type PrivateMessages} from "twitch-js";
     import {onDestroy, onMount} from 'svelte';
     import TwitchMessage from "$lib/TwitchMessage.svelte";
-    import TwitchChannelList from "$lib/TwitchChannelList.svelte";
 
+    let {channels} = $props<{channels: string[]}>()
+    
     let limit = $state(500);
     let messages = $state([] as PrivateMessages[]);
-    let channels = $state(['gronkh']);
     let anchor = $state(null as HTMLDivElement | null);
 
     const chat = new Chat({
         username: 'justinfan9999',
         log: {enabled: true, level: 'info'},
+        connectionTimeout: 1000 * 30,
+        joinTimeout: 1000 * 30,
     });
 
     function clearMessages() {
@@ -51,8 +53,6 @@
         await chat.disconnect();
     });
 </script>
-
-<TwitchChannelList channels="{channels}"/>
 
 <div class="twitch-chat" role="button" tabindex="0" on:click={scrollToBottom} on:keydown={scrollToBottom}>
     {#each messages as message (message._raw)}

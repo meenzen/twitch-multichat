@@ -21,8 +21,8 @@
     }
     
     .channel-list {
-        font-size: 25px;
-        font-family: sans-serif;
+        font-size: var(--text-size);
+        font-family: var(--font-family);
         width: 100%;
     }
 </style>
