@@ -8,7 +8,7 @@
     let selectedChannels = searchParams.getAll("channel");
     let shouldConnect = selectedChannels.length > 0;
     if (shouldConnect) {
-        console.log("Connecting to channels:", selectedChannels);
+        console.log("Selected channels:", selectedChannels);
     }
 </script>
 
