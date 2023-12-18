@@ -3,10 +3,11 @@
     import {onDestroy, onMount} from 'svelte';
     import TwitchMessage from "$lib/TwitchMessage.svelte";
 
-    let {channels} = $props<{channels: string[]}>()
-    
+    let {channels} = $props<{ channels: string[] }>()
+
     let limit = $state(500);
     let messages = $state([] as PrivateMessages[]);
+    let chatContainer = $state(null as HTMLDivElement | null);
     let anchor = $state(null as HTMLDivElement | null);
 
     const chat = new Chat({
@@ -44,6 +45,44 @@
         anchor?.scrollIntoView({behavior: "instant", block: "end"});
     }
 
+    /** Detect if the chat window has enough content to be scrollable */
+    function isScrollable() {
+        const target = chatContainer;
+
+        if (!target) {
+            return false;
+        }
+
+        if (target.scrollHeight > target.clientHeight) {
+            return true;
+        }
+
+        // if the chat window is taller than the screen, it's definitely scrollable
+        // this happens when the chat window doesn't have a height set
+        if (target.scrollHeight > window.innerHeight) {
+            return true;
+        }
+
+        return false;
+    }
+
+    let autoScrolled = false;
+
+    function autoScrollToBottom() {
+        if (autoScrolled) {
+            return;
+        }
+
+        if (isScrollable()) {
+            console.log("auto scrolling to bottom");
+            scrollToBottom();
+            autoScrolled = true;
+            return;
+        }
+
+        setTimeout(autoScrollToBottom, 250);
+    }
+
     onMount(async () => {
         chat.on(Chat.Events.PRIVATE_MESSAGE, (message) => {
             console.log("Message received:", message.message);
@@ -68,9 +107,12 @@
     onDestroy(async () => {
         await chat.disconnect();
     });
+
+    setTimeout(autoScrollToBottom, 250);
 </script>
 
-<div class="twitch-chat" role="button" tabindex="0" on:click={scrollToBottom} on:keydown={scrollToBottom}>
+<div class="twitch-chat" role="button" tabindex="0" on:click={scrollToBottom} on:keydown={scrollToBottom}
+     bind:this={chatContainer}>
     {#each messages as message (message._raw)}
         <TwitchMessage {message}/>
     {/each}
