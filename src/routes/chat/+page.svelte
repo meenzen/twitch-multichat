@@ -14,6 +14,7 @@
 
 <svelte:head>
     <title>Twitch Multichat: {selectedChannels.join(", ")}</title>
+    <link rel="preload" as="image" href="/emote.png">
 </svelte:head>
 
 {#if shouldConnect}
