@@ -12,6 +12,7 @@
     let maxBufferSize = $derived(bufferSize * 2);
     let currentBufferSize = $derived(anchorVisible ? bufferSize : maxBufferSize);
 
+    let connectionError = $state(false);
     let messages = $state([] as PrivateMessages[]);
     let chatContainer = $state(null as HTMLDivElement | null);
     let anchor = $state(null as HTMLDivElement | null);
@@ -140,10 +141,15 @@
         });
 
         console.log("Connecting to twitch...");
-        await chat.connect();
+        await chat.connect().catch((error) => {
+            console.error("Failed to connect to twitch:", error);
+            connectionError = true;
+        });
         for (const channel of channels) {
             console.log("Joining channel:", channel);
-            await chat.join(channel);
+            await chat.join(channel).catch((error) => {
+                console.error("Failed to join channel:", error);
+            });
         }
     });
 
@@ -157,6 +163,14 @@
     {#each messages as message (message._raw)}
         <TwitchMessage {message}/>
     {/each}
+
+    {#if connectionError}
+        <div class="error-message">
+            <span class="message-text">Failed to connect to twitch chat.</span>
+            <span class="message-text">Please try to refresh the page.</span>
+        </div>
+    {/if}
+
     <div class="chat-end-marker" bind:this={anchor}/>
 </div>
 
@@ -169,6 +183,16 @@
         padding-right: 5px;
         box-sizing: border-box;
         font-size: 13px;
+    }
+    
+    .error-message {
+        font-family: Inter, Roobert, "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-weight: 700;
+        font-size: 20px;
+        color: orangered;
+        margin-top: 2px;
+        margin-bottom: 5px;
+        overflow-wrap: break-word;
     }
 
     :global(.message-text) {
