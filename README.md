@@ -4,7 +4,7 @@ Combines multiple Twitch chats into one window.
 
 ## Usage
 
-You can use the official deployment [twitch-multichat.mnzn.dev](https://twitch-multichat.mnzn.dev) or deploy this app yourself.
+You can use the official deployment [multichat.mnzn.dev](https://multichat.mnzn.dev) or deploy this app yourself.
 
 ## Setup
 
