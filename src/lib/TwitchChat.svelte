@@ -15,6 +15,7 @@
 
     let connecting = $state(true);
     let connectionError = $state(false);
+    let joiningChannels = $state(false);
     let messages = $state([] as PrivateMessages[]);
     let chatContainer = $state(null as HTMLDivElement | null);
     let anchor = $state(null as HTMLDivElement | null);
@@ -147,6 +148,10 @@
             console.error("Failed to connect to twitch:", error);
             connectionError = true;
         });
+
+        connecting = false;
+        joiningChannels = true;
+
         for (const channel of channels) {
             console.log("Joining channel:", channel);
             await chat.join(channel).catch((error) => {
@@ -154,7 +159,7 @@
             });
         }
 
-        connecting = false;
+        joiningChannels = false;
     });
 
     onDestroy(async () => {
@@ -168,10 +173,15 @@
         <TwitchMessage {message}/>
     {/each}
 
-    {#if connecting}
+    {#if connecting || joiningChannels}
         <Spinner/>
         <div class="connecting">
-            <span>Connecting to twitch chat...</span>
+            {#if connecting}
+                <span>Connecting to twitch chat...</span>
+            {/if}
+            {#if joiningChannels}
+                <span>Joining channels...</span>
+            {/if}
         </div>
     {/if}
 
@@ -195,7 +205,7 @@
         box-sizing: border-box;
         font-size: 13px;
     }
-    
+
     .connecting {
         font-family: Inter, Roobert, "Helvetica Neue", Helvetica, Arial, sans-serif;
         font-size: 14px;
@@ -227,6 +237,8 @@
 
     :global(.chat-end-marker) {
         overflow-anchor: auto;
-        height: 1px;
+        height: 50px;
+        margin-top: -50px;
+        z-index: -100;
     }
 </style>
