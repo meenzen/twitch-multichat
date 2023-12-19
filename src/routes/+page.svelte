@@ -1,9 +1,9 @@
 <script lang="ts">
     import "@fontsource/inter";
     import "@fontsource/inter/700.css";
-    import {getRandomTwitchChannels} from "$lib/RandomTwitchChannels";
+    import TwitchChannel from "$lib/TwitchChannel";
 
-    let randomChannels = $state(getRandomTwitchChannels(3));
+    let randomChannels = $state(TwitchChannel.getRandomList(3));
     let randomChannelsString = $derived(randomChannels.join("\n"));
     let channels = $state("");
 
@@ -12,29 +12,19 @@
     }
 
     function getUrl(channels: string) {
-        let url = "/chat";
+        let url = "/-/";
         let channelList = getChannels();
 
         if (channelList.length > 0) {
-            url += "?channel=" + channelList.join("&channel=");
+            url += channelList.join("/");
         }
 
         return url;
     }
 
-    function isValid() {
+    function isValid(): boolean {
         const channels = getChannels();
-
-        if (channels.length < 1) {
-            return false;
-        }
-
-        if (channels.some(c => c.length < 2)) {
-            return false;
-        }
-
-        // channels must be alphanumeric or underscore, max 25 chars
-        return !channels.some(c => !c.match(/^[a-z0-9_]{1,25}$/));
+        return TwitchChannel.isValidList(channels);
     }
 
     let link = $derived(getUrl(channels));

@@ -4,8 +4,9 @@
     import TwitchChat from "$lib/TwitchChat.svelte";
     import TwitchChannelList from "$lib/TwitchChannelList.svelte";
 
-    let searchParams = new URLSearchParams(window.location.search);
-    let selectedChannels = searchParams.getAll("channel");
+    let {data} = $props();
+    
+    let selectedChannels = data.channels;
     let shouldConnect = selectedChannels.length > 0;
     if (shouldConnect) {
         console.log("Selected channels:", selectedChannels);
@@ -21,7 +22,7 @@
     <TwitchChannelList channels="{selectedChannels}"/>
     <TwitchChat channels="{selectedChannels}"/>
 {:else}
-    <p class="alert">No channels selected</p>
+    <p class="alert">No valid channels selected</p>
 {/if}
 
 <style>
