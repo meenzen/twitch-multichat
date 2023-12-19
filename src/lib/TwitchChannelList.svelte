@@ -1,4 +1,6 @@
 ﻿<script lang="ts">
+    import ColorGenerator from "$lib/ColorGenerator";
+
     let {channels} = $props<{ channels: string[] }>();
 </script>
 
@@ -7,7 +9,7 @@
         <tbody>
         {#each channels as channel}
             <tr>
-                <td>{channel}</td>
+                <td style="color: {ColorGenerator.generate(channel)}">{channel}</td>
             </tr>
         {/each}
         </tbody>
