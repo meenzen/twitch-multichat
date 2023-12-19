@@ -2,18 +2,19 @@
     import "@fontsource/inter";
     import "@fontsource/inter/700.css";
     import TwitchChannel from "$lib/TwitchChannel";
+    import {onMount} from "svelte";
 
-    let randomChannels = $state(TwitchChannel.getRandomList(3));
+    let randomChannels = $state([] as string[]);
     let randomChannelsString = $derived(randomChannels.join("\n"));
     let channels = $state("");
 
-    function getChannels() {
+    function getChannels(channels: string) {
         return channels.split("\n").map(c => c.trim().toLowerCase());
     }
 
     function getUrl(channels: string) {
         let url = "/-/";
-        let channelList = getChannels();
+        let channelList = getChannels(channels);
 
         if (channelList.length > 0) {
             url += channelList.join("/");
@@ -23,12 +24,22 @@
     }
 
     function isValid(): boolean {
-        const channels = getChannels();
-        return TwitchChannel.isValidList(channels);
+        let ch = getChannels(channels);
+        ch = ch.filter(c => c.length > 0);
+        
+        if (ch.length === 0) {
+            return false;
+        }
+        
+        return TwitchChannel.isValidList(ch);
     }
 
     let link = $derived(getUrl(channels));
     let valid = $derived(isValid());
+
+    onMount(() => {
+        randomChannels = TwitchChannel.getRandomList(3);
+    });
 </script>
 
 <svelte:head>
@@ -62,8 +73,12 @@
         font-family: "Inter", sans-serif;
         font-size: 1.5rem;
         padding: 1rem;
-        border: 1px solid #ccc;
+        border: 1px solid var(--twitch-purple);
         border-radius: 0.5rem;
+    }
+    
+    textarea:focus {
+        outline-color: var(--twitch-purple);
     }
 
     textarea {
