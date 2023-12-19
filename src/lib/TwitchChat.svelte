@@ -15,7 +15,8 @@
     let messages = $state([] as PrivateMessages[]);
     let chatContainer = $state(null as HTMLDivElement | null);
     let anchor = $state(null as HTMLDivElement | null);
-    let autoScrollCount = $state(0);
+    let autoScrolled = false;
+    let autoScrolledVerified = false;
 
     let logLevel = dev ? 'info' : 'warn';
 
@@ -29,10 +30,30 @@
     function updateAnchorVisibility() {
         anchorVisible = ElementChecker.isVisible(anchor);
     }
-    
+
     function scrollToBottom() {
-        console.log("scrolling to bottom");
+        console.log("Scrolling to bottom");
         anchor?.scrollIntoView({behavior: "instant", block: "end"});
+    }
+
+    function autoScroll() {
+        if (anchor == null) {
+            return;
+        }
+
+        if (autoScrolledVerified) {
+            return;
+        }
+
+        if (autoScrolled && anchorVisible) {
+            console.log("Auto scroll finished");
+            autoScrolledVerified = true;
+        }
+
+        if (!anchorVisible) {
+            autoScrolled = true;
+            scrollToBottom();
+        }
     }
 
     function clearMessages() {
@@ -42,18 +63,17 @@
     function addMessage(message: PrivateMessages) {
         messages.push(message);
         updateAnchorVisibility();
-        
-        if(anchor != null && !anchorVisible && autoScrollCount <= 4) {
-            scrollToBottom();
-            autoScrollCount++;
-        }
-
-        console.debug({"messages": messages.length, "bufferSize": currentBufferSize, "anchorVisible": anchorVisible});
+        autoScroll();
 
         while (messages.length > currentBufferSize) {
             messages.shift();
         }
-        messages = messages;
+
+        console.debug({
+            "messages": messages.length,
+            "bufferSize": currentBufferSize,
+            "anchorVisible": anchorVisible,
+        });
     }
 
     function deleteMessage(id: string) {
