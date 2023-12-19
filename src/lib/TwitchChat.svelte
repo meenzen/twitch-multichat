@@ -4,6 +4,7 @@
     import TwitchMessage from "$lib/TwitchMessage.svelte";
     import {dev} from '$app/environment';
     import ElementChecker from "$lib/ElementChecker";
+    import Spinner from "$lib/components/Spinner.svelte";
 
     let {channels} = $props<{ channels: string[] }>()
 
@@ -12,6 +13,7 @@
     let maxBufferSize = $derived(bufferSize * 2);
     let currentBufferSize = $derived(anchorVisible ? bufferSize : maxBufferSize);
 
+    let connecting = $state(true);
     let connectionError = $state(false);
     let messages = $state([] as PrivateMessages[]);
     let chatContainer = $state(null as HTMLDivElement | null);
@@ -151,6 +153,8 @@
                 console.error("Failed to join channel:", error);
             });
         }
+
+        connecting = false;
     });
 
     onDestroy(async () => {
@@ -163,6 +167,13 @@
     {#each messages as message (message._raw)}
         <TwitchMessage {message}/>
     {/each}
+
+    {#if connecting}
+        <Spinner/>
+        <div class="connecting">
+            <span>Connecting to twitch chat...</span>
+        </div>
+    {/if}
 
     {#if connectionError}
         <div class="error-message">
@@ -185,6 +196,16 @@
         font-size: 13px;
     }
     
+    .connecting {
+        font-family: Inter, Roobert, "Helvetica Neue", Helvetica, Arial, sans-serif;
+        font-size: 14px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+    }
+
     .error-message {
         font-family: Inter, Roobert, "Helvetica Neue", Helvetica, Arial, sans-serif;
         font-weight: 700;
