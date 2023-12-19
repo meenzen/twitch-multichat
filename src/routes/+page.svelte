@@ -9,7 +9,9 @@
     let channels = $state("");
 
     function getChannels(channels: string) {
-        return channels.split("\n").map(c => c.trim().toLowerCase());
+        return channels.split("\n")
+            .map(c => c.trim().toLowerCase())
+            .filter(c => c.length > 0);
     }
 
     function getUrl(channels: string) {
@@ -25,12 +27,11 @@
 
     function isValid(): boolean {
         let ch = getChannels(channels);
-        ch = ch.filter(c => c.length > 0);
-        
+
         if (ch.length === 0) {
             return false;
         }
-        
+
         return TwitchChannel.isValidList(ch);
     }
 
@@ -76,7 +77,7 @@
         border: 1px solid var(--twitch-purple);
         border-radius: 0.5rem;
     }
-    
+
     textarea:focus {
         outline-color: var(--twitch-purple);
     }
