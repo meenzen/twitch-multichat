@@ -46,7 +46,7 @@
     function deleteUserMessages(username: string) {
         messages = messages.filter(message => {
             if ("username" in message) {
-                const messageUsername = message.tags.username as string;
+                const messageUsername = message.username as string;
                 return messageUsername.toLowerCase() !== username.toLowerCase();
             }
 
