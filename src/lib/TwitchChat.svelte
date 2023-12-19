@@ -3,13 +3,19 @@
     import {onDestroy, onMount} from 'svelte';
     import TwitchMessage from "$lib/TwitchMessage.svelte";
     import {dev} from '$app/environment';
+    import ElementChecker from "$lib/ElementChecker";
 
     let {channels} = $props<{ channels: string[] }>()
 
-    let limit = $state(500);
+    let anchorVisible = $state(true);
+    let bufferSize = $state(500);
+    let maxBufferSize = $derived(bufferSize * 2);
+    let currentBufferSize = $derived(anchorVisible ? bufferSize : maxBufferSize);
+
     let messages = $state([] as PrivateMessages[]);
     let chatContainer = $state(null as HTMLDivElement | null);
     let anchor = $state(null as HTMLDivElement | null);
+    let autoScrollCount = $state(0);
 
     let logLevel = dev ? 'info' : 'warn';
 
@@ -20,13 +26,31 @@
         joinTimeout: 1000 * 30,
     });
 
+    function updateAnchorVisibility() {
+        anchorVisible = ElementChecker.isVisible(anchor);
+    }
+    
+    function scrollToBottom() {
+        console.log("scrolling to bottom");
+        anchor?.scrollIntoView({behavior: "instant", block: "end"});
+    }
+
     function clearMessages() {
         messages = [];
     }
 
     function addMessage(message: PrivateMessages) {
         messages.push(message);
-        while (messages.length > limit) {
+        updateAnchorVisibility();
+        
+        if(anchor != null && !anchorVisible && autoScrollCount <= 4) {
+            scrollToBottom();
+            autoScrollCount++;
+        }
+
+        console.debug({"messages": messages.length, "bufferSize": currentBufferSize, "anchorVisible": anchorVisible});
+
+        while (messages.length > currentBufferSize) {
             messages.shift();
         }
         messages = messages;
@@ -63,49 +87,6 @@
 
             return true;
         });
-    }
-
-    function scrollToBottom() {
-        console.log("scrolling to bottom");
-        anchor?.scrollIntoView({behavior: "instant", block: "end"});
-    }
-
-    /** Detect if the chat window has enough content to be scrollable */
-    function isScrollable() {
-        const target = chatContainer;
-
-        if (!target) {
-            return false;
-        }
-
-        if (target.scrollHeight > target.clientHeight) {
-            return true;
-        }
-
-        // if the chat window is taller than the screen, it's definitely scrollable
-        // this happens when the chat window doesn't have a height set
-        if (target.scrollHeight > window.innerHeight) {
-            return true;
-        }
-
-        return false;
-    }
-
-    let autoScrolled = false;
-
-    function autoScrollToBottom() {
-        if (autoScrolled) {
-            return;
-        }
-
-        if (isScrollable()) {
-            console.log("auto scrolling to bottom");
-            scrollToBottom();
-            autoScrolled = true;
-            return;
-        }
-
-        setTimeout(autoScrollToBottom, 250);
     }
 
     onMount(async () => {
@@ -149,8 +130,6 @@
     onDestroy(async () => {
         await chat.disconnect();
     });
-
-    setTimeout(autoScrollToBottom, 250);
 </script>
 
 <div class="twitch-chat" role="button" tabindex="0" on:click={scrollToBottom} on:keydown={scrollToBottom}
