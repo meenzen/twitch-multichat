@@ -1,7 +1,5 @@
-import chroma from "chroma-js";
-import randomizer from "seedrandom";
+import { generateColor, generateSecondaryColor } from "@marko19907/string-to-color";
 
-const scale = chroma.scale("Spectral");
 const cache = new Map<string, string>();
 
 const ColorGenerator = {
@@ -10,9 +8,7 @@ const ColorGenerator = {
             return cache.get(seed);
         }
 
-        const random = randomizer(seed);
-
-        const color = scale(random()).hex();
+        const color = generateColor(seed);
         cache.set(seed, color);
 
         return color;
