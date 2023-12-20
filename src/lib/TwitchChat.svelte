@@ -4,7 +4,7 @@
     import TwitchMessage from "$lib/TwitchMessage.svelte";
     import {dev} from '$app/environment';
     import ElementChecker from "$lib/ElementChecker";
-    import Spinner from "$lib/components/Spinner.svelte";
+    import LoadingMessage from "$lib/LoadingMessage.svelte";
 
     let {channels} = $props<{ channels: string[] }>()
 
@@ -12,10 +12,9 @@
     let bufferSize = $state(500);
     let maxBufferSize = $derived(bufferSize * 2);
     let currentBufferSize = $derived(anchorVisible ? bufferSize : maxBufferSize);
-
-    let connecting = $state(true);
+    
     let connectionError = $state(false);
-    let joiningChannels = $state(false);
+    let loadingMessage = $state("");
     let messages = $state([] as PrivateMessages[]);
     let chatContainer = $state(null as HTMLDivElement | null);
     let anchor = $state(null as HTMLDivElement | null);
@@ -112,6 +111,14 @@
             return true;
         });
     }
+    
+    function showLoadingMessage(message: string) {
+        loadingMessage = message;
+        
+        if (loadingMessage.length > 0) {
+            console.log(message);
+        }
+    }
 
     onMount(async () => {
         chat.on(Chat.Events.PRIVATE_MESSAGE, (message) => {
@@ -143,23 +150,20 @@
             }
         });
 
-        console.log("Connecting to twitch...");
+        showLoadingMessage("Connecting to Twitch...");
         await chat.connect().catch((error) => {
-            console.error("Failed to connect to twitch:", error);
+            console.error("Failed to connect to Twitch:", error);
             connectionError = true;
         });
 
-        connecting = false;
-        joiningChannels = true;
-
         for (const channel of channels) {
-            console.log("Joining channel:", channel);
+            showLoadingMessage(`Joining: ${channel}...`)
             await chat.join(channel).catch((error) => {
                 console.error("Failed to join channel:", error);
             });
         }
-
-        joiningChannels = false;
+        
+        showLoadingMessage("");
     });
 
     onDestroy(async () => {
@@ -173,17 +177,7 @@
         <TwitchMessage {message}/>
     {/each}
 
-    {#if connecting || joiningChannels}
-        <Spinner/>
-        <div class="connecting">
-            {#if connecting}
-                <span>Connecting to twitch chat...</span>
-            {/if}
-            {#if joiningChannels}
-                <span>Joining channels...</span>
-            {/if}
-        </div>
-    {/if}
+    <LoadingMessage bind:loadingMessage={loadingMessage}/>
 
     {#if connectionError}
         <div class="error-message">
@@ -206,18 +200,7 @@
         font-size: 13px;
     }
 
-    .connecting {
-        font-family: Inter, Roobert, "Helvetica Neue", Helvetica, Arial, sans-serif;
-        font-size: 14px;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        height: 100%;
-    }
-
     .error-message {
-        font-family: Inter, Roobert, "Helvetica Neue", Helvetica, Arial, sans-serif;
         font-weight: 700;
         font-size: 20px;
         color: orangered;

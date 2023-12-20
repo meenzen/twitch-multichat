@@ -1,8 +1,7 @@
 <script lang="ts">
     import type {PrivateMessages} from "twitch-js";
-    import {isAction, type MessagePart, MessagePartType, parseMessage} from "$lib/MessageParser";
+    import {isAction, MessagePartType, parseMessage} from "$lib/MessageParser";
     import TwitchEmote from "$lib/TwitchEmote.svelte";
-    import {onMount} from "svelte";
     import TwitchUsername from "$lib/TwitchUsername.svelte";
     import FormattedMessage from "$lib/FormattedMessage.svelte";
 
@@ -28,7 +27,6 @@
 
 <style>
     .message {
-        font-family: Inter, Roobert, "Helvetica Neue", Helvetica, Arial, sans-serif;
         margin-top: 2px;
         margin-bottom: 5px;
         overflow-wrap: break-word;
