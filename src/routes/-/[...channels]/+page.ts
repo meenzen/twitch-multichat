@@ -1,29 +1,37 @@
 import TwitchChannel from "$lib/TwitchChannel";
+import type {ChatSettings} from "$lib/ChatSettings";
 
 export const ssr = false;
 
-type ChannelData = {
-    channels: string[];
-}
-
-const NO_DATA: ChannelData = {
-    channels: [] as string[]
-}
-
-export function load({params}): ChannelData {
-    let channelsString = params.channels;
-
-    if (channelsString.trim().length === 0) {
-        return NO_DATA;
+function getSettings(url: URL): ChatSettings {
+    
+    let shadowParam = url.searchParams.get("shadow");
+    let shadow = true;
+    
+    if (shadowParam === "false") {
+        shadow = false;
     }
     
+    return {
+        channels: [],
+        shadow: shadow
+    }
+}
+
+export function load({params, url}): ChatSettings {
+    let channelsString = params.channels;
+    let settings = getSettings(url);
+
+    if (channelsString.trim().length === 0) {
+        return settings;
+    }
+
     const channels = channelsString.split("/");
 
     if (!TwitchChannel.isValidList(channels)) {
-        return NO_DATA;
+        return settings;
     }
 
-    return {
-        channels: channels,
-    }
+    settings.channels = channels;
+    return settings;
 }

@@ -19,8 +19,8 @@
 </svelte:head>
 
 {#if shouldConnect}
-    <TwitchChannelList channels="{selectedChannels}"/>
-    <TwitchChat channels="{selectedChannels}"/>
+    <TwitchChannelList bind:settings={data}/>
+    <TwitchChat bind:settings={data}/>
 {:else}
     <p class="alert">No valid channels selected</p>
 {/if}

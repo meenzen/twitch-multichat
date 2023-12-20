@@ -5,14 +5,15 @@
     import {dev} from '$app/environment';
     import ElementChecker from "$lib/ElementChecker";
     import LoadingMessage from "$lib/LoadingMessage.svelte";
+    import type {ChatSettings} from "$lib/ChatSettings";
 
-    let {channels} = $props<{ channels: string[] }>()
+    let {settings} = $props<{ settings: ChatSettings }>()
 
     let anchorVisible = $state(true);
     let bufferSize = $state(500);
     let maxBufferSize = $derived(bufferSize * 2);
     let currentBufferSize = $derived(anchorVisible ? bufferSize : maxBufferSize);
-    
+
     let connectionError = $state(false);
     let loadingMessage = $state("");
     let messages = $state([] as PrivateMessages[]);
@@ -111,10 +112,10 @@
             return true;
         });
     }
-    
+
     function showLoadingMessage(message: string) {
         loadingMessage = message;
-        
+
         if (loadingMessage.length > 0) {
             console.log(message);
         }
@@ -156,13 +157,13 @@
             connectionError = true;
         });
 
-        for (const channel of channels) {
+        for (const channel of settings.channels) {
             showLoadingMessage(`Joining: ${channel}...`)
             await chat.join(channel).catch((error) => {
                 console.error("Failed to join channel:", error);
             });
         }
-        
+
         showLoadingMessage("");
     });
 
@@ -174,7 +175,7 @@
 <div class="twitch-chat" role="button" tabindex="0" on:click={scrollToBottom} on:keydown={scrollToBottom}
      bind:this={chatContainer}>
     {#each messages as message (message._raw)}
-        <TwitchMessage {message}/>
+        <TwitchMessage {message} bind:settings={settings}/>
     {/each}
 
     <LoadingMessage bind:loadingMessage={loadingMessage}/>

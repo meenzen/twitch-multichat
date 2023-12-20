@@ -1,13 +1,14 @@
 ﻿<script lang="ts">
     import ColorGenerator from "$lib/ColorGenerator";
+    import type {ChatSettings} from "$lib/ChatSettings";
 
-    let {channels} = $props<{ channels: string[] }>();
+    let {settings} = $props<{ settings: ChatSettings }>();
 </script>
 
 <div class="channel-list">
     <table>
         <tbody>
-        {#each channels as channel}
+        {#each settings.channels as channel}
             <tr>
                 <td style="color: {ColorGenerator.generate(channel)}">{channel}</td>
             </tr>

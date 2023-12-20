@@ -4,8 +4,9 @@
     import TwitchEmote from "$lib/TwitchEmote.svelte";
     import TwitchUsername from "$lib/TwitchUsername.svelte";
     import FormattedMessage from "$lib/FormattedMessage.svelte";
+    import type {ChatSettings} from "$lib/ChatSettings";
 
-    let {message} = $props<{ message: PrivateMessages }>();
+    let {message, settings} = $props<{ message: PrivateMessages, settings: ChatSettings }>();
 
     let parts = parseMessage(message);
     let isActionMessage = isAction(message);
@@ -13,7 +14,7 @@
 
 
 <div class="message">
-    <TwitchUsername message="{message}" isAction="{isActionMessage}"/>
+    <TwitchUsername message="{message}" isAction="{isActionMessage}" bind:settings={settings}/>
     <FormattedMessage italicized="{isActionMessage}">
         {#each parts as part}
             {#if part.type === MessagePartType.Text}
