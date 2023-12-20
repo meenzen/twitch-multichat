@@ -26,8 +26,7 @@
 
 <span class:shadow={settings.shadow}>
     <span class="message-text channel-name" style="color: {channelColor}">[{channel}] </span>
-    <span class="message-text username" style="color: {color}">{username}</span>
-    <span class="message-text">{spacer}</span>
+    <span class="message-text username" style="color: {color}">{username}</span><span class="message-text">{spacer}</span>
 </span>
 
 <style>
