@@ -24,11 +24,11 @@
     let channelColor = $derived(ColorGenerator.generate(channel));
 </script>
 
-<div class:shadow={settings.shadow}>
+<span class:shadow={settings.shadow}>
     <span class="message-text channel-name" style="color: {channelColor}">[{channel}] </span>
     <span class="message-text username" style="color: {color}">{username}</span>
     <span class="message-text">{spacer}</span>
-</div>
+</span>
 
 <style>
     .username {
