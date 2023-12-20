@@ -18,6 +18,7 @@ export const RANDOM_TWITCH_CHANNELS = [
     "Shenpai",
     "JoltzDude139",
     "lilypichu",
+    "SovietWomble",
 ];
 
 
