@@ -3,8 +3,8 @@
     import ColorGenerator from "$lib/ColorGenerator";
     import type {ChatSettings} from "$lib/ChatSettings";
 
-    const normalSpacer = ": ";
-    const actionSpacer = " ";
+    const normalSpacer = ":";
+    const actionSpacer = "";
 
     let {message, isAction, settings} = $props<{
         message: PrivateMessages,
