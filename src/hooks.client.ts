@@ -5,6 +5,7 @@ const onError = init(
     'https://7e14327dadb7a8dc3cbb451dc31a20ac@sentry.mnzn.dev/4',
     {
         sentryOptions: {
+            tunnel: "/api/tunnel",
             integrations: [
                 new Sentry.BrowserProfilingIntegration(),
                 Sentry.replayIntegration(),
