@@ -8,6 +8,9 @@ export default defineConfig({
 	},
 	plugins: [
 		sentryVitePlugin({
+			org: "meenzen",
+			project: "twitch-multichat",
+			url: "https://sentry.mnzn.dev",
 			authToken: process.env.SENTRY_AUTH_TOKEN,
 			telemetry: false,
 		}),
