@@ -7,7 +7,8 @@ const onError = init(
         sentryOptions: {
             tunnel: "/api/tunnel",
             integrations: [
-                new Sentry.BrowserProfilingIntegration(),
+                Sentry.browserTracingIntegration(),
+                Sentry.browserProfilingIntegration(),
                 Sentry.replayIntegration(),
             ],
             tracesSampleRate: 1.0,

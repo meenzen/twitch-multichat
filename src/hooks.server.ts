@@ -16,7 +16,11 @@ const { onHandle, onError } = init(
     }
 )
 
-export const handle = onHandle();
+export const handle = onHandle(async ({ event, resolve }) => {
+    const response = await resolve(event);
+    response.headers.set("Document-Policy", "js-profiling");
+    return response;
+})
 
 export const handleError = onError((e, sentryEventId) => {
     // no special error handling
