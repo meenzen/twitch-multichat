@@ -5,11 +5,10 @@
 import { cleanupOutdatedCaches, createHandlerBoundToURL, precacheAndRoute } from 'workbox-precaching'
 import { NavigationRoute, registerRoute } from 'workbox-routing'
 import { clientsClaim } from "workbox-core";
+import { CacheFirst } from 'workbox-strategies'
+import { ExpirationPlugin } from 'workbox-expiration'
 
 declare let self: ServiceWorkerGlobalScope
-
-self.skipWaiting()
-clientsClaim()
 
 // self.__WB_MANIFEST is default injection point
 precacheAndRoute(self.__WB_MANIFEST)
@@ -17,13 +16,32 @@ precacheAndRoute(self.__WB_MANIFEST)
 // clean old assets
 cleanupOutdatedCaches()
 
+// cache twitch emotes
+registerRoute(
+    ({ url }) => url.origin === "https://static-cdn.jtvnw.net",
+    new CacheFirst({
+        cacheName: "twitch-emotes",
+        plugins: [
+            new ExpirationPlugin({
+                maxEntries: 10000,
+                maxAgeSeconds: 60 * 60 * 24 * 7, // 1 week
+                purgeOnQuotaError: true,
+            }),
+        ],
+    })
+)
 
 let allowlist: undefined | RegExp[]
-if (import.meta.env.DEV)
-    allowlist = [/^\/$/]
+let denylist: RegExp[] = [
+    new RegExp("^/api"),
+    new RegExp("/[^/]+\\.[^/]+$"),
+]
 
 // to allow work offline
 registerRoute(new NavigationRoute(
     createHandlerBoundToURL('/'),
-    { allowlist },
+    { allowlist, denylist }
 ))
+
+self.skipWaiting()
+clientsClaim()
