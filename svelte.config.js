@@ -13,6 +13,9 @@ const config = {
 		files: {
 			serviceWorker: "src/service-worker.ts"
 		},
+		paths: {
+			relative: false,
+		}
 	},
 	
 	compilerOptions: {
