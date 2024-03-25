@@ -30,13 +30,17 @@ export default defineConfig({
 				theme_color: "#9146ff",
 			},
 			injectManifest: {
-				globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}']
+				globPatterns: ["client/**/*.{js,css,ico,png,svg,webp,woff,woff2}"]
 			},
 			workbox: {
 				cleanupOutdatedCaches: true,
 				skipWaiting: true,
 				clientsClaim: true,
-				globPatterns: ['client/**/*.{js,css,ico,png,svg,webp,woff,woff2}'],
+				globPatterns: ["client/**/*.{js,css,ico,png,svg,webp,woff,woff2}"],
+				navigateFallbackDenylist: [
+					new RegExp("^/api"),
+					new RegExp("/[^/]+\\.[^/]+$"),
+				],
 			},
 			pwaAssets: {
 				image: "static/logo.svg",
