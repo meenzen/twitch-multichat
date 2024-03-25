@@ -54,26 +54,37 @@
     <meta name="keywords" content="Twitch, chat, multichat">
 </svelte:head>
 
-<form>
+<div class="container">
+
+    <img src="/logo-512x512.png" alt="Twitch Multichat Logo" class="logo"/>
+
     <textarea bind:value="{channels}" placeholder="{randomChannelsString}" rows="10" cols="50"/>
     {#if valid}
         <a href="{link}">Connect</a>
     {:else}
-        <div class="placeholder">Enter at least one channel name</div>
+        <div class="placeholder">Connect</div>
     {/if}
     
     <a href="/" on:click="{feelingLucky}" style="margin-top: 15px">I'm feeling lucky</a>
-</form>
+
+</div>
 
 <style>
-    form {
+    .logo {
+        width: 256px;
+        height: 256px;
+        border-radius: 10%;
+        margin-bottom: 20px;
+    }
+
+    .container {
         display: flex;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        height: 100vh;
-        padding-left: 10px;
-        padding-right: 10px;
+        box-sizing: border-box;
+        padding: 20px;
+        min-height: 80vh;
     }
 
     textarea, a, .placeholder {
@@ -92,8 +103,11 @@
         resize: none;
         margin-bottom: 1rem;
         width: 90%;
-        max-width: 800px;
+        height: 120px;
+        max-width: 300px;
         text-align: center;
+        background-color: var(--background-color);
+        color: var(--twitch-purple);
     }
 
     a {
