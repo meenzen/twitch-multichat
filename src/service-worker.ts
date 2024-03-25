@@ -38,10 +38,12 @@ let denylist: RegExp[] = [
 ]
 
 // to allow work offline
+/*
 registerRoute(new NavigationRoute(
     createHandlerBoundToURL('/'),
     { allowlist, denylist }
 ))
+*/
 
 self.skipWaiting()
 clientsClaim()
