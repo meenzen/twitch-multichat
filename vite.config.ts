@@ -21,8 +21,6 @@ export default defineConfig({
 			strategies: "injectManifest",
 			srcDir: "src",
 			filename: "service-worker.ts",
-			scope: "/",
-			base: "/",
 			manifest: {
 				short_name: "Twitch Multichat",
 				name: "Twitch Multichat",
