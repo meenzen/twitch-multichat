@@ -20,7 +20,7 @@
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
 		"@vite-pwa/assets-generator": "^0.2.4",
 		"@vite-pwa/sveltekit": "^0.4.0",
-		"svelte": "^5.0.0-next.1",
+		"svelte": "5.0.0-next.82",
 		"svelte-check": "^3.6.0",
 		"tslib": "^2.4.1",
 		"twitch-js": "^2.0.0-beta.45",
