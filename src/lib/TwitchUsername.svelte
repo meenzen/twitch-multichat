@@ -6,7 +6,7 @@
     const normalSpacer = ":";
     const actionSpacer = "";
 
-    let {message, isAction, settings} = $props<{
+    let {message, isAction, settings = $bindable()} = $props<{
         message: PrivateMessages,
         isAction: boolean,
         settings: ChatSettings

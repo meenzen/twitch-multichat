@@ -1,7 +1,7 @@
 <script>
     import { pwaInfo } from 'virtual:pwa-info';
     import { pwaAssetsHead } from 'virtual:pwa-assets/head';
-    import {onMount} from "svelte";
+    import { onMount } from "svelte";
 
     const intervalMS = 10 * 60 * 1000 // check for updates every 10 minutes
 
@@ -44,6 +44,7 @@
     })
 
     let webManifest = $derived(pwaInfo ? pwaInfo.webManifest.linkTag : '')
+    let { children } = $props();
 </script>
 
 <svelte:head>
@@ -58,5 +59,5 @@
 </svelte:head>
 
 <main>
-    <slot />
+    {@render children()}
 </main>

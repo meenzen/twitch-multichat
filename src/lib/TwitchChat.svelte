@@ -7,7 +7,7 @@
     import LoadingMessage from "$lib/LoadingMessage.svelte";
     import type {ChatSettings} from "$lib/ChatSettings";
 
-    let {settings} = $props<{ settings: ChatSettings }>()
+    let {settings = $bindable()} = $props<{ settings: ChatSettings }>()
 
     let anchorVisible = $state(true);
     let bufferSize = $state(500);
@@ -172,7 +172,7 @@
     });
 </script>
 
-<div class="twitch-chat" role="button" tabindex="0" on:click={scrollToBottom} on:keydown={scrollToBottom}
+<div class="twitch-chat" role="button" tabindex="0" onclick={scrollToBottom} onkeydown={scrollToBottom}
      bind:this={chatContainer}>
     {#each messages as message (message._raw)}
         <TwitchMessage {message} bind:settings={settings}/>
@@ -187,7 +187,7 @@
         </div>
     {/if}
 
-    <div class="chat-end-marker" bind:this={anchor}/>
+    <div class="chat-end-marker" bind:this={anchor}></div>
 </div>
 
 <style>

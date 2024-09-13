@@ -4,7 +4,7 @@
     import TwitchChat from "$lib/TwitchChat.svelte";
     import TwitchChannelList from "$lib/TwitchChannelList.svelte";
 
-    let {data} = $props();
+    let {data = $bindable()} = $props();
     
     let selectedChannels = data.channels;
     let shouldConnect = selectedChannels.length > 0;

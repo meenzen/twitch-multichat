@@ -1,13 +1,15 @@
 ﻿<script lang="ts">
-    let {italicized = false} = $props<{ italicized?: boolean }>()
+  import type { Snippet } from "svelte";
+
+    let {italicized = false, children} = $props<{ italicized?: boolean, childred: Snippet }>()
 </script>
 
 {#if italicized}
     <span class="italicized">
-        <slot/>
+        {@render children()}
     </span>
 {:else}
-    <slot/>
+    {@render children()}
 {/if}
 
 <style>

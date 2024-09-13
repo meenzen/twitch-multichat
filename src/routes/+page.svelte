@@ -58,14 +58,14 @@
 
     <img src="/logo-512x512.png" alt="Twitch Multichat Logo" class="logo"/>
 
-    <textarea bind:value="{channels}" placeholder="{randomChannelsString}" rows="10" cols="50"/>
+    <textarea bind:value="{channels}" placeholder="{randomChannelsString}" rows="10" cols="50"></textarea>
     {#if valid}
         <a href="{link}">Connect</a>
     {:else}
         <div class="placeholder">Connect</div>
     {/if}
     
-    <a href="/" on:click="{feelingLucky}" style="margin-top: 15px">I'm feeling lucky</a>
+    <a href="/" onclick="{feelingLucky}" style="margin-top: 15px">I'm feeling lucky</a>
 
 </div>
 
