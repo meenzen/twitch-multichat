@@ -1,6 +1,6 @@
 import { json, type RequestHandler } from "@sveltejs/kit";
 
-const SENTRY_HOST = "ingest.de.sentry.io"
+const SENTRY_HOST = "bf0e1a778faa45f43774793d79698924@o4508253646553088.ingest.de.sentry.io"
 const SENTRY_PROJECT_IDS = ["4508253698064464"]
 
 export const POST: RequestHandler = async ({ request }) => {
