@@ -2,7 +2,7 @@ import { init } from '@jill64/sentry-sveltekit-cloudflare/client'
 import * as Sentry from "@sentry/browser";
 
 const onError = init(
-    'https://7e14327dadb7a8dc3cbb451dc31a20ac@sentry.mnzn.dev/4',
+    'https://bf0e1a778faa45f43774793d79698924@o4508253646553088.ingest.de.sentry.io/4508253698064464',
     {
         sentryOptions: {
             tunnel: "/api/tunnel",
