@@ -18,7 +18,7 @@
 </div>
 
 <style>
-    table, tbody, th, td {
+    table, tbody, td {
         width: 100%;
         text-align: center;
     }

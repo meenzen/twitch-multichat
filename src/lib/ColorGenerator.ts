@@ -1,4 +1,4 @@
-import { generateColor, generateSecondaryColor } from "@marko19907/string-to-color";
+import { generateColor } from "@marko19907/string-to-color";
 
 const cache = new Map<string, string>();
 
