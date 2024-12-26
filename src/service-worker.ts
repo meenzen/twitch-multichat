@@ -23,8 +23,8 @@ registerRoute(
         cacheName: "twitch-emotes",
         plugins: [
             new ExpirationPlugin({
-                maxEntries: 10000,
-                maxAgeSeconds: 60 * 60 * 24 * 7, // 1 week
+                maxEntries: 50000,
+                maxAgeSeconds: 60 * 60 * 24 * 30, // 1 month
                 purgeOnQuotaError: true,
             }),
         ],
