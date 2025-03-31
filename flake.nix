@@ -38,6 +38,11 @@
             forbid-new-submodules.enable = true;
             nil.enable = true;
             trim-trailing-whitespace.enable = true;
+            svelte-check = {
+              enable = true;
+              name = "Run svelte-check";
+              entry = "npm run check";
+            };
           };
           devcontainer.enable = true;
         };

@@ -11,7 +11,7 @@
         name,
         animated = true,
         dark = true,
-    } = $props<Props>();
+    }: Props = $props();
 
     let src = $state("/emote.png")
 

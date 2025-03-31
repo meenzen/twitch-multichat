@@ -10,7 +10,12 @@
 		"sourceMap": true,
 		"strict": true,
 		"moduleResolution": "bundler",
-		"lib": ["ESNext", "DOM", "WebWorker"]
+		"lib": ["ESNext", "DOM", "WebWorker"],
+		"types": [
+			"vite-plugin-pwa/info",
+			"vite-plugin-pwa/client",
+			"vite-plugin-pwa/pwa-assets",
+		],
 	}
 	// Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias
 	//
