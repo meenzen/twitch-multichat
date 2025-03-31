@@ -6,7 +6,7 @@
     import FormattedMessage from "$lib/FormattedMessage.svelte";
     import type {ChatSettings} from "$lib/ChatSettings";
 
-    let {message, settings = $bindable()} = $props<{ message: PrivateMessages, settings: ChatSettings }>();
+    let {message, settings = $bindable()}: { message: PrivateMessages, settings: ChatSettings } = $props();
 
     let parts = parseMessage(message);
     let isActionMessage = isAction(message);

@@ -2,7 +2,7 @@
     import ColorGenerator from "$lib/ColorGenerator";
     import type {ChatSettings} from "$lib/ChatSettings";
 
-    let {settings = $bindable()} = $props<{ settings: ChatSettings }>();
+    let {settings = $bindable()}: { settings: ChatSettings } = $props();
 </script>
 
 <div class="channel-list">

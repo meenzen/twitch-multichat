@@ -1,7 +1,7 @@
 <script lang="ts">
     import Spinner from "$lib/components/Spinner.svelte";
 
-    let {loadingMessage = $bindable()} = $props<{ loadingMessage: string }>();
+    let {loadingMessage = $bindable()}: { loadingMessage: string } = $props();
 </script>
 
 {#if loadingMessage.length > 0}

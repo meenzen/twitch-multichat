@@ -6,11 +6,11 @@
     const normalSpacer = ":";
     const actionSpacer = "";
 
-    let {message, isAction, settings = $bindable()} = $props<{
+    let {message, isAction, settings = $bindable()}: {
         message: PrivateMessages,
         isAction: boolean,
         settings: ChatSettings
-    }>();
+    } = $props();
 
     let c = "white";
     if ("color" in message.tags && message.tags.color) {

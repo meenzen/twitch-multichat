@@ -7,7 +7,7 @@
     import LoadingMessage from "$lib/LoadingMessage.svelte";
     import type {ChatSettings} from "$lib/ChatSettings";
 
-    let {settings = $bindable()} = $props<{ settings: ChatSettings }>()
+    let {settings = $bindable()}: { settings: ChatSettings } = $props()
 
     let anchorVisible = $state(true);
     let bufferSize = $state(500);
