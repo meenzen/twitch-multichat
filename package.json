@@ -12,8 +12,8 @@
 	},
 	"devDependencies": {
 		"@fontsource/inter": "^5.0.16",
-		"@jill64/sentry-sveltekit-cloudflare": "^2.0.0",
 		"@marko19907/string-to-color": "^1.0.0",
+		"@sentry/sveltekit": "^9.10.1",
 		"@sentry/vite-plugin": "^3.0.0",
 		"@sveltejs/adapter-cloudflare": "^6.0.0",
 		"@sveltejs/kit": "^2.0.0",
