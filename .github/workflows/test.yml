@@ -26,11 +26,11 @@ jobs:
       - name: Set up direnv
         run: direnv allow
 
-      - name: Run tests
-        run: direnv exec . devenv test
-
       - name: Install dependencies
         run: direnv exec . npm install
 
-      - name: Build
+      - name: Run devenv tests
+        run: direnv exec . devenv test
+
+      - name: Build project
         run: direnv exec . npm run build
