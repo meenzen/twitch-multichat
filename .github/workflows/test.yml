@@ -1,0 +1,31 @@
+name: "Test"
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  tests:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: cachix/install-nix-action@v26
+      - uses: cachix/cachix-action@v14
+        with:
+          name: devenv
+
+      - name: Install tools
+        run: nix profile install nixpkgs#direnv nixpkgs#nix-direnv
+
+      - name: Set up direnv
+        run: direnv allow
+
+      - name: Run tests
+        run: direnv exec . devenv test
+
+      - name: Build
+        run: direnv exec . npm run build
