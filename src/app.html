@@ -1,60 +1,61 @@
 <!doctype html>
 <html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width, initial-scale=1" />
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
 
-		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-		<link rel="mask-icon" href="/safari-pinned-tab.svg" color="#9146ff">
-		<meta name="msapplication-TileColor" content="#9146ff">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#9146ff" />
+    <meta name="msapplication-TileColor" content="#9146ff" />
 
-		%sveltekit.head%
+    %sveltekit.head%
 
-		<style>
-			:root {
-				--text-color: #efeff1;
-				--text-size: 25px;
-				--font-family: 'Roboto', sans-serif;
-				--background-color: #0e0e10;
+    <style>
+      :root {
+        --text-color: #efeff1;
+        --text-size: 25px;
+        --font-family: "Roboto", sans-serif;
+        --background-color: #0e0e10;
 
-				--twitch-purple: #9146ff;
-				--twitch-font-family: Inter, Roobert, "Helvetica Neue", Helvetica, Arial, sans-serif;
+        --twitch-purple: #9146ff;
+        --twitch-font-family:
+          Inter, Roobert, "Helvetica Neue", Helvetica, Arial, sans-serif;
 
-				--scrollbar-color: #000000;
-				--scrollbar-thumb-color: #F5F5F5;
-			}
+        --scrollbar-color: #000000;
+        --scrollbar-thumb-color: #f5f5f5;
+      }
 
-			::-webkit-scrollbar-track {
-				background-color: var(--scrollbar-color);
-			}
+      ::-webkit-scrollbar-track {
+        background-color: var(--scrollbar-color);
+      }
 
-			::-webkit-scrollbar {
-				width: 10px;
-				background-color: var(--scrollbar-color);
-			}
+      ::-webkit-scrollbar {
+        width: 10px;
+        background-color: var(--scrollbar-color);
+      }
 
-			::-webkit-scrollbar-thumb {
-				background-color: var(--scrollbar-thumb-color);
-			}
+      ::-webkit-scrollbar-thumb {
+        background-color: var(--scrollbar-thumb-color);
+      }
 
-			html {
-				height: 100%;
-			}
+      html {
+        height: 100%;
+      }
 
-			body {
-				font-family: var(--twitch-font-family);
-				color: var(--text-color);
-				background-color: var(--background-color);
-				min-height: 100%;
-				margin: 0;
-				padding: 0;
-				box-sizing: border-box;
-			}
-		</style>
-	</head>
-	<body data-sveltekit-preload-data="hover">
-		<div style="display: contents">%sveltekit.body%</div>
-	</body>
+      body {
+        font-family: var(--twitch-font-family);
+        color: var(--text-color);
+        background-color: var(--background-color);
+        min-height: 100%;
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body data-sveltekit-preload-data="hover">
+    <div style="display: contents">%sveltekit.body%</div>
+  </body>
 </html>

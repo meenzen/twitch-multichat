@@ -17,6 +17,6 @@ export const handle = sequence(
     const response = await resolve(event);
     response.headers.set("Document-Policy", "js-profiling");
     return response;
-  }
+  },
 );
 export const handleError = handleErrorWithSentry();

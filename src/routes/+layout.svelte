@@ -1,63 +1,62 @@
 <script>
-    import { pwaInfo } from 'virtual:pwa-info';
-    import { pwaAssetsHead } from 'virtual:pwa-assets/head';
-    import { onMount } from "svelte";
+  import { pwaInfo } from "virtual:pwa-info";
+  import { pwaAssetsHead } from "virtual:pwa-assets/head";
+  import { onMount } from "svelte";
 
-    const intervalMS = 10 * 60 * 1000 // check for updates every 10 minutes
+  const intervalMS = 10 * 60 * 1000; // check for updates every 10 minutes
 
-    onMount(async () => {
-        if (pwaInfo) {
-            const { registerSW } = await import('virtual:pwa-register')
+  onMount(async () => {
+    if (pwaInfo) {
+      const { registerSW } = await import("virtual:pwa-register");
 
-            registerSW({
-                immediate: true,
-                onRegisteredSW(swUrl, registration) {
-                    registration && setInterval(async () => {
-                        if (!(!registration.installing && navigator))
-                            return
+      registerSW({
+        immediate: true,
+        onRegisteredSW(swUrl, registration) {
+          if (!registration) return;
 
-                        if (('connection' in navigator) && !navigator.onLine)
-                            return
+          setInterval(async () => {
+            if (!(!registration.installing && navigator)) return;
 
-                        console.log('Checking for sw update')
+            if ("connection" in navigator && !navigator.onLine) return;
 
-                        const resp = await fetch(swUrl, {
-                            cache: 'no-store',
-                            headers: {
-                                'cache': 'no-store',
-                                'cache-control': 'no-cache',
-                            },
-                        })
+            console.log("Checking for sw update");
 
-                        if (resp?.status === 200)
-                            await registration.update()
-                    }, intervalMS)
+            const resp = await fetch(swUrl, {
+              cache: "no-store",
+              headers: {
+                cache: "no-store",
+                "cache-control": "no-cache",
+              },
+            });
 
-                    console.log(`SW Registered: ${registration}`)
-                },
+            if (resp?.status === 200) await registration.update();
+          }, intervalMS);
 
-                onRegisterError(error) {
-                    console.log('SW registration error', error)
-                }
-            })
-        }
-    })
+          console.log(`SW Registered: ${registration}`);
+        },
 
-    let webManifest = $derived(pwaInfo ? pwaInfo.webManifest.linkTag : '')
-    let { children } = $props();
+        onRegisterError(error) {
+          console.log("SW registration error", error);
+        },
+      });
+    }
+  });
+
+  let webManifest = $derived(pwaInfo ? pwaInfo.webManifest.linkTag : "");
+  let { children } = $props();
 </script>
 
 <svelte:head>
-    {#if pwaAssetsHead.themeColor}
-        <meta name="theme-color" content={pwaAssetsHead.themeColor.content} />
-    {/if}
-    {#each pwaAssetsHead.links as link}
-        <link {...link} />
-    {/each}
-    <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-    {@html webManifest}
+  {#if pwaAssetsHead.themeColor}
+    <meta name="theme-color" content={pwaAssetsHead.themeColor.content} />
+  {/if}
+  {#each pwaAssetsHead.links as link (link)}
+    <link {...link} />
+  {/each}
+  <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+  {@html webManifest}
 </svelte:head>
 
 <main>
-    {@render children()}
+  {@render children()}
 </main>

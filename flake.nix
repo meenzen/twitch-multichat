@@ -38,9 +38,24 @@
             forbid-new-submodules.enable = true;
             nil.enable = true;
             trim-trailing-whitespace.enable = true;
-            svelte-check = {
+            npm-format = {
+              enable = true;
+              name = "Run prettier";
+              entry = "npm run format";
+              pass_filenames = false;
+              before = ["npm-lint"];
+            };
+            npm-lint = {
+              enable = true;
+              name = "Run eslint";
+              entry = "npm run lint";
+              pass_filenames = false;
+              before = ["npm-check"];
+            };
+            npm-check = {
               enable = true;
               name = "Run svelte-check";
+              pass_filenames = false;
               entry = "npm run check";
             };
           };

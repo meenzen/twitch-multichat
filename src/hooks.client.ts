@@ -1,7 +1,7 @@
 import * as Sentry from "@sentry/sveltekit";
 import { dev } from "$app/environment";
 
-const onError = Sentry.init({
+Sentry.init({
   dsn: "https://bf0e1a778faa45f43774793d79698924@o4508253646553088.ingest.de.sentry.io/4508253698064464",
   tunnel: "/api/tunnel",
   integrations: [

@@ -29,7 +29,7 @@ export default defineConfig({
         display: "standalone",
         theme_color: "#9146ff",
         background_color: "#0e0e10",
-				lang: "en",
+        lang: "en",
         icons: [
           {
             src: "logo-192x192.png",
@@ -40,7 +40,7 @@ export default defineConfig({
             src: "logo-512x512.png",
             sizes: "512x512",
             type: "image/png",
-						purpose: "any maskable",
+            purpose: "any maskable",
           },
         ],
       },

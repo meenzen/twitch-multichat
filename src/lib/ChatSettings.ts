@@ -1,4 +1,4 @@
 export type ChatSettings = {
-    channels: string[];
-    shadow: boolean;
-}
+  channels: string[];
+  shadow: boolean;
+};
