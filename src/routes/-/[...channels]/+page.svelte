@@ -5,7 +5,7 @@
     import TwitchChannelList from "$lib/TwitchChannelList.svelte";
 
     let {data = $bindable()} = $props();
-    
+
     let selectedChannels = data.channels;
     let shouldConnect = selectedChannels.length > 0;
     if (shouldConnect) {

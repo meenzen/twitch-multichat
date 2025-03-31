@@ -1,4 +1,4 @@
-﻿<script lang="ts">
+<script lang="ts">
   import type { Snippet } from "svelte";
 
     let {italicized = false, children} = $props<{ italicized?: boolean, childred: Snippet }>()

@@ -1,4 +1,4 @@
-﻿<script lang="ts">
+<script lang="ts">
     import ColorGenerator from "$lib/ColorGenerator";
     import type {ChatSettings} from "$lib/ChatSettings";
 
@@ -22,7 +22,7 @@
         width: 100%;
         text-align: center;
     }
-    
+
     .channel-list {
         font-size: var(--text-size);
         font-family: var(--font-family);

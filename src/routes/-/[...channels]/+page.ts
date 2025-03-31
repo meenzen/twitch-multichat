@@ -4,14 +4,14 @@ import type {ChatSettings} from "$lib/ChatSettings";
 export const ssr = false;
 
 function getSettings(url: URL): ChatSettings {
-    
+
     let shadowParam = url.searchParams.get("shadow");
     let shadow = true;
-    
+
     if (shadowParam === "false") {
         shadow = false;
     }
-    
+
     return {
         channels: [],
         shadow: shadow

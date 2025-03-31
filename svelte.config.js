@@ -17,7 +17,7 @@ const config = {
 			relative: false,
 		}
 	},
-	
+
 	compilerOptions: {
 		runes: true
 	}

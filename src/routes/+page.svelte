@@ -34,7 +34,7 @@
 
         return TwitchChannel.isValidList(ch);
     }
-    
+
     function feelingLucky() {
         const channelCount = Math.floor(Math.random() * 4) + 1;
         channels = TwitchChannel.getRandomList(channelCount).join("\n");
@@ -64,7 +64,7 @@
     {:else}
         <div class="placeholder">Connect</div>
     {/if}
-    
+
     <a href="/" onclick="{feelingLucky}" style="margin-top: 15px">I'm feeling lucky</a>
 
 </div>

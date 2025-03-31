@@ -1,4 +1,4 @@
-﻿<script lang="ts">
+<script lang="ts">
     import {Chat, type PrivateMessages} from "twitch-js";
     import {onDestroy, onMount} from 'svelte';
     import TwitchMessage from "$lib/TwitchMessage.svelte";

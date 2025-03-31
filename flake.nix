@@ -32,7 +32,12 @@
           git-hooks.hooks = {
             alejandra.enable = true;
             actionlint.enable = true;
+            check-added-large-files.enable = true;
             end-of-file-fixer.enable = true;
+            fix-byte-order-marker.enable = true;
+            forbid-new-submodules.enable = true;
+            nil.enable = true;
+            trim-trailing-whitespace.enable = true;
           };
           devcontainer.enable = true;
         };
