@@ -17,7 +17,7 @@
     "@marko19907/string-to-color": "^1.0.0",
     "@sentry/sveltekit": "^9.10.1",
     "@sentry/vite-plugin": "^3.0.0",
-    "@sveltejs/adapter-cloudflare": "^6.0.0",
+    "@sveltejs/adapter-cloudflare": "^7.0.0",
     "@sveltejs/kit": "^2.0.0",
     "@sveltejs/vite-plugin-svelte": "^5.0.0",
     "@vite-pwa/assets-generator": "^1.0.0",
