@@ -36,6 +36,9 @@ export default ts.config(
     rules: {
       // Override or add rule settings here, such as:
       // 'svelte/rule-name': 'error'
+
+      // see: https://github.com/sveltejs/kit/issues/14376 and https://github.com/sveltejs/eslint-plugin-svelte/issues/1324
+      "svelte/no-navigation-without-resolve": "warn",
     },
   },
   {
