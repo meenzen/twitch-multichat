@@ -40,23 +40,23 @@
             trim-trailing-whitespace.enable = true;
             npm-format = {
               enable = true;
-              name = "Run prettier";
+              name = "prettier";
               entry = "npm run format";
               pass_filenames = false;
-              before = ["npm-lint"];
             };
             npm-lint = {
               enable = true;
-              name = "Run eslint";
+              name = "eslint";
               entry = "npm run lint";
               pass_filenames = false;
-              before = ["npm-check"];
+              after = ["npm-format"];
             };
             npm-check = {
               enable = true;
-              name = "Run svelte-check";
+              name = "svelte-check";
               pass_filenames = false;
               entry = "npm run check";
+              after = ["npm-lint"];
             };
           };
           devcontainer.enable = true;
