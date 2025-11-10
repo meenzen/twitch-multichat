@@ -25,7 +25,7 @@ jobs:
           extraPullNames: devenv
 
       - name: Install tools
-        run: nix profile install nixpkgs#direnv nixpkgs#nix-direnv
+        run: nix profile install nixpkgs#direnv nixpkgs#nix-direnv nixpkgs#devenv
 
       - name: Set up direnv
         run: direnv allow
