@@ -47,21 +47,21 @@ export function parseMessage(message: ChatMessage): Array<MessagePart> {
     }
   }
 
-  if (action) {
+  if (action && parts.length > 0) {
     const firstPart = parts[0];
     const lastPart = parts[parts.length - 1];
 
     // strip the \u0001 characters
-    if (firstPart && firstPart.type === MessagePartType.Text) {
+    if (firstPart.type === MessagePartType.Text) {
       firstPart.content = firstPart.content.replace("\u0001", "");
     }
 
-    if (lastPart && lastPart.type === MessagePartType.Text) {
+    if (lastPart.type === MessagePartType.Text) {
       lastPart.content = lastPart.content.replace("\u0001", "");
     }
 
     // remove the "ACTION" text from the first part
-    if (firstPart && firstPart.type === MessagePartType.Text) {
+    if (firstPart.type === MessagePartType.Text) {
       firstPart.content = firstPart.content.replace("ACTION ", "");
     }
   }
