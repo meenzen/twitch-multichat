@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Chat, type PrivateMessages } from "twitch-js";
+  import { ChatClient, type ChatMessage } from "@twurple/chat";
   import { onDestroy, onMount } from "svelte";
   import TwitchMessage from "$lib/TwitchMessage.svelte";
   import { dev } from "$app/environment";
@@ -16,19 +16,16 @@
 
   let connectionError = $state(false);
   let loadingMessage = $state("");
-  let messages = $state([] as PrivateMessages[]);
+  let messages = $state([] as ChatMessage[]);
   let chatContainer = $state(null as HTMLDivElement | null);
   let anchor = $state(null as HTMLDivElement | null);
   let autoScrolled = false;
   let autoScrolledVerified = false;
 
-  let logLevel = dev ? "info" : "warn";
-
-  const chat = new Chat({
-    username: "justinfan9999",
-    log: { enabled: true, level: logLevel },
-    connectionTimeout: 1000 * 30,
-    joinTimeout: 1000 * 30,
+  const chat = new ChatClient({
+    logger: {
+      minLevel: dev ? "INFO" : "WARNING",
+    },
   });
 
   function updateAnchorVisibility() {
@@ -60,7 +57,7 @@
     }
   }
 
-  function addMessage(message: PrivateMessages) {
+  function addMessage(message: ChatMessage) {
     messages.push(message);
     updateAnchorVisibility();
     autoScroll();
@@ -78,34 +75,19 @@
 
   function deleteMessage(id: string) {
     messages = messages.filter((message) => {
-      if ("tags" in message && "id" in message.tags) {
-        const messageId = message.tags.id as string;
-        return messageId.toLowerCase() !== id.toLowerCase();
-      }
-
-      return true;
+      return message.id.toLowerCase() !== id.toLowerCase();
     });
   }
 
   function deleteUserMessages(username: string) {
     messages = messages.filter((message) => {
-      if ("username" in message) {
-        const messageUsername = message.username as string;
-        return messageUsername.toLowerCase() !== username.toLowerCase();
-      }
-
-      return true;
+      return message.userInfo.userName.toLowerCase() !== username.toLowerCase();
     });
   }
 
   function deleteChannelMessages(channel: string) {
     messages = messages.filter((message) => {
-      if ("channel" in message) {
-        const messageChannel = message.channel as string;
-        return messageChannel.toLowerCase() !== channel.toLowerCase();
-      }
-
-      return true;
+      return message.target.toLowerCase() !== channel.toLowerCase();
     });
   }
 
@@ -118,40 +100,40 @@
   }
 
   onMount(async () => {
-    chat.on(Chat.Events.PRIVATE_MESSAGE, (message) => {
+    chat.onMessage((channel, user, text, msg) => {
       if (dev) {
-        console.log("Message received:", message);
+        console.log("Message received:", { channel, user, text, msg });
       } else {
-        console.debug("Message received:", message);
+        console.debug("Message received:", { channel, user, text });
       }
-      addMessage(message);
+      addMessage(msg);
     });
 
-    chat.on(Chat.Events.CLEAR_MESSAGE, (message) => {
-      if ("targetMessageId" in message) {
-        console.log("Clearing message:", message);
-        const id = message.targetMessageId as string;
-        deleteMessage(id);
-      }
+    chat.onMessageRemove((channel, messageId) => {
+      console.log("Clearing message:", { channel, messageId });
+      deleteMessage(messageId);
     });
 
-    chat.on(Chat.Events.CLEAR_CHAT, (message) => {
-      if ("username" in message) {
-        console.log("Clearing user:", message);
-        const username = message.username as string;
-        deleteUserMessages(username);
-      } else if ("channel" in message) {
-        console.log("Clearing channel:", message);
-        const channel = message.channel as string;
+    chat.onChatClear((channel, msg) => {
+      if (msg.targetUserId) {
+        console.log("Clearing user:", { channel, userId: msg.targetUserId });
+        // Get username from the user field in the message
+        if (msg.user) {
+          deleteUserMessages(msg.user);
+        }
+      } else {
+        console.log("Clearing channel:", { channel });
         deleteChannelMessages(channel);
       }
     });
 
     showLoadingMessage("Connecting to Twitch...");
-    await chat.connect().catch((error) => {
+    try {
+      chat.connect();
+    } catch (error) {
       console.error("Failed to connect to Twitch:", error);
       connectionError = true;
-    });
+    }
 
     for (const channel of settings.channels) {
       showLoadingMessage(`Joining: ${channel}...`);
@@ -164,7 +146,7 @@
   });
 
   onDestroy(async () => {
-    await chat.disconnect();
+    await chat.quit();
   });
 </script>
 
@@ -176,7 +158,7 @@
   onkeydown={scrollToBottom}
   bind:this={chatContainer}
 >
-  {#each messages as message (message._raw)}
+  {#each messages as message (message.id)}
     <TwitchMessage {message} bind:settings />
   {/each}
 
