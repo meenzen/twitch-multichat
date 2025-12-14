@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { PrivateMessages } from "twitch-js";
+  import type { ChatMessage } from "@twurple/chat";
   import { isAction, MessagePartType, parseMessage } from "$lib/MessageParser";
   import TwitchEmote from "$lib/TwitchEmote.svelte";
   import TwitchUsername from "$lib/TwitchUsername.svelte";
@@ -9,10 +9,10 @@
   let {
     message,
     settings = $bindable(),
-  }: { message: PrivateMessages; settings: ChatSettings } = $props();
+  }: { message: ChatMessage; settings: ChatSettings } = $props();
 
-  let parts = parseMessage(message);
-  let isActionMessage = isAction(message);
+  let parts = $derived(parseMessage(message));
+  let isActionMessage = $derived(isAction(message));
 </script>
 
 <div class="message">

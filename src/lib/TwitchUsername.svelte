@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { PrivateMessages } from "twitch-js";
+  import type { ChatMessage } from "@twurple/chat";
   import ColorGenerator from "$lib/ColorGenerator";
   import type { ChatSettings } from "$lib/ChatSettings";
 
@@ -11,20 +11,15 @@
     isAction,
     settings = $bindable(),
   }: {
-    message: PrivateMessages;
+    message: ChatMessage;
     isAction: boolean;
     settings: ChatSettings;
   } = $props();
 
-  let c = "white";
-  if ("color" in message.tags && message.tags.color) {
-    c = message.tags.color;
-  }
-
-  let spacer = $state(isAction ? actionSpacer : normalSpacer);
-  let color = $state(c);
-  let username = $state(message.tags.displayName);
-  let channel = $state(message.channel.substring(1));
+  let spacer = $derived(isAction ? actionSpacer : normalSpacer);
+  let color = $derived(message.userInfo.color || "white");
+  let username = $derived(message.userInfo.displayName);
+  let channel = $derived(message.target.substring(1));
   let channelColor = $derived(ColorGenerator.generate(channel));
 </script>
 
