@@ -8,13 +8,12 @@
     "preview": "vite preview",
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
-    "test": "vitest",
+    "test": "vitest --run",
     "lint": "eslint . --ext .js,.ts,.svelte",
     "format": "prettier --write ."
   },
   "devDependencies": {
     "@fontsource/inter": "^5.0.16",
-    "@marko19907/string-to-color": "^1.0.0",
     "@sentry/sveltekit": "^10.0.0",
     "@sentry/vite-plugin": "^4.0.0",
     "@sveltejs/adapter-cloudflare": "^7.0.0",
