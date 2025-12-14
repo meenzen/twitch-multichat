@@ -39,6 +39,13 @@
       entry = "npm run check";
       after = ["npm-lint"];
     };
+    npm-test = {
+      enable = true;
+      name = "vitest";
+      pass_filenames = false;
+      entry = "npm run test";
+      after = ["npm-check"];
+    };
   };
   devcontainer.enable = true;
 }
