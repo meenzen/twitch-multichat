@@ -1,6 +1,9 @@
 <script lang="ts">
-  import type { ChatMessage } from "@twurple/chat";
-  import { isAction, MessagePartType, parseMessage } from "$lib/MessageParser";
+  import {
+    MessagePartType,
+    MessageType,
+    type ParsedMessage,
+  } from "$lib/MessageParser";
   import TwitchEmote from "$lib/TwitchEmote.svelte";
   import TwitchUsername from "$lib/TwitchUsername.svelte";
   import FormattedMessage from "$lib/FormattedMessage.svelte";
@@ -9,16 +12,14 @@
   let {
     message,
     settings = $bindable(),
-  }: { message: ChatMessage; settings: ChatSettings } = $props();
-
-  let parts = $derived(parseMessage(message));
-  let isActionMessage = $derived(isAction(message));
+  }: { message: ParsedMessage; settings: ChatSettings } = $props();
+  let isAction = $derived(message.type === MessageType.Action);
 </script>
 
 <div class="message">
-  <TwitchUsername {message} isAction={isActionMessage} bind:settings />
-  <FormattedMessage italicized={isActionMessage}>
-    {#each parts as part (part)}
+  <TwitchUsername {message} bind:settings />
+  <FormattedMessage italicized={isAction}>
+    {#each message.parts as part (part)}
       {#if part.type === MessagePartType.Text}
         <span class="message-text">{part.content}</span>
       {:else if part.type === MessagePartType.Emote}

@@ -1,11 +1,17 @@
 <script lang="ts">
-  import { ChatClient, type ChatMessage } from "@twurple/chat";
+  import { ChatClient } from "@twurple/chat";
   import { onDestroy, onMount } from "svelte";
   import TwitchMessage from "$lib/TwitchMessage.svelte";
   import { dev } from "$app/environment";
   import ElementChecker from "$lib/ElementChecker";
   import LoadingMessage from "$lib/LoadingMessage.svelte";
   import type { ChatSettings } from "$lib/ChatSettings";
+  import {
+    MessageType,
+    parseMessage,
+    type ParsedMessage,
+    type RawMessage,
+  } from "./MessageParser";
 
   let { settings = $bindable() }: { settings: ChatSettings } = $props();
 
@@ -16,7 +22,7 @@
 
   let connectionError = $state(false);
   let loadingMessage = $state("");
-  let messages = $state([] as ChatMessage[]);
+  let messages = $state([] as ParsedMessage[]);
   let chatContainer = $state(null as HTMLDivElement | null);
   let anchor = $state(null as HTMLDivElement | null);
   let autoScrolled = false;
@@ -57,8 +63,8 @@
     }
   }
 
-  function addMessage(message: ChatMessage) {
-    messages.push(message);
+  function addMessage(message: RawMessage) {
+    messages.push(parseMessage(message));
     updateAnchorVisibility();
     autoScroll();
 
@@ -81,7 +87,7 @@
 
   function deleteUserMessages(username: string) {
     messages = messages.filter((message) => {
-      return message.userInfo.userName.toLowerCase() !== username.toLowerCase();
+      return message.userName.toLowerCase() !== username.toLowerCase();
     });
   }
 
@@ -106,7 +112,16 @@
       } else {
         console.debug("Message received:", { channel, user, text });
       }
-      addMessage(msg);
+      addMessage({ message: msg, type: MessageType.Normal });
+    });
+
+    chat.onAction((channel, user, text, msg) => {
+      if (dev) {
+        console.log("Action message received:", { channel, user, text, msg });
+      } else {
+        console.debug("Action message received:", { channel, user, text });
+      }
+      addMessage({ message: msg, type: MessageType.Action });
     });
 
     chat.onMessageRemove((channel, messageId) => {

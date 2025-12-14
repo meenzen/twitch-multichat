@@ -1,6 +1,26 @@
 import type { ChatMessage } from "@twurple/chat";
 import { parseChatMessage, type ParsedMessagePart } from "@twurple/chat";
 
+export enum MessageType {
+  Normal,
+  Action,
+}
+
+export type RawMessage = {
+  message: ChatMessage;
+  type: MessageType;
+};
+
+export type ParsedMessage = {
+  type: MessageType;
+  parts: Array<MessagePart>;
+  id: string;
+  target: string;
+  userName: string;
+  displayName: string;
+  userColor: string | undefined;
+};
+
 export enum MessagePartType {
   Text,
   Emote,
@@ -12,23 +32,15 @@ export type MessagePart = {
   emoteName?: string;
 };
 
-/** Returns true if the message is an action (italicized text) */
-export function isAction(message: ChatMessage): boolean {
-  const text = message.text;
-  // italicized text is surrounded by \u0001
-  return text.startsWith("\u0001") && text.endsWith("\u0001");
-}
-
-export function parseMessage(message: ChatMessage): Array<MessagePart> {
+export function parseMessage(raw: RawMessage): ParsedMessage {
   const parts: Array<MessagePart> = [];
 
-  const messageContent = message.text;
-  const action = isAction(message);
+  const messageContent = raw.message.text;
 
   // Use twurple's parseChatMessage utility to parse emotes
   const parsedParts: ParsedMessagePart[] = parseChatMessage(
     messageContent,
-    message.emoteOffsets,
+    raw.message.emoteOffsets,
   );
 
   // Convert twurple's ParsedMessagePart to our MessagePart format
@@ -47,7 +59,7 @@ export function parseMessage(message: ChatMessage): Array<MessagePart> {
     }
   }
 
-  if (action && parts.length > 0) {
+  if (raw.type === MessageType.Action && parts.length > 0) {
     const firstPart = parts[0];
     const lastPart = parts[parts.length - 1];
 
@@ -66,5 +78,13 @@ export function parseMessage(message: ChatMessage): Array<MessagePart> {
     }
   }
 
-  return parts;
+  return {
+    type: raw.type,
+    parts: parts,
+    id: raw.message.id,
+    target: raw.message.target,
+    userName: raw.message.userInfo.userName,
+    displayName: raw.message.userInfo.displayName,
+    userColor: raw.message.userInfo.color,
+  };
 }

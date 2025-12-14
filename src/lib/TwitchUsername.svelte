@@ -1,24 +1,24 @@
 <script lang="ts">
-  import type { ChatMessage } from "@twurple/chat";
   import ColorGenerator from "$lib/ColorGenerator";
   import type { ChatSettings } from "$lib/ChatSettings";
+  import { MessageType, type ParsedMessage } from "./MessageParser";
 
   const normalSpacer = ":";
   const actionSpacer = "";
 
   let {
     message,
-    isAction,
     settings = $bindable(),
   }: {
-    message: ChatMessage;
-    isAction: boolean;
+    message: ParsedMessage;
     settings: ChatSettings;
   } = $props();
 
-  let spacer = $derived(isAction ? actionSpacer : normalSpacer);
-  let color = $derived(message.userInfo.color || "white");
-  let username = $derived(message.userInfo.displayName);
+  let spacer = $derived(
+    message.type === MessageType.Action ? actionSpacer : normalSpacer,
+  );
+  let color = $derived(message.userColor || "white");
+  let username = $derived(message.displayName);
   let channel = $derived(message.target.substring(1));
   let channelColor = $derived(ColorGenerator.generate(channel));
 </script>
