@@ -2,6 +2,7 @@
   import "@fontsource/inter";
   import "@fontsource/inter/700.css";
   import TwitchChannel from "$lib/TwitchChannel";
+  import { fetchTrendingChannels } from "$lib/TrendingChannels";
   import { onMount } from "svelte";
 
   let randomChannels = $state([] as string[]);
@@ -44,7 +45,10 @@
   let link = $derived(getUrl(channels));
   let valid = $derived(isValid());
 
-  onMount(() => {
+  onMount(async () => {
+    // Fetch trending channels from API (client-side only)
+    await fetchTrendingChannels();
+    // After fetching, update the random channels display
     randomChannels = TwitchChannel.getRandomList(3);
   });
 </script>

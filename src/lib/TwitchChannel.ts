@@ -1,4 +1,7 @@
-export const RANDOM_TWITCH_CHANNELS = [
+import { getCachedChannels } from "./TrendingChannels";
+
+// Fallback channels if API fetch fails or hasn't completed yet
+const FALLBACK_CHANNELS = [
   "ThePrimeagen",
   "teej_dv",
   "PirateSoftware",
@@ -23,27 +26,27 @@ export const RANDOM_TWITCH_CHANNELS = [
 
 const TwitchChannel = {
   getRandom(): string {
-    return RANDOM_TWITCH_CHANNELS[
-      Math.floor(Math.random() * RANDOM_TWITCH_CHANNELS.length)
-    ];
+    const channels = getCachedChannels() || FALLBACK_CHANNELS;
+    return channels[Math.floor(Math.random() * channels.length)];
   },
 
   getRandomList(count: number): string[] {
-    const channelCount = RANDOM_TWITCH_CHANNELS.length;
+    const channels = getCachedChannels() || FALLBACK_CHANNELS;
+    const channelCount = channels.length;
 
     if (count > channelCount) {
       count = channelCount;
     }
 
-    const candidates = [...RANDOM_TWITCH_CHANNELS];
-    const channels = [];
+    const candidates = [...channels];
+    const result = [];
     for (let i = 0; i < count; i++) {
       const index = Math.floor(Math.random() * candidates.length);
-      channels.push(candidates[index]);
+      result.push(candidates[index]);
       candidates.splice(index, 1);
     }
 
-    return channels;
+    return result;
   },
 
   isValid(channel: string): boolean {
