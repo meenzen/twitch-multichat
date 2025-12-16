@@ -36,16 +36,16 @@
     return TwitchChannel.isValidList(ch);
   }
 
-  function feelingLucky() {
+  async function feelingLucky() {
     const channelCount = Math.floor(Math.random() * 4) + 1;
-    channels = TwitchChannel.getRandomList(channelCount).join("\n");
+    channels = (await TwitchChannel.getRandomList(channelCount)).join("\n");
   }
 
   let link = $derived(getUrl(channels));
   let valid = $derived(isValid());
 
-  onMount(() => {
-    randomChannels = TwitchChannel.getRandomList(3);
+  onMount(async () => {
+    randomChannels = await TwitchChannel.getRandomList(3);
   });
 </script>
 
