@@ -137,7 +137,10 @@
 
     try {
       console.log("Reconnecting to Twitch...");
-      chat.reconnect();
+      await chat.reconnect();
+
+      // Wait a moment for the connection to fully establish
+      await new Promise((resolve) => setTimeout(resolve, 500));
 
       // Rejoin all channels
       for (const channel of settings.channels) {
@@ -155,8 +158,7 @@
     } catch (error) {
       console.error("Failed to reconnect:", error);
       isReconnecting = false;
-      // Will try again on next disconnect event or visibility change
-      await reconnectToChat(); // Recursive retry
+      // Don't retry recursively - let the disconnect event or visibility change trigger the next attempt
     }
   }
 
@@ -219,7 +221,8 @@
       if (document.visibilityState === "visible") {
         console.log("Page became visible");
         // If we're not connected and not already reconnecting, try to reconnect
-        if (!isReconnecting && (connectionError || reconnectAttempts > 0)) {
+        // Check if we had a connection issue (connectionError or failed attempts) 
+        if (!isReconnecting && connectionError) {
           console.log("Page visible after disconnect, attempting reconnect...");
           reconnectToChat();
         }
