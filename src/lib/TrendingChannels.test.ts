@@ -64,7 +64,7 @@ describe("TrendingChannels", () => {
     expect(getCachedChannels()).toEqual(mockChannels);
   });
 
-  it("returns empty array on fetch error", async () => {
+  it("returns null on fetch error", async () => {
     // Mock console.error to avoid noise in test output
     const consoleErrorSpy = vi
       .spyOn(console, "error")
@@ -74,13 +74,13 @@ describe("TrendingChannels", () => {
 
     const channels = await fetchTrendingChannels();
 
-    expect(channels).toEqual([]);
+    expect(channels).toBeNull();
     expect(consoleErrorSpy).toHaveBeenCalled();
 
     consoleErrorSpy.mockRestore();
   });
 
-  it("returns empty array on non-ok response", async () => {
+  it("returns null on non-ok response", async () => {
     const consoleErrorSpy = vi
       .spyOn(console, "error")
       .mockImplementation(() => {});
@@ -92,7 +92,7 @@ describe("TrendingChannels", () => {
 
     const channels = await fetchTrendingChannels();
 
-    expect(channels).toEqual([]);
+    expect(channels).toBeNull();
     expect(consoleErrorSpy).toHaveBeenCalled();
 
     consoleErrorSpy.mockRestore();

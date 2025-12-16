@@ -1,9 +1,9 @@
 const API_URL = "https://mnzn.dev/api/twitch/streams/trending?language=English";
 
 let cachedChannels: string[] | null = null;
-let fetchPromise: Promise<string[]> | null = null;
+let fetchPromise: Promise<string[] | null> | null = null;
 
-export async function fetchTrendingChannels(): Promise<string[]> {
+export async function fetchTrendingChannels(): Promise<string[] | null> {
   // If we already have cached channels, return them
   if (cachedChannels !== null) {
     return cachedChannels;
@@ -26,8 +26,8 @@ export async function fetchTrendingChannels(): Promise<string[]> {
       return channels;
     } catch (error) {
       console.error("Error fetching trending channels:", error);
-      // Return empty array on error so the application doesn't break
-      return [];
+      // Return null on error to allow fallback channels to be used
+      return null;
     } finally {
       fetchPromise = null;
     }
