@@ -21,12 +21,16 @@
   let currentBufferSize = $derived(anchorVisible ? bufferSize : maxBufferSize);
 
   let connectionError = $state(false);
+  let isReconnecting = $state(false);
   let loadingMessage = $state("");
   let messages = $state([] as ParsedMessage[]);
   let chatContainer = $state(null as HTMLDivElement | null);
   let anchor = $state(null as HTMLDivElement | null);
   let autoScrolled = false;
   let autoScrolledVerified = false;
+  let reconnectAttempts = $state(0);
+  let maxReconnectAttempts = 5;
+  let reconnectDelay = 2000; // Start with 2 seconds
 
   const chat = new ChatClient({
     logger: {
@@ -105,7 +109,85 @@
     }
   }
 
-  onMount(async () => {
+  async function reconnectToChat() {
+    if (isReconnecting) {
+      console.log("Already attempting to reconnect");
+      return;
+    }
+
+    if (reconnectAttempts >= maxReconnectAttempts) {
+      console.error("Max reconnect attempts reached");
+      connectionError = true;
+      isReconnecting = false;
+      return;
+    }
+
+    isReconnecting = true;
+    reconnectAttempts++;
+    const delay = reconnectDelay * Math.pow(2, reconnectAttempts - 1); // Exponential backoff
+
+    console.log(
+      `Attempting to reconnect (${reconnectAttempts}/${maxReconnectAttempts}) in ${delay}ms...`,
+    );
+    showLoadingMessage(
+      `Reconnecting... (attempt ${reconnectAttempts}/${maxReconnectAttempts})`,
+    );
+
+    await new Promise((resolve) => setTimeout(resolve, delay));
+
+    try {
+      console.log("Reconnecting to Twitch...");
+      await chat.reconnect();
+
+      // Wait a moment for the connection to fully establish
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      // Rejoin all channels
+      for (const channel of settings.channels) {
+        console.log(`Rejoining channel: ${channel}`);
+        await chat.join(channel).catch((error) => {
+          console.error(`Failed to rejoin channel ${channel}:`, error);
+        });
+      }
+
+      console.log("Successfully reconnected");
+      reconnectAttempts = 0; // Reset on success
+      isReconnecting = false;
+      connectionError = false;
+      showLoadingMessage("");
+    } catch (error) {
+      console.error("Failed to reconnect:", error);
+      isReconnecting = false;
+      
+      // If we haven't reached max attempts, schedule another retry
+      if (reconnectAttempts < maxReconnectAttempts) {
+        console.log("Scheduling next reconnection attempt...");
+        setTimeout(() => reconnectToChat(), 1000);
+      } else {
+        connectionError = true;
+        showLoadingMessage("");
+      }
+    }
+  }
+
+  onMount(() => {
+    chat.onConnect(() => {
+      console.log("Connected to Twitch chat");
+      reconnectAttempts = 0; // Reset reconnect attempts on successful connection
+      connectionError = false;
+      isReconnecting = false;
+    });
+
+    chat.onDisconnect((manually, reason) => {
+      console.log("Disconnected from Twitch chat", { manually, reason });
+      
+      // Only auto-reconnect if the disconnect was not manual
+      if (!manually) {
+        console.log("Unexpected disconnect, attempting to reconnect...");
+        reconnectToChat();
+      }
+    });
+
     chat.onMessage((channel, user, text, msg) => {
       if (dev) {
         console.log("Message received:", { channel, user, text, msg });
@@ -142,22 +224,47 @@
       }
     });
 
-    showLoadingMessage("Connecting to Twitch...");
-    try {
-      chat.connect();
-    } catch (error) {
-      console.error("Failed to connect to Twitch:", error);
-      connectionError = true;
-    }
+    // Listen for page visibility changes (e.g., phone wake/sleep)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        console.log("Page became visible");
+        // If we're not connected and not already reconnecting, try to reconnect
+        // Check if we had a connection issue (connectionError or failed attempts) 
+        if (!isReconnecting && connectionError) {
+          console.log("Page visible after disconnect, attempting reconnect...");
+          reconnectToChat();
+        }
+      } else {
+        console.log("Page became hidden");
+      }
+    };
 
-    for (const channel of settings.channels) {
-      showLoadingMessage(`Joining: ${channel}...`);
-      await chat.join(channel).catch((error) => {
-        console.error("Failed to join channel:", error);
-      });
-    }
+    document.addEventListener("visibilitychange", handleVisibilityChange);
 
-    showLoadingMessage("");
+    // Initialize connection asynchronously
+    (async () => {
+      showLoadingMessage("Connecting to Twitch...");
+      try {
+        chat.connect();
+      } catch (error) {
+        console.error("Failed to connect to Twitch:", error);
+        connectionError = true;
+      }
+
+      for (const channel of settings.channels) {
+        showLoadingMessage(`Joining: ${channel}...`);
+        await chat.join(channel).catch((error) => {
+          console.error("Failed to join channel:", error);
+        });
+      }
+
+      showLoadingMessage("");
+    })();
+
+    // Cleanup visibility change listener
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
   });
 
   onDestroy(async () => {
@@ -178,6 +285,15 @@
   {/each}
 
   <LoadingMessage bind:loadingMessage />
+
+  {#if isReconnecting}
+    <div class="reconnecting-message">
+      <span class="message-text">Reconnecting to Twitch chat...</span>
+      <span class="message-text"
+        >(attempt {reconnectAttempts}/{maxReconnectAttempts})</span
+      >
+    </div>
+  {/if}
 
   {#if connectionError}
     <div class="error-message">
@@ -204,6 +320,15 @@
     font-weight: 700;
     font-size: 20px;
     color: orangered;
+    margin-top: 2px;
+    margin-bottom: 5px;
+    overflow-wrap: break-word;
+  }
+
+  .reconnecting-message {
+    font-weight: 700;
+    font-size: 18px;
+    color: #ffa500;
     margin-top: 2px;
     margin-bottom: 5px;
     overflow-wrap: break-word;
