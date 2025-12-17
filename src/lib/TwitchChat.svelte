@@ -158,7 +158,15 @@
     } catch (error) {
       console.error("Failed to reconnect:", error);
       isReconnecting = false;
-      // Don't retry recursively - let the disconnect event or visibility change trigger the next attempt
+      
+      // If we haven't reached max attempts, schedule another retry
+      if (reconnectAttempts < maxReconnectAttempts) {
+        console.log("Scheduling next reconnection attempt...");
+        setTimeout(() => reconnectToChat(), 1000);
+      } else {
+        connectionError = true;
+        showLoadingMessage("");
+      }
     }
   }
 
