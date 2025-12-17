@@ -16,6 +16,11 @@ const config = {
     paths: {
       relative: false,
     },
+    experimental: {
+      instrumentation: {
+        server: true,
+      },
+    },
   },
 
   compilerOptions: {

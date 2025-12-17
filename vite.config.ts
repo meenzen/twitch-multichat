@@ -1,4 +1,4 @@
-import { sentryVitePlugin } from "@sentry/vite-plugin";
+import { sentrySvelteKit } from "@sentry/sveltekit";
 import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig } from "vitest/config";
 import { SvelteKitPWA } from "@vite-pwa/sveltekit";
@@ -8,12 +8,12 @@ export default defineConfig({
     sourcemap: true,
   },
   plugins: [
-    sentryVitePlugin({
+    sentrySvelteKit({
       org: "meenzen",
       project: "twitch-multichat",
-      url: "https://sentry.mnzn.dev",
       authToken: process.env.SENTRY_AUTH_TOKEN,
       telemetry: false,
+      adapter: "cloudflare",
     }),
     sveltekit(),
     SvelteKitPWA({

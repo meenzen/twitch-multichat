@@ -8,12 +8,14 @@ Sentry.init({
     Sentry.browserTracingIntegration(),
     Sentry.browserProfilingIntegration(),
     Sentry.replayIntegration(),
+    Sentry.consoleLoggingIntegration({ levels: ["error"] }),
   ],
   tracesSampleRate: 1.0,
-  profilesSampleRate: 1.0,
+  profileSessionSampleRate: 1.0,
   // we only care about errors
   replaysSessionSampleRate: 0,
   replaysOnErrorSampleRate: 1.0,
+  enableLogs: true,
   enabled: !dev,
 });
 
