@@ -1,4 +1,5 @@
 <script lang="ts">
+  import * as Sentry from "@sentry/sveltekit";
   import { ChatClient } from "@twurple/chat";
   import { onDestroy, onMount } from "svelte";
   import TwitchMessage from "$lib/TwitchMessage.svelte";
@@ -77,24 +78,47 @@
       bufferSize: currentBufferSize,
       anchorVisible: anchorVisible,
     });
+
+    Sentry.metrics.count("twitch_messages_received");
   }
 
   function deleteMessage(id: string) {
+    let countBefore = messages.length;
+
     messages = messages.filter((message) => {
       return message.id.toLowerCase() !== id.toLowerCase();
     });
+
+    let deleted = countBefore - messages.length;
+    if (deleted > 0) {
+      Sentry.metrics.count("twitch_messages_deleted", deleted);
+    }
   }
 
   function deleteUserMessages(username: string) {
+    let countBefore = messages.length;
+
     messages = messages.filter((message) => {
       return message.userName.toLowerCase() !== username.toLowerCase();
     });
+
+    let deleted = countBefore - messages.length;
+    if (deleted > 0) {
+      Sentry.metrics.count("twitch_messages_deleted_user", deleted);
+    }
   }
 
   function deleteChannelMessages(channel: string) {
+    let countBefore = messages.length;
+
     messages = messages.filter((message) => {
       return message.target.toLowerCase() !== channel.toLowerCase();
     });
+
+    let deleted = countBefore - messages.length;
+    if (deleted > 0) {
+      Sentry.metrics.count("twitch_messages_deleted_channel", deleted);
+    }
   }
 
   function showLoadingMessage(message: string) {
@@ -157,11 +181,13 @@
       });
     }
 
+    Sentry.metrics.count("twitch_channels_joined", settings.channels.length);
+
     showLoadingMessage("");
   });
 
-  onDestroy(async () => {
-    await chat.quit();
+  onDestroy(() => {
+    chat.quit();
   });
 </script>
 
