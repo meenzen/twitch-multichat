@@ -57,6 +57,7 @@
     content="Combines multiple Twitch chats into one window."
   />
   <meta name="keywords" content="Twitch, chat, multichat" />
+  <link rel="preconnect" href="https://mnzn.dev" />
 </svelte:head>
 
 <div class="container">
