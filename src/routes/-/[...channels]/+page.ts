@@ -1,7 +1,7 @@
 import TwitchChannel from "$lib/TwitchChannel";
 import type { ChatSettings } from "$lib/ChatSettings";
 
-export const ssr = false;
+export const ssr = true;
 
 function getSettings(url: URL): ChatSettings {
   const shadowParam = url.searchParams.get("shadow");

@@ -4,12 +4,13 @@
   import TwitchChat from "$lib/TwitchChat.svelte";
   import TwitchChannelList from "$lib/TwitchChannelList.svelte";
   import MetaTags from "$lib/components/MetaTags.svelte";
+  import { browser } from "$app/environment";
 
   let { data = $bindable() } = $props();
 
   let selectedChannels = data.channels;
   let shouldConnect = selectedChannels.length > 0;
-  if (shouldConnect) {
+  if (browser && shouldConnect) {
     console.log("Selected channels:", selectedChannels);
   }
 </script>
@@ -19,11 +20,13 @@
   <link rel="preload" as="image" href="/emote.png" />
 </svelte:head>
 
-{#if shouldConnect}
-  <TwitchChannelList bind:settings={data} />
-  <TwitchChat bind:settings={data} />
-{:else}
-  <p class="alert">No valid channels selected</p>
+{#if browser}
+  {#if shouldConnect}
+    <TwitchChannelList bind:settings={data} />
+    <TwitchChat bind:settings={data} />
+  {:else}
+    <p class="alert">No valid channels selected</p>
+  {/if}
 {/if}
 
 <style>
