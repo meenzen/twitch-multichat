@@ -15,11 +15,8 @@
   let title = $derived(
     hasChannels ? `Twitch Multichat: ${combinedChannels}` : "Twitch Multichat",
   );
-  let description = $derived(
-    hasChannels
-      ? `Combined Twitch chat: ${combinedChannels}`
-      : "Combine multiple Twitch chats into a single view — Seamless chat for collaborations and multi-stream events.",
-  );
+  let description =
+    "Combine multiple Twitch chats into a single view — Seamless chat for collabs, multi-stream events or just your favorite streamers.";
   let imageAlt = $derived(
     hasChannels
       ? `Twitch Multichat preview for channels: ${combinedChannels}`
