@@ -59,7 +59,12 @@
 </svelte:head>
 
 <div class="container">
-  <img src="/logo-512x512.png" alt="Twitch Multichat Logo" class="logo" />
+  <img
+    src="/logo-512x512.png"
+    fetchpriority="high"
+    alt="Twitch Multichat Logo"
+    class="logo"
+  />
 
   <textarea
     bind:value={channels}
