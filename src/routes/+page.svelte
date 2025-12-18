@@ -3,6 +3,7 @@
   import "@fontsource/inter/700.css";
   import TwitchChannel from "$lib/TwitchChannel";
   import { onMount } from "svelte";
+  import logo from "$lib/assets/logo.png?enhanced";
 
   let randomChannels = $state([] as string[]);
   let randomChannelsString = $derived(randomChannels.join("\n"));
@@ -59,8 +60,8 @@
 </svelte:head>
 
 <div class="container">
-  <img
-    src="/logo-512x512.png"
+  <enhanced:img
+    src={logo}
     fetchpriority="high"
     alt="Twitch Multichat Logo"
     class="logo"

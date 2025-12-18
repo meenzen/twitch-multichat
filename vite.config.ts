@@ -2,6 +2,7 @@ import { sentrySvelteKit } from "@sentry/sveltekit";
 import { sveltekit } from "@sveltejs/kit/vite";
 import { defineConfig } from "vitest/config";
 import { SvelteKitPWA } from "@vite-pwa/sveltekit";
+import { enhancedImages } from "@sveltejs/enhanced-img";
 
 export default defineConfig({
   build: {
@@ -15,6 +16,7 @@ export default defineConfig({
       telemetry: false,
       adapter: "cloudflare",
     }),
+    enhancedImages(),
     sveltekit(),
     SvelteKitPWA({
       registerType: "autoUpdate",
