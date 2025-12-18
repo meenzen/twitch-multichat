@@ -4,6 +4,7 @@
   import TwitchChannel from "$lib/TwitchChannel";
   import { onMount } from "svelte";
   import logo from "$lib/assets/logo.png?enhanced";
+  import MetaTags from "$lib/components/MetaTags.svelte";
 
   let randomChannels = $state([] as string[]);
   let randomChannelsString = $derived(randomChannels.join("\n"));
@@ -51,12 +52,7 @@
 </script>
 
 <svelte:head>
-  <title>Twitch Multichat</title>
-  <meta
-    name="description"
-    content="Combines multiple Twitch chats into one window."
-  />
-  <meta name="keywords" content="Twitch, chat, multichat" />
+  <MetaTags channels={[]} />
   <link rel="preconnect" href="https://mnzn.dev" />
 </svelte:head>
 

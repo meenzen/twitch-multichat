@@ -3,6 +3,7 @@
   import "@fontsource/inter/700.css";
   import TwitchChat from "$lib/TwitchChat.svelte";
   import TwitchChannelList from "$lib/TwitchChannelList.svelte";
+  import MetaTags from "$lib/components/MetaTags.svelte";
 
   let { data = $bindable() } = $props();
 
@@ -14,7 +15,7 @@
 </script>
 
 <svelte:head>
-  <title>Twitch Multichat: {selectedChannels.join(", ")}</title>
+  <MetaTags channels={selectedChannels} />
   <link rel="preload" as="image" href="/emote.png" />
 </svelte:head>
 

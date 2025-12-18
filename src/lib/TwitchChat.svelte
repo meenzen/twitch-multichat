@@ -235,10 +235,6 @@
     overflow-wrap: break-word;
   }
 
-  :global(.message-text) {
-    white-space: pre-wrap;
-  }
-
   /* https://css-tricks.com/books/greatest-css-tricks/pin-scrolling-to-bottom/ */
   :global(.twitch-chat *) {
     overflow-anchor: none;

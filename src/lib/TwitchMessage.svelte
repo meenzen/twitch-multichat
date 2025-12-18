@@ -35,4 +35,7 @@
     margin-bottom: 5px;
     overflow-wrap: break-word;
   }
+  .message-text {
+    white-space: pre-wrap;
+  }
 </style>
