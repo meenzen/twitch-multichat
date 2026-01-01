@@ -29,7 +29,7 @@
     "eslint-plugin-svelte": "^3.13.1",
     "espree": "^11.0.0",
     "fast-glob": "^3.3.3",
-    "globals": "^16.5.0",
+    "globals": "^17.0.0",
     "prettier": "^3.7.4",
     "prettier-plugin-svelte": "^3.4.0",
     "svelte": "^5.46.0",
