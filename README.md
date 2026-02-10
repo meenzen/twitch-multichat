@@ -8,13 +8,13 @@ You can use the official deployment [multichat.mnzn.dev](https://multichat.mnzn.
 
 ## Setup
 
-Install the dependencies with `npm install` (or `pnpm install` or `yarn`), then start a development server:
+Install the dependencies with `bun install`, then start a development server:
 
 ```bash
-npm run dev
+bun run dev
 
 # or start the server and open the app in a new browser tab
-npm run dev -- --open
+bun run dev -- --open
 ```
 
 ## Building
@@ -22,7 +22,7 @@ npm run dev -- --open
 To create a production version of the app:
 
 ```bash
-npm run build
+bun run build
 ```
 
-You can preview the production build with `npm run preview`.
+You can preview the production build with `bun run preview`.

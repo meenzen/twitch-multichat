@@ -8,7 +8,7 @@
   packages = [pkgs.git];
   languages.javascript = {
     enable = true;
-    npm.enable = true;
+    bun.enable = true;
   };
   git-hooks.hooks = {
     alejandra.enable = true;
@@ -19,32 +19,32 @@
     forbid-new-submodules.enable = true;
     nil.enable = true;
     trim-trailing-whitespace.enable = true;
-    npm-format = {
+    bun-format = {
       enable = true;
       name = "prettier";
-      entry = "npm run format";
+      entry = "bun run format";
       pass_filenames = false;
     };
-    npm-lint = {
+    bun-lint = {
       enable = true;
       name = "eslint";
-      entry = "npm run lint";
+      entry = "bun run lint";
       pass_filenames = false;
-      after = ["npm-format"];
+      after = ["bun-format"];
     };
-    npm-check = {
+    bun-check = {
       enable = true;
       name = "svelte-check";
       pass_filenames = false;
-      entry = "npm run check";
-      after = ["npm-lint"];
+      entry = "bun run check";
+      after = ["bun-lint"];
     };
-    npm-test = {
+    bun-test = {
       enable = true;
       name = "vitest";
       pass_filenames = false;
-      entry = "npm run test";
-      after = ["npm-check"];
+      entry = "bun run test";
+      after = ["bun-check"];
     };
   };
   devcontainer.enable = true;

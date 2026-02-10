@@ -31,10 +31,10 @@ jobs:
         run: direnv allow
 
       - name: Install dependencies
-        run: direnv exec . npm install
+        run: direnv exec . bun install
 
       - name: Run devenv tests
         run: direnv exec . devenv test
 
       - name: Build project
-        run: direnv exec . npm run build
+        run: direnv exec . bun run build
