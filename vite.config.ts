@@ -1,6 +1,6 @@
 import { sentrySvelteKit } from "@sentry/sveltekit";
 import { sveltekit } from "@sveltejs/kit/vite";
-import { defineConfig } from "vitest/config";
+import { defineConfig } from "vite";
 import { SvelteKitPWA } from "@vite-pwa/sveltekit";
 import { enhancedImages } from "@sveltejs/enhanced-img";
 import { sveltekitOG } from "@ethercorps/sveltekit-og/plugin";
@@ -56,7 +56,4 @@ export default defineConfig({
       },
     }),
   ],
-  test: {
-    include: ["src/**/*.{test,spec}.{js,ts}"],
-  },
 });
