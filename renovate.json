@@ -12,7 +12,18 @@
     },
     {
       "groupName": "eslint and prettier",
-      "matchPackageNames": ["**eslint**", "**prettier**"]
+      "matchPackageNames": [
+        "@babel/eslint-parser",
+        "@eslint/js",
+        "eslint",
+        "eslint-config-prettier",
+        "eslint-plugin-svelte",
+        "espree",
+        "globals",
+        "prettier",
+        "prettier-plugin-svelte",
+        "typescript-eslint"
+      ]
     },
     {
       "groupName": "vite and plugins",
