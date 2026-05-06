@@ -13,6 +13,10 @@
     {
       "groupName": "eslint and prettier",
       "matchPackageNames": ["**eslint**", "**prettier**"]
+    },
+    {
+      "groupName": "vite and plugins",
+      "matchPackageNames": ["**vite**"]
     }
   ]
 }
