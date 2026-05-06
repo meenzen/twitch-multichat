@@ -1,4 +1,5 @@
 <script lang="ts">
+  // @ts-expect-error Error: Cannot find module or type declarations for side-effect import of '@fontsource/inter'. (ts)
   import "@fontsource/inter";
   import "@fontsource/inter/700.css";
   import TwitchChannel from "$lib/TwitchChannel";
