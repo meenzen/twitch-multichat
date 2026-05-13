@@ -25,16 +25,16 @@ jobs:
           extraPullNames: devenv
 
       - name: Install tools
-        run: nix profile install nixpkgs#direnv nixpkgs#nix-direnv nixpkgs#devenv
+        run: nix profile install nixpkgs#devenv
 
       - name: Set up direnv
         run: direnv allow
 
       - name: Install dependencies
-        run: direnv exec . bun install
+        run: devenv shell bun install
 
       - name: Run devenv tests
-        run: direnv exec . devenv test
+        run: devenv test
 
       - name: Build project
-        run: direnv exec . bun run build
+        run: devenv shell bun run build
