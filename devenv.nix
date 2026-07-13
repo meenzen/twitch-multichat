@@ -43,5 +43,4 @@
       after = ["bun-check"];
     };
   };
-  devcontainer.enable = true;
 }
