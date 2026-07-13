@@ -6,6 +6,7 @@
   import { onMount } from "svelte";
   import logo from "$lib/assets/logo.png?enhanced";
   import MetaTags from "$lib/components/MetaTags.svelte";
+  import { resolve } from "$app/paths";
 
   let randomChannels = $state([] as string[]);
   let randomChannelsString = $derived(randomChannels.join("\n"));
@@ -19,12 +20,12 @@
   }
 
   function getUrl(channels: string) {
-    let url = "/-/";
     let channelList = getChannels(channels);
+    let channelString = channelList.join("/");
 
-    if (channelList.length > 0) {
-      url += channelList.join("/");
-    }
+    let url = resolve("/-/[...channels]", {
+      channels: channelString,
+    });
 
     return url;
   }
@@ -69,15 +70,15 @@
     bind:value={channels}
     placeholder={randomChannelsString}
     rows="10"
-    cols="50"
-  ></textarea>
+    cols="50"></textarea>
   {#if valid}
+    // eslint-disable-next-line svelte/no-navigation-without-resolve
     <a href={link}>Connect</a>
   {:else}
     <div class="placeholder">Connect</div>
   {/if}
 
-  <a href="/" onclick={feelingLucky} style="margin-top: 15px"
+  <a href={resolve("/")} onclick={feelingLucky} style="margin-top: 15px"
     >I'm feeling lucky</a
   >
 </div>
