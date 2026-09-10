@@ -11,6 +11,7 @@
     bun.enable = true;
   };
   scripts.ci.exec = ''
+    set -euo pipefail
     bun install
     bun run format
     bun run lint
