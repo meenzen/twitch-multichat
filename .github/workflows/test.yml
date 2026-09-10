@@ -30,11 +30,8 @@ jobs:
       - name: Set up devenv
         run: devenv allow
 
-      - name: Install dependencies
-        run: devenv shell bun install
-
       - name: Run devenv tests
         run: devenv test
 
       - name: Build project
-        run: devenv shell bun run build
+        run: devenv shell ci

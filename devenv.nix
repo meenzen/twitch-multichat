@@ -10,6 +10,14 @@
     enable = true;
     bun.enable = true;
   };
+  scripts.ci.exec = ''
+    bun install
+    bun run format
+    bun run lint
+    bun run check
+    bun run test
+    bun run build
+  '';
   git-hooks.hooks = {
     alejandra.enable = true;
     actionlint.enable = true;
@@ -19,28 +27,10 @@
     forbid-new-submodules.enable = true;
     nil.enable = true;
     trim-trailing-whitespace.enable = true;
-    bun-format = {
+    ci = {
       enable = true;
-      entry = "bun run format";
+      entry = "ci";
       pass_filenames = false;
-    };
-    bun-lint = {
-      enable = true;
-      entry = "bun run lint";
-      pass_filenames = false;
-      after = ["bun-format"];
-    };
-    bun-check = {
-      enable = true;
-      pass_filenames = false;
-      entry = "bun run check";
-      after = ["bun-lint"];
-    };
-    bun-test = {
-      enable = true;
-      pass_filenames = false;
-      entry = "bun run test";
-      after = ["bun-check"];
     };
   };
 }
