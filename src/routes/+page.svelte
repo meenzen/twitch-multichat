@@ -72,7 +72,7 @@
     rows="10"
     cols="50"></textarea>
   {#if valid}
-    // eslint-disable-next-line svelte/no-navigation-without-resolve
+    <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
     <a href={link}>Connect</a>
   {:else}
     <div class="placeholder">Connect</div>
