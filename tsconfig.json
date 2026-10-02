@@ -1,7 +1,7 @@
 {
   "extends": "$app/tsconfig",
   "include": ["src", "test", "*"],
-  "exclude": ["src/service-worker", "src/service-worker.ts"],
+  "exclude": ["src/service-worker"],
   "compilerOptions": {
     "allowJs": true,
     "checkJs": true,
@@ -12,12 +12,6 @@
     "sourceMap": true,
     "strict": true,
     "moduleResolution": "bundler",
-    "lib": ["ESNext", "DOM", "WebWorker"],
-    "types": [
-      "$app/types",
-      "vite-plugin-pwa/info",
-      "vite-plugin-pwa/client",
-      "vite-plugin-pwa/pwa-assets"
-    ]
+    "lib": ["ESNext", "DOM"]
   }
 }

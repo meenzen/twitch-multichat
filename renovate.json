@@ -30,13 +30,7 @@
     },
     {
       "groupName": "vite and plugins",
-      "matchPackageNames": [
-        "@sveltejs/vite-plugin-svelte",
-        "@vite-pwa/assets-generator",
-        "@vite-pwa/sveltekit",
-        "vite",
-        "vite-plugin-pwa"
-      ]
+      "matchPackageNames": ["@sveltejs/vite-plugin-svelte", "vite"]
     }
   ]
 }
