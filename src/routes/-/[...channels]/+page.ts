@@ -1,5 +1,5 @@
-import TwitchChannel from "$lib/TwitchChannel";
-import type { ChatSettings } from "$lib/ChatSettings";
+import TwitchChannel from "#lib/TwitchChannel.ts";
+import type { ChatSettings } from "#lib/ChatSettings.ts";
 
 export const ssr = true;
 

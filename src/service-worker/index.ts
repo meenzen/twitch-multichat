@@ -1,17 +1,25 @@
-/// <reference lib="WebWorker" />
-/// <reference types="vite/client" />
-/// <reference no-default-lib="true"/>
-/// <reference lib="esnext" />
 import { cleanupOutdatedCaches, precacheAndRoute } from "workbox-precaching";
 import { registerRoute } from "workbox-routing";
 import { clientsClaim } from "workbox-core";
 import { CacheFirst } from "workbox-strategies";
 import { ExpirationPlugin } from "workbox-expiration";
+import { assets, immutable } from "$app/manifest";
+import { version } from "$app/env";
 
 declare let self: ServiceWorkerGlobalScope;
 
-// self.__WB_MANIFEST is default injection point
-precacheAndRoute(self.__WB_MANIFEST);
+const precacheable = /\.(js|css|ico|png|svg|webp|woff2?)$/;
+
+precacheAndRoute([
+  // hashed build output, the filename changes with its content
+  ...immutable
+    .filter(({ path }) => precacheable.test(path))
+    .map(({ path }) => ({ url: path, revision: null })),
+  // files from static/ keep their name, so revision them by app version
+  ...assets
+    .filter(({ path }) => precacheable.test(path))
+    .map(({ path }) => ({ url: path, revision: version })),
+]);
 
 // clean old assets
 cleanupOutdatedCaches();

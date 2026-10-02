@@ -1,10 +1,10 @@
 <script lang="ts">
   import "@fontsource/inter";
   import "@fontsource/inter/700.css";
-  import TwitchChannel from "$lib/TwitchChannel";
+  import TwitchChannel from "#lib/TwitchChannel.ts";
   import { onMount } from "svelte";
-  import logo from "$lib/assets/logo.png?enhanced";
-  import MetaTags from "$lib/components/MetaTags.svelte";
+  import logo from "#lib/assets/logo.png?enhanced";
+  import MetaTags from "#lib/components/MetaTags.svelte";
   import { resolve } from "$app/paths";
 
   let randomChannels = $state([] as string[]);
@@ -77,7 +77,7 @@
     <div class="placeholder">Connect</div>
   {/if}
 
-  <a href={resolve("/")} onclick={feelingLucky} style="margin-top: 15px"
+  <a href={resolve("")} onclick={feelingLucky} style="margin-top: 15px"
     >I'm feeling lucky</a
   >
 </div>

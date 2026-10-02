@@ -1,5 +1,5 @@
 <script lang="ts">
-  import Spinner from "$lib/components/Spinner.svelte";
+  import Spinner from "#lib/components/Spinner.svelte";
 
   let { loadingMessage = $bindable() }: { loadingMessage: string } = $props();
 </script>

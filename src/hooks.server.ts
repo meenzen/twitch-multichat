@@ -4,7 +4,7 @@ import {
   initCloudflareSentryHandle,
 } from "@sentry/sveltekit";
 import { sequence } from "@sveltejs/kit/hooks";
-import { dev } from "$app/environment";
+import { dev } from "$app/env";
 
 export const handle = sequence(
   initCloudflareSentryHandle({

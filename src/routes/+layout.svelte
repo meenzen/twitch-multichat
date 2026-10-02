@@ -1,61 +1,32 @@
 <script>
-  import { pwaInfo } from "virtual:pwa-info";
-  import { pwaAssetsHead } from "virtual:pwa-assets/head";
   import { onMount } from "svelte";
 
   const intervalMS = 10 * 60 * 1000; // check for updates every 10 minutes
 
-  onMount(async () => {
-    if (pwaInfo) {
-      const { registerSW } = await import("virtual:pwa-register");
+  // SvelteKit registers the service worker, we only poll for updates
+  onMount(() => {
+    if (!("serviceWorker" in navigator)) return;
 
-      registerSW({
-        immediate: true,
-        onRegisteredSW(swUrl, registration) {
-          if (!registration) return;
+    /** @type {ReturnType<typeof setInterval> | undefined} */
+    let interval;
 
-          setInterval(async () => {
-            if (!(!registration.installing && navigator)) return;
+    navigator.serviceWorker.ready.then((registration) => {
+      interval = setInterval(async () => {
+        if (registration.installing) return;
 
-            if ("connection" in navigator && !navigator.onLine) return;
+        if (!navigator.onLine) return;
 
-            console.log("Checking for sw update");
+        console.log("Checking for sw update");
 
-            const resp = await fetch(swUrl, {
-              cache: "no-store",
-              headers: {
-                cache: "no-store",
-                "cache-control": "no-cache",
-              },
-            });
+        await registration.update();
+      }, intervalMS);
+    });
 
-            if (resp?.status === 200) await registration.update();
-          }, intervalMS);
-
-          console.log(`SW Registered: ${registration}`);
-        },
-
-        onRegisterError(error) {
-          console.log("SW registration error", error);
-        },
-      });
-    }
+    return () => clearInterval(interval);
   });
 
-  let webManifest = $derived(pwaInfo ? pwaInfo.webManifest.linkTag : "");
   let { children } = $props();
 </script>
-
-<svelte:head>
-  {#if pwaAssetsHead.themeColor}
-    <meta name="theme-color" content={pwaAssetsHead.themeColor.content} />
-  {/if}
-  {#each pwaAssetsHead.links as link (link)}
-    <link {...link} />
-  {/each}
-  <!-- eslint-disable-next-line svelte/no-at-html-tags -->
-  {@html webManifest}
-</svelte:head>
 
 <main>
   {@render children()}

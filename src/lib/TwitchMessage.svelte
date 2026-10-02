@@ -3,11 +3,11 @@
     MessagePartType,
     MessageType,
     type ParsedMessage,
-  } from "$lib/MessageParser";
-  import TwitchEmote from "$lib/TwitchEmote.svelte";
-  import TwitchUsername from "$lib/TwitchUsername.svelte";
-  import FormattedMessage from "$lib/FormattedMessage.svelte";
-  import type { ChatSettings } from "$lib/ChatSettings";
+  } from "#lib/MessageParser.ts";
+  import TwitchEmote from "#lib/TwitchEmote.svelte";
+  import TwitchUsername from "#lib/TwitchUsername.svelte";
+  import FormattedMessage from "#lib/FormattedMessage.svelte";
+  import type { ChatSettings } from "#lib/ChatSettings.ts";
 
   let {
     message,

@@ -1,10 +1,10 @@
 <script lang="ts">
   import "@fontsource/inter";
   import "@fontsource/inter/700.css";
-  import TwitchChat from "$lib/TwitchChat.svelte";
-  import TwitchChannelList from "$lib/TwitchChannelList.svelte";
-  import MetaTags from "$lib/components/MetaTags.svelte";
-  import { browser } from "$app/environment";
+  import TwitchChat from "#lib/TwitchChat.svelte";
+  import TwitchChannelList from "#lib/TwitchChannelList.svelte";
+  import MetaTags from "#lib/components/MetaTags.svelte";
+  import { browser } from "$app/env";
 
   let { data = $bindable() } = $props();
 
