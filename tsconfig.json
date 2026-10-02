@@ -1,5 +1,7 @@
 {
-  "extends": "./.svelte-kit/tsconfig.json",
+  "extends": "$app/tsconfig",
+  "include": ["src", "test", "*"],
+  "exclude": ["src/service-worker", "src/service-worker.ts"],
   "compilerOptions": {
     "allowJs": true,
     "checkJs": true,
@@ -12,13 +14,10 @@
     "moduleResolution": "bundler",
     "lib": ["ESNext", "DOM", "WebWorker"],
     "types": [
+      "$app/types",
       "vite-plugin-pwa/info",
       "vite-plugin-pwa/client",
       "vite-plugin-pwa/pwa-assets"
     ]
   }
-  // Path aliases are handled by https://kit.svelte.dev/docs/configuration#alias
-  //
-  // If you want to overwrite includes/excludes, make sure to copy over the relevant includes/excludes
-  // from the referenced tsconfig.json - TypeScript does not merge them in
 }

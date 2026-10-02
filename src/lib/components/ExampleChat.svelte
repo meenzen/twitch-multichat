@@ -1,7 +1,7 @@
 <script lang="ts">
-  import ColorGenerator from "$lib/ColorGenerator";
-  import { type ParsedMessage } from "$lib/MessageParser";
-  import TwitchMessage from "$lib/TwitchMessage.svelte";
+  import ColorGenerator from "#lib/ColorGenerator.ts";
+  import { type ParsedMessage } from "#lib/MessageParser.ts";
+  import TwitchMessage from "#lib/TwitchMessage.svelte";
 
   const exampleText = [
     "Hi",

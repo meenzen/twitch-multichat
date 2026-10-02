@@ -1,5 +1,7 @@
 import { sentrySvelteKit } from "@sentry/sveltekit/vite";
+import adapter from "@sveltejs/adapter-cloudflare";
 import { sveltekit } from "@sveltejs/kit/vite";
+import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 import { defineConfig } from "vite";
 import { SvelteKitPWA } from "@vite-pwa/sveltekit";
 import { enhancedImages } from "@sveltejs/enhanced-img";
@@ -18,7 +20,22 @@ export default defineConfig({
       adapter: "cloudflare",
     }),
     enhancedImages(),
-    sveltekit(),
+    sveltekit({
+      adapter: adapter(),
+      preprocess: vitePreprocess(),
+      compilerOptions: {
+        runes: true,
+      },
+      serviceWorker: {
+        register: false,
+      },
+      files: {
+        serviceWorker: "src/service-worker.ts",
+      },
+      paths: {
+        relative: false,
+      },
+    }),
     sveltekitOG(),
     SvelteKitPWA({
       registerType: "autoUpdate",

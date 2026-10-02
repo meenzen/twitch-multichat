@@ -2,11 +2,11 @@
   import * as Sentry from "@sentry/sveltekit";
   import { ChatClient } from "@twurple/chat";
   import { onDestroy, onMount } from "svelte";
-  import TwitchMessage from "$lib/TwitchMessage.svelte";
-  import { dev } from "$app/environment";
-  import ElementChecker from "$lib/ElementChecker";
-  import LoadingMessage from "$lib/LoadingMessage.svelte";
-  import type { ChatSettings } from "$lib/ChatSettings";
+  import TwitchMessage from "#lib/TwitchMessage.svelte";
+  import { dev } from "$app/env";
+  import ElementChecker from "#lib/ElementChecker.ts";
+  import LoadingMessage from "#lib/LoadingMessage.svelte";
+  import type { ChatSettings } from "#lib/ChatSettings.ts";
   import {
     MessageType,
     parseMessage,

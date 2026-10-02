@@ -44,5 +44,9 @@
     "vitest": "^5.0.0",
     "workbox-core": "^7.4.0"
   },
-  "type": "module"
+  "type": "module",
+  "imports": {
+    "#lib": "./src/lib",
+    "#lib/*": "./src/lib/*"
+  }
 }

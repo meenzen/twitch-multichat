@@ -1,6 +1,6 @@
 import { ImageResponse } from "@ethercorps/sveltekit-og";
 import { GoogleFont, resolveFonts } from "@ethercorps/sveltekit-og/fonts";
-import PreviewImage from "$lib/components/PreviewImage.svelte";
+import PreviewImage from "#lib/components/PreviewImage.svelte";
 import type { RequestHandler } from "@sveltejs/kit";
 
 const interRegular = new GoogleFont("Inter", {

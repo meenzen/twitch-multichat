@@ -1,6 +1,6 @@
 <script lang="ts">
-  import ColorGenerator from "$lib/ColorGenerator";
-  import type { ChatSettings } from "$lib/ChatSettings";
+  import ColorGenerator from "#lib/ColorGenerator.ts";
+  import type { ChatSettings } from "#lib/ChatSettings.ts";
 
   let { settings = $bindable() }: { settings: ChatSettings } = $props();
 </script>
