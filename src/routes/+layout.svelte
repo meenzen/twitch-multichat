@@ -14,7 +14,7 @@
       interval = setInterval(async () => {
         if (registration.installing) return;
 
-        if ("connection" in navigator && !navigator.onLine) return;
+        if (!navigator.onLine) return;
 
         console.log("Checking for sw update");
 
