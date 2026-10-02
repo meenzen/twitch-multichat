@@ -15,7 +15,6 @@ Sentry.init({
   // we only care about errors
   replaysSessionSampleRate: 0,
   replaysOnErrorSampleRate: 1.0,
-  enableLogs: true,
   enabled: !dev,
 });
 
