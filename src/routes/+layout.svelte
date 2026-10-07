@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
   import { onMount } from "svelte";
 
   const intervalMS = 10 * 60 * 1000; // check for updates every 10 minutes
@@ -7,8 +7,7 @@
   onMount(() => {
     if (!("serviceWorker" in navigator)) return;
 
-    /** @type {ReturnType<typeof setInterval> | undefined} */
-    let interval;
+    let interval: ReturnType<typeof setInterval> | undefined;
 
     navigator.serviceWorker.ready.then((registration) => {
       interval = setInterval(async () => {
