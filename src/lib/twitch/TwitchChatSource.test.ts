@@ -42,7 +42,7 @@ function stubClient() {
       Promise.resolve(void channel),
     ),
     quit: mock(),
-    irc: { pingCheck: mock() },
+    irc: { pingCheck: mock(), onAnyMessage: binder("ircMessage") },
   };
   return { client, fire };
 }
@@ -177,7 +177,7 @@ describe("TwitchChatSource reconnecting", () => {
 
     expect(client.join.mock.calls).toEqual([["one"], ["two"]]);
     expect(statuses).toEqual([
-      { kind: "reconnecting" },
+      { kind: "reconnecting", since: expect.any(Number) },
       { kind: "joining", channel: "one" },
       { kind: "joining", channel: "two" },
       { kind: "ready" },
@@ -201,8 +201,29 @@ describe("TwitchChatSource reconnecting", () => {
     // no "ready" from the stale round
     expect(statuses).toEqual([
       { kind: "joining", channel: "one" },
-      { kind: "reconnecting" },
+      { kind: "reconnecting", since: expect.any(Number) },
     ]);
+  });
+
+  it("reports when the last line arrived before the connection dropped", async () => {
+    jest.useFakeTimers();
+    try {
+      const { fire, source, statuses } = setup();
+      await source.connect(["one"]);
+
+      jest.setSystemTime(new Date(1_000_000));
+      fire("ircMessage", {});
+      // the drop is only noticed later, e.g. after the phone woke up
+      jest.setSystemTime(new Date(1_300_000));
+      fire("disconnect", false);
+
+      expect(statuses.at(-1)).toEqual({
+        kind: "reconnecting",
+        since: 1_000_000,
+      });
+    } finally {
+      jest.useRealTimers();
+    }
   });
 
   it("does not report reconnecting after a manual disconnect", async () => {

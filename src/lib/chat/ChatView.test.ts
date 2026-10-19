@@ -74,6 +74,21 @@ describe("ChatView", () => {
     expect(link.getAttribute("rel")).toContain("noopener");
   });
 
+  it("shows a divider where the chat was disconnected", () => {
+    render(ChatView, {
+      messages: [
+        createMessage({ text: "before" }),
+        { kind: "disconnect", id: "d1", since: 0, until: 133_000 },
+        createMessage({ text: "after" }),
+      ],
+    });
+
+    const marker = screen.getByRole("separator");
+    expect(marker.textContent?.trim()).toBe("Disconnected for 2m 13s");
+    expect(marker.previousElementSibling?.textContent).toContain("before");
+    expect(marker.nextElementSibling?.textContent).toContain("after");
+  });
+
   it("italicizes actions and omits the colon", () => {
     const { container } = render(ChatView, {
       messages: [createMessage({ type: MessageType.Action, text: "waves" })],

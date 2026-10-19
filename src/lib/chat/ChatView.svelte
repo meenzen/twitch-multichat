@@ -2,7 +2,8 @@
   import { untrack } from "svelte";
   import TwitchMessage from "#lib/TwitchMessage.svelte";
   import Modal from "#lib/components/modal/Modal.svelte";
-  import type { ParsedMessage } from "./ChatMessage";
+  import DisconnectMarker from "./DisconnectMarker.svelte";
+  import { isMessage, type ChatEntry } from "./ChatMessage";
   import type { ChatStatus } from "./ChatSource";
   import { StickToBottom } from "./StickToBottom";
 
@@ -15,7 +16,7 @@
     shadow = true,
     following = $bindable(true),
   }: {
-    messages: ParsedMessage[];
+    messages: ChatEntry[];
     status?: ChatStatus;
     shadow?: boolean;
     /** Whether the view is pinned to the newest message */
@@ -65,8 +66,12 @@
     data-testid="chat-scroller"
   >
     <div bind:this={content}>
-      {#each messages as message (message.id)}
-        <TwitchMessage {message} {shadow} />
+      {#each messages as entry (entry.id)}
+        {#if isMessage(entry)}
+          <TwitchMessage message={entry} {shadow} />
+        {:else}
+          <DisconnectMarker {entry} />
+        {/if}
       {/each}
 
       {#if status.kind === "error"}
