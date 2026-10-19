@@ -2,6 +2,7 @@
   import Check from "@lucide/svelte/icons/check";
   import Copy from "@lucide/svelte/icons/copy";
   import X from "@lucide/svelte/icons/x";
+  import GitHubLink from "#lib/components/GitHubLink.svelte";
   import { fontSizes, type FontSize } from "./ChatSettings";
   import type { Settings } from "./Settings.svelte";
 
@@ -151,6 +152,8 @@
     </fieldset>
 
     <footer>
+      <!-- new tab, so the chat keeps running -->
+      <GitHubLink newTab />
       <button
         type="button"
         class="text-button"
@@ -300,7 +303,9 @@
 
   footer {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
   }
 
   .text-button,
