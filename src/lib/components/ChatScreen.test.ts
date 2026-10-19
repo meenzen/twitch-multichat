@@ -140,6 +140,15 @@ describe("SettingsDialog", () => {
     expect(screen.getByRole("status").textContent).toContain("copied");
   });
 
+  it("links to the source code in a new tab", () => {
+    renderDialog({ writeText: () => Promise.resolve() });
+    const link = screen.getByRole("link", { name: "Source on GitHub" });
+    expect(link.getAttribute("href")).toBe(
+      "https://github.com/meenzen/twitch-multichat",
+    );
+    expect(link.getAttribute("target")).toBe("_blank");
+  });
+
   it("asks for a manual copy without clipboard access", async () => {
     renderDialog({ writeText: () => Promise.reject(new Error("denied")) });
 

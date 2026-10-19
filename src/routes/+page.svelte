@@ -5,6 +5,7 @@
   import { onMount } from "svelte";
   import logo from "#lib/assets/logo.png?enhanced";
   import MetaTags from "#lib/components/MetaTags.svelte";
+  import GitHubLink from "#lib/components/GitHubLink.svelte";
   import { resolve } from "$app/paths";
 
   let randomChannels = $state([] as string[]);
@@ -82,6 +83,10 @@
   >
 </div>
 
+<footer>
+  <GitHubLink />
+</footer>
+
 <style>
   .logo {
     width: 256px;
@@ -133,5 +138,11 @@
 
   .placeholder {
     color: var(--text-color);
+  }
+
+  footer {
+    display: flex;
+    justify-content: center;
+    padding: 20px;
   }
 </style>
