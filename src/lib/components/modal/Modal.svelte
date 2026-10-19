@@ -34,7 +34,7 @@
 
 <style>
   /* covers the page so the message stays readable on busy pages, but lets
-     clicks through (e.g. the chat's click to scroll down) */
+     clicks and scrolling through to the chat */
   .backdrop {
     position: fixed;
     inset: 0;
