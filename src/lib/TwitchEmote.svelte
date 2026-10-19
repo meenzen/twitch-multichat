@@ -24,5 +24,7 @@
   img {
     height: 28px;
     display: inline-block;
+    /* centre on the text so the line grows evenly above and below it */
+    vertical-align: middle;
   }
 </style>
