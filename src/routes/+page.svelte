@@ -68,36 +68,40 @@
   <link rel="preconnect" href="https://mnzn.dev" />
 </svelte:head>
 
-<div class="container">
-  <enhanced:img src={logo} fetchpriority="high" alt="" class="logo" />
+<!-- full height: the content is centred in the space above the footer,
+     the footer sits at the bottom -->
+<div class="page">
+  <div class="container">
+    <enhanced:img src={logo} fetchpriority="high" alt="" class="logo" />
 
-  <h1>{siteName}</h1>
-  <p class="intro">
-    Combine the chats of multiple Twitch channels into one view. Enter one
-    channel per line.
-  </p>
+    <h1>{siteName}</h1>
+    <p class="intro">
+      Combine the chats of multiple Twitch channels into one view. Enter one
+      channel per line.
+    </p>
 
-  <textarea
-    bind:value={channels}
-    aria-label="Channels, one per line"
-    placeholder={randomChannelsString}
-    rows="10"
-    cols="50"></textarea>
-  {#if valid}
-    <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
-    <a href={link}>Connect</a>
-  {:else}
-    <div class="placeholder">Connect</div>
-  {/if}
+    <textarea
+      bind:value={channels}
+      aria-label="Channels, one per line"
+      placeholder={randomChannelsString}
+      rows="10"
+      cols="50"></textarea>
+    {#if valid}
+      <!-- eslint-disable-next-line svelte/no-navigation-without-resolve -->
+      <a href={link}>Connect</a>
+    {:else}
+      <div class="placeholder">Connect</div>
+    {/if}
 
-  <a href={resolve("")} onclick={feelingLucky} style="margin-top: 15px"
-    >I'm feeling lucky</a
-  >
+    <a href={resolve("")} onclick={feelingLucky} style="margin-top: 15px"
+      >I'm feeling lucky</a
+    >
+  </div>
+
+  <footer>
+    <GitHubLink />
+  </footer>
 </div>
-
-<footer>
-  <GitHubLink />
-</footer>
 
 <style>
   .logo {
@@ -105,6 +109,14 @@
     height: 256px;
     border-radius: 10%;
     margin-bottom: 20px;
+  }
+
+  /* keep everything on one screen on laptops */
+  @media (max-height: 900px) {
+    .logo {
+      width: 160px;
+      height: 160px;
+    }
   }
 
   h1 {
@@ -115,7 +127,7 @@
 
   .intro {
     margin: 0 0 1.5rem;
-    max-width: 22rem;
+    max-width: 26rem;
     font-family: "Inter", sans-serif;
     font-size: 1rem;
     line-height: 1.5;
@@ -124,14 +136,36 @@
     color: color-mix(in srgb, var(--text-color) 75%, var(--background-color));
   }
 
+  .page {
+    --footer-height: 48px;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  /* as tall as the footer, so the content is centred on the whole page */
+  .page::before {
+    content: "";
+    flex: none;
+    height: var(--footer-height);
+  }
+
+  /* short screens (phones): fitting on one screen beats exact centring */
+  @media (max-height: 800px) {
+    .page::before {
+      display: none;
+    }
+  }
+
   .container {
+    flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
     padding: 20px;
-    min-height: 80vh;
   }
 
   textarea,
@@ -171,7 +205,11 @@
 
   footer {
     display: flex;
+    flex: none;
     justify-content: center;
-    padding: 20px;
+    align-items: flex-start;
+    box-sizing: border-box;
+    height: var(--footer-height);
+    padding: 0 20px;
   }
 </style>
