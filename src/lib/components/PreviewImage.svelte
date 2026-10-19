@@ -8,24 +8,32 @@
 <section class="background">
   <section class="card debug-border">
     <section class="logo debug-border">
-      <img src={logoUrl} alt="Logo" width="250" height="250" />
+      <img src={logoUrl} alt="Logo" />
       <h2 class="no-padding">Twitch Multichat</h2>
     </section>
     <section class="text debug-border">
       <h1 class="title no-padding">Combined Chat</h1>
-      <section class="channels debug-border {flip ? 'flipped' : ''}">
-        {#each channels as channel (channel)}
-          <h2 class="channel no-padding">
-            {channel}
-          </h2>
-        {/each}
-      </section>
+      {#if channels.length > 0}
+        <section class="channels debug-border {flip ? 'flipped' : ''}">
+          {#each channels as channel (channel)}
+            <h2 class="channel no-padding">
+              {channel}
+            </h2>
+          {/each}
+        </section>
+      {:else}
+        <h2 class="tagline no-padding">All your Twitch chats in one view</h2>
+      {/if}
     </section>
   </section>
 </section>
 
 <style>
+  /* in CSS: the renderer drops images with width/height attributes, they
+     arrive as strings */
   img {
+    width: 250px;
+    height: 250px;
     border-radius: 10%;
   }
   .no-padding {
@@ -81,6 +89,10 @@
   .flipped {
     flex-wrap: wrap;
     flex-direction: row;
+  }
+  .tagline {
+    text-align: center;
+    color: #9146ff;
   }
   .channel {
     text-align: center;

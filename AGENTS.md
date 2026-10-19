@@ -64,6 +64,18 @@ anonymous via `@twurple/chat`.
 - `src/lib/serviceWorkerUpdates.ts` and `components/UpdateNotifier.svelte`:
   update polling, the "Installing update..." modal and the reload.
 - `src/service-worker/`: workbox setup. `precache.ts` is pure and testable.
+- SEO: `src/lib/site.ts` (texts, structured data, robots.txt, sitemap) and
+  `components/MetaTags.svelte`. Meta tags need absolute URLs; prerendered
+  pages have a placeholder origin, so pass `siteUrl(page.url, building)`.
+  Only the landing page is indexed, chat pages are `noindex` but stay
+  crawlable for link previews. The preview image (`routes/images/`) is
+  rendered by `@ethercorps/sveltekit-og`, which drops `<img>` with
+  width/height attributes: size images with CSS. `radial-gradient` makes it
+  fail. Errors only show with `debug: true` in the `ImageResponse` options;
+  the response is then empty (curl: "Empty reply from server"). After
+  editing a preview component, restart `vite dev`: hot reloads leave the
+  renderer failing until a restart, which looks like a broken design.
+  `LandingPreviewImage.svelte` is the image without channels.
 - Design tokens live in `src/app.html` (`--background-color`,
   `--twitch-purple`, ...). Reuse them instead of hard-coding colours.
 
