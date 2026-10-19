@@ -6,7 +6,10 @@
   import logo from "#lib/assets/logo.png?enhanced";
   import MetaTags from "#lib/components/MetaTags.svelte";
   import GitHubLink from "#lib/components/GitHubLink.svelte";
+  import { siteName, siteUrl, structuredData } from "#lib/site.ts";
+  import { building } from "$app/env";
   import { resolve } from "$app/paths";
+  import { page } from "$app/state";
 
   let randomChannels = $state([] as string[]);
   let randomChannelsString = $derived(randomChannels.join("\n"));
@@ -45,6 +48,11 @@
     channels = (await TwitchChannel.getRandomList(channelCount)).join("\n");
   }
 
+  // prerendered, see siteUrl
+  const url = siteUrl(page.url, building);
+  // split so the closing tag does not end this component's own <script>
+  const jsonLd = `<script type="application/ld+json">${structuredData(url.origin)}<${"/"}script>`;
+
   let link = $derived(getUrl(channels));
   let valid = $derived(isValid());
 
@@ -54,20 +62,24 @@
 </script>
 
 <svelte:head>
-  <MetaTags channels={[]} />
+  <MetaTags {url} />
+  <!-- eslint-disable-next-line svelte/no-at-html-tags (static, escaped JSON) -->
+  {@html jsonLd}
   <link rel="preconnect" href="https://mnzn.dev" />
 </svelte:head>
 
 <div class="container">
-  <enhanced:img
-    src={logo}
-    fetchpriority="high"
-    alt="Twitch Multichat Logo"
-    class="logo"
-  />
+  <enhanced:img src={logo} fetchpriority="high" alt="" class="logo" />
+
+  <h1>{siteName}</h1>
+  <p class="intro">
+    Combine the chats of multiple Twitch channels into one view. Enter one
+    channel per line.
+  </p>
 
   <textarea
     bind:value={channels}
+    aria-label="Channels, one per line"
     placeholder={randomChannelsString}
     rows="10"
     cols="50"></textarea>
@@ -93,6 +105,23 @@
     height: 256px;
     border-radius: 10%;
     margin-bottom: 20px;
+  }
+
+  h1 {
+    margin: 0 0 0.5rem;
+    font-family: "Inter", sans-serif;
+    font-size: 2rem;
+  }
+
+  .intro {
+    margin: 0 0 1.5rem;
+    max-width: 22rem;
+    font-family: "Inter", sans-serif;
+    font-size: 1rem;
+    line-height: 1.5;
+    text-align: center;
+    /* --muted-text-color is too dark for body text */
+    color: color-mix(in srgb, var(--text-color) 75%, var(--background-color));
   }
 
   .container {

@@ -9,6 +9,7 @@
   import { replaceUrl } from "#lib/settings/replaceUrl.ts";
   import { browser } from "$app/env";
   import { resolve } from "$app/paths";
+  import { page } from "$app/state";
 
   let { data = $bindable() } = $props();
 
@@ -27,7 +28,8 @@
 </script>
 
 <svelte:head>
-  <MetaTags channels={selectedChannels} />
+  <!-- endless channel combinations, only the landing page is indexed -->
+  <MetaTags url={page.url} channels={selectedChannels} noindex />
   <link rel="preload" as="image" href="/emote.png" />
 </svelte:head>
 

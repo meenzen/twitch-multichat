@@ -64,6 +64,13 @@ anonymous via `@twurple/chat`.
 - `src/lib/serviceWorkerUpdates.ts` and `components/UpdateNotifier.svelte`:
   update polling, the "Installing update..." modal and the reload.
 - `src/service-worker/`: workbox setup. `precache.ts` is pure and testable.
+- SEO: `src/lib/site.ts` (texts, structured data, robots.txt, sitemap) and
+  `components/MetaTags.svelte`. Meta tags need absolute URLs; prerendered
+  pages have a placeholder origin, so pass `siteUrl(page.url, building)`.
+  Only the landing page is indexed, chat pages are `noindex` but stay
+  crawlable for link previews. The preview image (`routes/images/`) is
+  rendered by `@ethercorps/sveltekit-og`, which drops `<img>` with
+  width/height attributes: size images with CSS.
 - Design tokens live in `src/app.html` (`--background-color`,
   `--twitch-purple`, ...). Reuse them instead of hard-coding colours.
 
