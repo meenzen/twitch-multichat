@@ -1,4 +1,12 @@
-import { describe, expect, it, mock } from "bun:test";
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  jest,
+  mock,
+} from "bun:test";
 import { parseTwitchMessage, type ChatClient } from "@twurple/chat";
 import { MessageType } from "#lib/chat/ChatMessage.ts";
 import type { ChatStatus } from "#lib/chat/ChatSource.ts";
@@ -12,6 +20,7 @@ function stubClient() {
   const binder = (name: string) => (handler: Handler) => {
     handlers[name] = handler;
   };
+  const fire = (name: string, ...args: unknown[]) => handlers[name](...args);
   const client = {
     onMessage: binder("message"),
     onAction: binder("action"),
@@ -19,25 +28,65 @@ function stubClient() {
     onBan: binder("ban"),
     onTimeout: binder("timeout"),
     onChatClear: binder("chatClear"),
-    connect: mock(),
-    join: mock((channel: string) => Promise.resolve(void channel)),
+    onAuthenticationSuccess: binder("authSuccess"),
+    onDisconnect: binder("disconnect"),
+    isConnected: false,
+    isConnecting: false,
+    // like twurple: connecting leads to authentication
+    connect: mock(() => {
+      client.isConnected = true;
+      queueMicrotask(() => fire("authSuccess"));
+    }),
+    reconnect: mock(),
+    join: mock((channel: string): Promise<void> =>
+      Promise.resolve(void channel),
+    ),
     quit: mock(),
+    irc: { pingCheck: mock() },
   };
-  const fire = (name: string, ...args: unknown[]) => handlers[name](...args);
   return { client, fire };
+}
+
+/** document/window stand-ins for page lifecycle events */
+function fakePage() {
+  const document = Object.assign(new EventTarget(), {
+    visibilityState: "visible" as DocumentVisibilityState,
+  });
+  const window = new EventTarget();
+  return { document, window };
 }
 
 function setup() {
   const { client, fire } = stubClient();
+  const page = fakePage();
   const source = new TwitchChatSource({
     client: client as unknown as ChatClient,
+    ...page,
   });
-  return { client, fire, source };
+  const statuses: ChatStatus[] = [];
+  source.on("status", (status) => statuses.push(status));
+  return { client, fire, source, statuses, ...page };
 }
+
+/** let pending promise callbacks run */
+const flush = async () => {
+  for (let i = 0; i < 5; i++) await new Promise((r) => queueMicrotask(r));
+};
 
 const rawMessage = parseTwitchMessage(
   "@display-name=Bob;emotes=;id=m1;user-id=9 :bob!bob@bob.tmi.twitch.tv PRIVMSG #chan :\u0001ACTION hi\u0001",
 );
+
+beforeEach(() => {
+  // keep the test output clean
+  for (const level of ["log", "debug", "warn", "error"] as const) {
+    jest.spyOn(console, level).mockImplementation(() => {});
+  }
+});
+
+afterEach(() => {
+  jest.restoreAllMocks();
+});
 
 describe("TwitchChatSource", () => {
   it("emits parsed messages and actions", () => {
@@ -79,10 +128,8 @@ describe("TwitchChatSource", () => {
     expect(channelCleared).toHaveBeenCalledWith("chan");
   });
 
-  it("reports progress while joining channels", async () => {
-    const { client, source } = setup();
-    const statuses: ChatStatus[] = [];
-    source.on("status", (status) => statuses.push(status));
+  it("joins all channels once authenticated", async () => {
+    const { client, source, statuses } = setup();
 
     await source.connect(["one", "two"]);
 
@@ -98,12 +145,10 @@ describe("TwitchChatSource", () => {
   });
 
   it("reports an error when connecting throws", async () => {
-    const { client, source } = setup();
+    const { client, source, statuses } = setup();
     client.connect.mockImplementation(() => {
       throw new Error("offline");
     });
-    const statuses: ChatStatus[] = [];
-    source.on("status", (status) => statuses.push(status));
 
     await source.connect(["one"]);
 
@@ -115,5 +160,142 @@ describe("TwitchChatSource", () => {
     const { client, source } = setup();
     source.disconnect();
     expect(client.quit).toHaveBeenCalled();
+  });
+});
+
+describe("TwitchChatSource reconnecting", () => {
+  it("rejoins all channels after an unexpected disconnect", async () => {
+    const { client, fire, source, statuses } = setup();
+    await source.connect(["one", "two"]);
+    client.join.mockClear();
+    statuses.length = 0;
+
+    fire("disconnect", false, new Error("socket closed"));
+    // twurple reconnects by itself and authenticates again
+    fire("authSuccess");
+    await flush();
+
+    expect(client.join.mock.calls).toEqual([["one"], ["two"]]);
+    expect(statuses).toEqual([
+      { kind: "reconnecting" },
+      { kind: "joining", channel: "one" },
+      { kind: "joining", channel: "two" },
+      { kind: "ready" },
+    ]);
+  });
+
+  it("abandons a join round interrupted by a disconnect", async () => {
+    const { client, fire, source, statuses } = setup();
+    await source.connect(["one"]);
+    statuses.length = 0;
+
+    let finishJoin!: () => void;
+    client.join.mockImplementationOnce(
+      () => new Promise<void>((r) => (finishJoin = r)),
+    );
+    fire("authSuccess");
+    fire("disconnect", false);
+    finishJoin();
+    await flush();
+
+    // no "ready" from the stale round
+    expect(statuses).toEqual([
+      { kind: "joining", channel: "one" },
+      { kind: "reconnecting" },
+    ]);
+  });
+
+  it("does not report reconnecting after a manual disconnect", async () => {
+    const { fire, source, statuses } = setup();
+    await source.connect(["one"]);
+    statuses.length = 0;
+
+    source.disconnect();
+    fire("disconnect", true);
+    fire("authSuccess");
+    await flush();
+
+    expect(statuses).toEqual([]);
+  });
+});
+
+describe("TwitchChatSource page resume", () => {
+  it("pings when the page becomes visible again", async () => {
+    const { client, document, source } = setup();
+    await source.connect(["one"]);
+
+    document.dispatchEvent(new Event("visibilitychange"));
+
+    expect(client.irc.pingCheck).toHaveBeenCalledTimes(1);
+    expect(client.reconnect).not.toHaveBeenCalled();
+  });
+
+  it("ignores the page being hidden", async () => {
+    const { client, document, source } = setup();
+    await source.connect(["one"]);
+
+    document.visibilityState = "hidden";
+    document.dispatchEvent(new Event("visibilitychange"));
+
+    expect(client.irc.pingCheck).not.toHaveBeenCalled();
+  });
+
+  it("reconnects right away when the connection is already gone", async () => {
+    const { client, window, source } = setup();
+    await source.connect(["one"]);
+    client.isConnected = false;
+
+    window.dispatchEvent(new Event("online"));
+
+    expect(client.reconnect).toHaveBeenCalledTimes(1);
+    expect(client.irc.pingCheck).not.toHaveBeenCalled();
+  });
+
+  it("leaves a reconnect that is already underway alone", async () => {
+    const { client, window, source } = setup();
+    await source.connect(["one"]);
+    client.isConnected = false;
+    client.isConnecting = true;
+
+    window.dispatchEvent(new Event("pageshow"));
+
+    expect(client.reconnect).not.toHaveBeenCalled();
+  });
+
+  it("checks on resume from a frozen page", async () => {
+    const { client, document, source } = setup();
+    await source.connect(["one"]);
+
+    document.dispatchEvent(new Event("resume"));
+
+    expect(client.irc.pingCheck).toHaveBeenCalledTimes(1);
+  });
+
+  it("checks at most every few seconds", async () => {
+    const { client, document, window, source } = setup();
+    await source.connect(["one"]);
+    const now = jest.spyOn(Date, "now").mockReturnValue(100_000);
+
+    // several lifecycle events usually arrive together on wake up
+    document.dispatchEvent(new Event("visibilitychange"));
+    window.dispatchEvent(new Event("pageshow"));
+    window.dispatchEvent(new Event("online"));
+    expect(client.irc.pingCheck).toHaveBeenCalledTimes(1);
+
+    now.mockReturnValue(106_000);
+    document.dispatchEvent(new Event("visibilitychange"));
+    expect(client.irc.pingCheck).toHaveBeenCalledTimes(2);
+  });
+
+  it("stops watching the page after disconnect", async () => {
+    const { client, document, window, source } = setup();
+    await source.connect(["one"]);
+
+    source.disconnect();
+    document.dispatchEvent(new Event("visibilitychange"));
+    window.dispatchEvent(new Event("online"));
+
+    expect(client.irc.pingCheck).not.toHaveBeenCalled();
+    expect(client.reconnect).not.toHaveBeenCalled();
   });
 });
