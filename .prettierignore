@@ -3,3 +3,4 @@ build
 dist
 .devcontainer.json
 .svelte-kit
+/.e2e

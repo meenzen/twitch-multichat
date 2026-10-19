@@ -9,6 +9,7 @@
     "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json && tsc -p src/service-worker",
     "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
     "test": "bun test --conditions=browser",
+    "test:e2e": "bun --config=e2e/bunfig.toml test ./e2e",
     "lint": "eslint . --ext .js,.ts,.svelte",
     "format": "prettier --write ."
   },
