@@ -1,7 +1,6 @@
 <script lang="ts">
   import "@fontsource/inter";
   import "@fontsource/inter/700.css";
-  import { goto } from "$app/navigation";
   import { page } from "$app/state";
   import Chat from "#lib/chat/Chat.svelte";
   import ChatView from "#lib/chat/ChatView.svelte";
@@ -9,6 +8,7 @@
   import ChatScreen from "#lib/components/ChatScreen.svelte";
   import { fontSizes, parseSettings } from "#lib/settings/ChatSettings.ts";
   import { Settings, persistInUrl } from "#lib/settings/Settings.svelte.ts";
+  import { replaceUrl } from "#lib/settings/replaceUrl.ts";
   import { FakeChatSource } from "#lib/fake/FakeChatSource.ts";
   import {
     defaultChannels,
@@ -32,7 +32,7 @@
   const settings = new Settings(parseSettings(params));
   $effect(() =>
     persistInUrl(settings, {
-      replace: (url) => goto(url, { shallow: true, replace: true }),
+      replace: replaceUrl,
     }),
   );
   let display = $derived({

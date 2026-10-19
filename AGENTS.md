@@ -46,7 +46,10 @@ anonymous via `@twurple/chat`.
   - `ChatSettings.ts`: the settings, defaults and query parameters (pure).
     Only non-default values go into the URL. Add new settings here.
   - `Settings.svelte.ts`: reactive `Settings` and `persistInUrl`, which
-    mirrors changes into the query string (pages pass a shallow `goto`).
+    mirrors changes into the query string. Pages pass `replaceUrl.ts`, a
+    replacing `goto` that is deliberately not shallow: SvelteKit restores
+    shallow entries from the URL the page was loaded with on back/forward,
+    which loses the settings.
   - `SettingsDialog.svelte`: the menu, a native `<dialog>` (focus trap and
     focus return come from the browser).
 - Icons come from `@lucide/svelte`. Import each icon from
