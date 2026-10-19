@@ -6,8 +6,8 @@
   import MetaTags from "#lib/components/MetaTags.svelte";
   import { ChannelFilter } from "#lib/chat/ChannelFilter.svelte.ts";
   import { Settings, persistInUrl } from "#lib/settings/Settings.svelte.ts";
+  import { replaceUrl } from "#lib/settings/replaceUrl.ts";
   import { browser } from "$app/env";
-  import { goto } from "$app/navigation";
   import { resolve } from "$app/paths";
 
   let { data = $bindable() } = $props();
@@ -18,7 +18,7 @@
   const settings = new Settings(data.settings);
   $effect(() =>
     persistInUrl(settings, {
-      replace: (url) => goto(url, { shallow: true, replace: true }),
+      replace: replaceUrl,
     }),
   );
   if (browser && shouldConnect) {
