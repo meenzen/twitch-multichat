@@ -1,6 +1,6 @@
 <script lang="ts">
   import TwitchMessage from "#lib/TwitchMessage.svelte";
-  import LoadingMessage from "#lib/LoadingMessage.svelte";
+  import Modal from "#lib/components/modal/Modal.svelte";
   import ElementChecker from "#lib/ElementChecker.ts";
   import type { ParsedMessage } from "./ChatMessage";
   import type { ChatStatus } from "./ChatSource";
@@ -80,7 +80,9 @@
     <TwitchMessage {message} {shadow} />
   {/each}
 
-  <LoadingMessage {loadingMessage} />
+  {#if loadingMessage}
+    <Modal message={loadingMessage} />
+  {/if}
 
   {#if status.kind === "error"}
     <div class="error-message" role="alert">

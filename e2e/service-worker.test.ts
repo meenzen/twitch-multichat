@@ -52,6 +52,22 @@ function evaluate<T>(script: string, timeoutMs = 20_000): Promise<T> {
   ])`);
 }
 
+/**
+ * Poll a page expression until it is truthy. Evaluations may fail while the
+ * page reloads, those count as "not yet".
+ */
+async function waitFor(expression: string, timeoutMs = 20_000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    const ok = await evaluate<boolean>(`!!(${expression})`, 2_000).catch(
+      () => false,
+    );
+    if (ok) return;
+    await Bun.sleep(100);
+  }
+  throw new Error(`timed out waiting for: ${expression}`);
+}
+
 type PrecacheState = { cacheNames: string[]; urls: string[] };
 
 function precacheState(): Promise<PrecacheState> {
@@ -137,37 +153,53 @@ describe("service worker updates", () => {
     );
 
     expect(installing).toBe(false);
+    expect(
+      await evaluate<boolean>(
+        `document.body.textContent.includes("Installing update...")`,
+      ),
+    ).toBe(false);
   });
 
-  it("activates a new deploy without reloading the page", async () => {
-    await evaluate(`(window.__e2eMarker = "same page", true)`);
+  it("shows a modal while installing a new deploy, then reloads", async () => {
+    // sessionStorage survives the reload, the window marker does not
+    await evaluate(`(() => {
+      window.__e2eMarker = "old page";
+      sessionStorage.removeItem("sawUpdateModal");
+      new MutationObserver(() => {
+        if (document.body.textContent.includes("Installing update...")) {
+          sessionStorage.setItem("sawUpdateModal", "yes");
+        }
+      }).observe(document.body, { childList: true, subtree: true, characterData: true });
+      return true;
+    })()`);
     current = "v2";
 
-    // same call the layout makes every 10 minutes
-    await timed("update to v2", () =>
-      evaluate(`(async () => {
-        const changed = new Promise((r) =>
-          navigator.serviceWorker.addEventListener("controllerchange", r, { once: true }));
-        const registration = await navigator.serviceWorker.getRegistration();
-        await registration.update();
-        await changed;
-        // workbox drops stale precache entries while activating
-        const worker = registration.active;
-        if (worker.state !== "activated") {
-          await new Promise((r) => worker.addEventListener("statechange", () =>
-            worker.state === "activated" && r(), {}));
-        }
-        return true;
-      })()`),
-    );
+    await timed("update to v2 + reload", async () => {
+      // same call the layout makes every 10 minutes; the reload tears down
+      // this page, so don't wait for the update promise itself
+      await evaluate(
+        `(navigator.serviceWorker.getRegistration().then((r) => r.update()), true)`,
+      );
+      await waitFor(
+        `window.__e2eMarker === undefined && document.readyState === "complete"`,
+      );
+      await waitFor(`navigator.serviceWorker.controller !== null`);
+    });
+
+    expect(
+      await evaluate<string | null>(`sessionStorage.getItem("sawUpdateModal")`),
+    ).toBe("yes");
+    // the reloaded page no longer shows the modal
+    expect(
+      await evaluate<boolean>(
+        `document.body.textContent.includes("Installing update...")`,
+      ),
+    ).toBe(false);
 
     const state = await precacheState();
     expect(emoteRevisions(state)).toEqual([await versionOf("v2")]);
     expect(state.cacheNames.filter((n) => n.includes("precache"))).toHaveLength(
       1,
     );
-
-    // skipWaiting + clientsClaim swap the worker, the page itself keeps running
-    expect(await evaluate<string>("window.__e2eMarker")).toBe("same page");
   });
 });

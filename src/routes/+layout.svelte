@@ -1,11 +1,10 @@
 <script lang="ts">
-  import { onMount } from "svelte";
-  import { watchForUpdates } from "#lib/serviceWorkerUpdates.ts";
-
-  onMount(() => watchForUpdates());
+  import UpdateNotifier from "#lib/components/UpdateNotifier.svelte";
 
   let { children } = $props();
 </script>
+
+<UpdateNotifier />
 
 <main>
   {@render children()}
