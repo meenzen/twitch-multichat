@@ -1,36 +1,27 @@
 import TwitchChannel from "#lib/TwitchChannel.ts";
-import type { ChatSettings } from "#lib/ChatSettings.ts";
+import {
+  parseSettings,
+  type ChatSettings,
+} from "#lib/settings/ChatSettings.ts";
 
 export const ssr = true;
 
-function getSettings(url: URL): ChatSettings {
-  const shadowParam = url.searchParams.get("shadow");
-  let shadow = true;
-
-  if (shadowParam === "false") {
-    shadow = false;
-  }
-
-  return {
-    channels: [],
-    shadow: shadow,
-  };
-}
-
-export function load({ params, url }): ChatSettings {
+export function load({ params, url }): {
+  channels: string[];
+  settings: ChatSettings;
+} {
   const channelsString = params.channels;
-  const settings = getSettings(url);
+  const settings = parseSettings(url.searchParams);
 
   if (channelsString.trim().length === 0) {
-    return settings;
+    return { channels: [], settings };
   }
 
   const channels = channelsString.split("/");
 
   if (!TwitchChannel.isValidList(channels)) {
-    return settings;
+    return { channels: [], settings };
   }
 
-  settings.channels = channels;
-  return settings;
+  return { channels, settings };
 }

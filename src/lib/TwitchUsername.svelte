@@ -5,8 +5,15 @@
   const normalSpacer = ":";
   const actionSpacer = "";
 
-  let { message, shadow = true }: { message: ParsedMessage; shadow?: boolean } =
-    $props();
+  let {
+    message,
+    shadow = true,
+    channelTag = true,
+  }: {
+    message: ParsedMessage;
+    shadow?: boolean;
+    channelTag?: boolean;
+  } = $props();
 
   let spacer = $derived(
     message.type === MessageType.Action ? actionSpacer : normalSpacer,
@@ -18,9 +25,11 @@
 </script>
 
 <span class:shadow>
-  <span class="message-text channel-name" style="color: {channelColor}"
-    >[{channel}]
-  </span>
+  {#if channelTag}
+    <span class="message-text channel-name" style="color: {channelColor}"
+      >[{channel}]
+    </span>
+  {/if}
   <span class="message-text username" style="color: {color}">{username}</span
   ><span class="message-text">{spacer}</span>
 </span>

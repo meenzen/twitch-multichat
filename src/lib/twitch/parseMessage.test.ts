@@ -79,4 +79,22 @@ describe("parseMessage", () => {
       },
     ]);
   });
+
+  it("takes the timestamp from the sent time", () => {
+    const parsed = parseMessage({
+      message: privmsg("hi", { "tmi-sent-ts": "1700000000000" }),
+      type: MessageType.Normal,
+    });
+    expect(parsed.timestamp).toBe(1700000000000);
+  });
+
+  it("falls back to the current time without a sent time", () => {
+    const before = Date.now();
+    const parsed = parseMessage({
+      message: privmsg("hi"),
+      type: MessageType.Normal,
+    });
+    expect(parsed.timestamp).toBeGreaterThanOrEqual(before);
+    expect(parsed.timestamp).toBeLessThanOrEqual(Date.now());
+  });
 });

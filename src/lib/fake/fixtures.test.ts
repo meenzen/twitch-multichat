@@ -40,9 +40,13 @@ describe("textToParts", () => {
 
 describe("randomMessages", () => {
   it("is reproducible for a seed", () => {
-    // ids are a global counter, compare everything else
+    // ids are a global counter and timestamps the clock, compare the rest
     const strip = (seed: number) =>
-      randomMessages(20, seededRandom(seed)).map((m) => ({ ...m, id: "" }));
+      randomMessages(20, seededRandom(seed)).map((m) => ({
+        ...m,
+        id: "",
+        timestamp: 0,
+      }));
 
     expect(strip(7)).toEqual(strip(7));
     expect(strip(7)).not.toEqual(strip(8));

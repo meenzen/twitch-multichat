@@ -22,7 +22,8 @@
 
 <style>
   img {
-    height: 28px;
+    /* 28px at the default 13px text, grows with the text size */
+    height: calc(28em / 13);
     display: inline-block;
     /* centre on the text so the line grows evenly above and below it */
     vertical-align: middle;

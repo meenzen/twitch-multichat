@@ -7,14 +7,27 @@
   import TwitchEmote from "#lib/TwitchEmote.svelte";
   import TwitchUsername from "#lib/TwitchUsername.svelte";
   import FormattedMessage from "#lib/FormattedMessage.svelte";
+  import { formatClock } from "#lib/chat/duration.ts";
 
-  let { message, shadow = true }: { message: ParsedMessage; shadow?: boolean } =
-    $props();
+  let {
+    message,
+    shadow = true,
+    channelTag = true,
+    timestamps = false,
+  }: {
+    message: ParsedMessage;
+    shadow?: boolean;
+    channelTag?: boolean;
+    timestamps?: boolean;
+  } = $props();
   let isAction = $derived(message.type === MessageType.Action);
 </script>
 
 <div class="message">
-  <TwitchUsername {message} {shadow} />
+  {#if timestamps}
+    <span class="timestamp">{formatClock(message.timestamp)}</span>
+  {/if}
+  <TwitchUsername {message} {shadow} {channelTag} />
   <FormattedMessage italicized={isAction}>
     {#each message.parts as part (part)}
       {#if part.type === MessagePartType.Text}
@@ -41,6 +54,10 @@
   }
   .message-text {
     white-space: pre-wrap;
+  }
+  .timestamp {
+    color: var(--muted-text-color);
+    font-variant-numeric: tabular-nums;
   }
   .message-link {
     color: var(--link-color);

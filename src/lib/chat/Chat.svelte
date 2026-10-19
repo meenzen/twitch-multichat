@@ -11,12 +11,19 @@
     source,
     channels,
     shadow = true,
+    channelTag = true,
+    timestamps = false,
+    fontSize = 13,
     store = new ChatStore(),
     filter,
   }: {
     source: ChatSource;
     channels: string[];
     shadow?: boolean;
+    channelTag?: boolean;
+    timestamps?: boolean;
+    /** Text size in px */
+    fontSize?: number;
     store?: ChatStore;
     /** Hides channels; the store keeps their messages for when they return */
     filter?: ChannelFilter;
@@ -46,5 +53,8 @@
   {messages}
   status={store.status}
   {shadow}
+  {channelTag}
+  {timestamps}
+  {fontSize}
   bind:following={store.following}
 />

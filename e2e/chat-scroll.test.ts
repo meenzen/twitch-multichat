@@ -213,3 +213,93 @@ describe("chat scrolling", () => {
     }
   });
 });
+
+const keys = {
+  Escape: { code: "Escape", windowsVirtualKeyCode: 27 },
+  Tab: { code: "Tab", windowsVirtualKeyCode: 9 },
+  Enter: { code: "Enter", windowsVirtualKeyCode: 13, text: "\r" },
+  " ": { code: "Space", windowsVirtualKeyCode: 32, text: " " },
+};
+
+/** Trusted key press, so the browser's own dialog handling kicks in */
+async function press(key: keyof typeof keys) {
+  const { text, ...rest } = keys[key] as (typeof keys)["Enter"];
+  await view.cdp("Input.dispatchKeyEvent", {
+    type: text ? "keyDown" : "rawKeyDown",
+    key,
+    text,
+    ...rest,
+  });
+  await view.cdp("Input.dispatchKeyEvent", { type: "keyUp", key, ...rest });
+  await settle();
+}
+
+type FocusState = { dialogOpen: boolean; focus: string; inDialog: boolean };
+
+function focusState(): Promise<FocusState> {
+  return view.evaluate<FocusState>(`(() => {
+    const dialog = document.querySelector("dialog");
+    const el = document.activeElement;
+    return {
+      dialogOpen: dialog?.open ?? false,
+      focus: el === document.body ? "" :
+        el?.getAttribute("aria-label") ?? el?.closest("label")?.textContent?.trim() ?? el?.textContent?.trim() ?? "",
+      inDialog: dialog?.contains(el) ?? false,
+    };
+  })()`);
+}
+
+describe("settings keyboard navigation", () => {
+  it("opens and closes with Escape and keeps focus inside", async () => {
+    await openChat(10);
+
+    await press("Escape");
+    let state = await focusState();
+    expect(state.dialogOpen).toBe(true);
+    expect(state.inDialog).toBe(true);
+
+    // the rest of the page is inert while the dialog is open
+    for (let i = 0; i < 12; i++) {
+      await press("Tab");
+      state = await focusState();
+      expect(state.dialogOpen).toBe(true);
+      if (state.focus !== "") expect(state.inDialog).toBe(true);
+    }
+
+    await press("Escape");
+    expect((await focusState()).dialogOpen).toBe(false);
+  });
+
+  it("returns focus to the settings button", async () => {
+    await openChat(10);
+    await view.evaluate(
+      `document.querySelector('[aria-label="Settings"]').focus()`,
+    );
+
+    await press("Enter");
+    expect((await focusState()).dialogOpen).toBe(true);
+
+    await press("Escape");
+    const state = await focusState();
+    expect(state.dialogOpen).toBe(false);
+    expect(state.focus).toBe("Settings");
+  });
+
+  it("changes a setting with the keyboard", async () => {
+    await openChat(10);
+    await press("Escape");
+
+    for (let i = 0; i < 12; i++) {
+      if ((await focusState()).focus === "Show timestamps") break;
+      await press("Tab");
+    }
+    expect((await focusState()).focus).toBe("Show timestamps");
+    await press(" ");
+    await press("Escape");
+
+    const timestamps = await view.evaluate<number>(
+      `document.querySelectorAll(".timestamp").length`,
+    );
+    expect(timestamps).toBe(10);
+  });
+});

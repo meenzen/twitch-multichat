@@ -38,8 +38,19 @@ anonymous via `@twurple/chat`.
   - `ChannelFilter.svelte.ts`: which channels are shown, toggled from the
     channel list (`TwitchChannelList.svelte`). `Chat` filters the store's
     messages, the store itself keeps hidden channels' messages.
-- `src/lib/components/ChatScreen.svelte`: full-screen layout (100dvh) with the
-  channel list as one row on top. Only the chat scrolls, never the page.
+- `src/lib/components/ChatScreen.svelte`: full-screen layout (100dvh) with a
+  top bar (home link, channel list in one row, settings button). Only the
+  chat scrolls, never the page. Escape toggles the settings dialog. Overlay
+  mode hides the bar and makes the background transparent.
+- `src/lib/settings/`: chat settings.
+  - `ChatSettings.ts`: the settings, defaults and query parameters (pure).
+    Only non-default values go into the URL. Add new settings here.
+  - `Settings.svelte.ts`: reactive `Settings` and `persistInUrl`, which
+    mirrors changes into the query string (pages pass a shallow `goto`).
+  - `SettingsDialog.svelte`: the menu, a native `<dialog>` (focus trap and
+    focus return come from the browser).
+- Icons come from `@lucide/svelte`. Import each icon from
+  `@lucide/svelte/icons/<name>` so only used icons are bundled.
 - `src/lib/twitch/`: the only place that touches twurple
   (`TwitchChatSource`, `parseMessage`).
 - `src/lib/fake/`: `FakeChatSource` (drive it by hand or call `stream()`) and
@@ -60,7 +71,8 @@ anonymous via `@twurple/chat`.
 - `/dev/chat?rate=10&delete=0.1`: live stream with random deletions
 - `/dev/chat?drop=10`: drop the connection for 3 s every 10 s
 - `/dev/chat?static&seed=42&count=50`: reproducible list
-- `?channels=a,b,c`, `?shadow=false`
+- `?channels=a,b,c`, plus every chat setting (`?size=large&timestamps=true`,
+  `?overlay=true`, ...)
 
 ## Testing
 

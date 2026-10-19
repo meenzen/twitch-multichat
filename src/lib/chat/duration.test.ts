@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { formatDuration } from "./duration";
+import { formatClock, formatDuration } from "./duration";
 
 describe("formatDuration", () => {
   it("shows seconds below a minute", () => {
@@ -18,5 +18,14 @@ describe("formatDuration", () => {
 
   it("never goes negative", () => {
     expect(formatDuration(-5000)).toBe("0s");
+  });
+});
+
+describe("formatClock", () => {
+  it("shows local 24-hour time with leading zeros", () => {
+    expect(formatClock(new Date(2026, 0, 1, 9, 5).getTime())).toBe("09:05");
+    expect(formatClock(new Date(2026, 0, 1, 23, 59, 59).getTime())).toBe(
+      "23:59",
+    );
   });
 });

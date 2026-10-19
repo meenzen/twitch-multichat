@@ -111,6 +111,31 @@ describe("ChatView", () => {
     expect(container.querySelector(".shadow")).toBeNull();
   });
 
+  it("hides the channel name", () => {
+    render(ChatView, {
+      messages: [createMessage({ channel: "foo", text: "hello" })],
+      channelTag: false,
+    });
+    expect(screen.queryByText("[foo]")).toBeNull();
+    expect(screen.getByText("hello")).toBeTruthy();
+  });
+
+  it("shows timestamps only when asked to", () => {
+    const sent = new Date(2026, 0, 1, 9, 5).getTime();
+    const messages = [createMessage({ timestamp: sent })];
+
+    const { rerender } = render(ChatView, { messages });
+    expect(screen.queryByText("09:05")).toBeNull();
+
+    rerender({ messages, timestamps: true });
+    expect(screen.getByText("09:05")).toBeTruthy();
+  });
+
+  it("applies the text size", () => {
+    render(ChatView, { messages: [], fontSize: 20 });
+    expect(screen.getByTestId("chat-scroller").style.fontSize).toBe("20px");
+  });
+
   it("updates when messages are removed", async () => {
     const keep = createMessage({ text: "stays" });
     const drop = createMessage({ text: "goes away" });
