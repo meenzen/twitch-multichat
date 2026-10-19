@@ -18,6 +18,7 @@
   //   /dev/chat?static               fixed, reproducible message list
   //   ?rate=20                       messages per second (live)
   //   ?delete=0.1                    chance to delete a recent message (live)
+  //   ?drop=10                       drop the connection for 3s every 10s (live)
   //   ?channels=a,b,c  ?shadow=false ?seed=42  ?count=50
   const params = page.url.searchParams;
   const isStatic = params.has("static");
@@ -32,6 +33,10 @@
       rate: Number(params.get("rate") ?? 5),
       deleteChance: Number(params.get("delete") ?? 0),
     });
+    const dropEvery = Number(params.get("drop") ?? 0);
+    if (dropEvery > 0) {
+      setInterval(() => source.drop(3000), dropEvery * 1000);
+    }
   }
 
   const staticMessages = isStatic

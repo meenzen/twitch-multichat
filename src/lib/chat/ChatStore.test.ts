@@ -110,6 +110,87 @@ describe("ChatStore", () => {
     expect(store.status).toEqual({ kind: "ready" });
   });
 
+  it("marks the gap after the connection is back", () => {
+    let now = 0;
+    const { store, source } = setup({ now: () => now });
+    const before = createMessage({ text: "before" });
+    const after = createMessage({ text: "after" });
+    source.push(before);
+
+    now = 50_000;
+    source.setStatus({ kind: "reconnecting", since: 10_000 });
+    // a failed attempt doesn't move the start of the outage
+    now = 60_000;
+    source.setStatus({ kind: "reconnecting", since: 55_000 });
+    expect(store.messages).toEqual([before]);
+
+    now = 90_000;
+    source.setStatus({ kind: "joining", channel: "foo" });
+    source.setStatus({ kind: "ready" });
+    source.push(after);
+
+    expect(store.messages).toEqual([
+      before,
+      {
+        kind: "disconnect",
+        id: "disconnect-10000",
+        since: 10_000,
+        until: 90_000,
+      },
+      after,
+    ]);
+  });
+
+  it("falls back to the time the drop was reported", () => {
+    let now = 5_000;
+    const { store, source } = setup({ now: () => now });
+
+    source.setStatus({ kind: "reconnecting" });
+    now = 8_000;
+    source.setStatus({ kind: "ready" });
+
+    expect(store.messages).toEqual([
+      { kind: "disconnect", id: "disconnect-5000", since: 5_000, until: 8_000 },
+    ]);
+  });
+
+  it("merges drops without messages in between into one marker", () => {
+    let now = 0;
+    const { store, source } = setup({ now: () => now });
+
+    source.setStatus({ kind: "reconnecting", since: 1_000 });
+    now = 2_000;
+    source.setStatus({ kind: "ready" });
+    source.setStatus({ kind: "reconnecting", since: 3_000 });
+    now = 4_000;
+    source.setStatus({ kind: "ready" });
+
+    expect(store.messages).toEqual([
+      { kind: "disconnect", id: "disconnect-1000", since: 1_000, until: 4_000 },
+    ]);
+  });
+
+  it("does not mark the first connect", async () => {
+    const { store, source } = setup();
+
+    source.setStatus({ kind: "connecting" });
+    await source.connect(["foo"]);
+
+    expect(store.messages).toEqual([]);
+  });
+
+  it("keeps markers when moderation removes messages", () => {
+    const { store, source } = setup();
+    source.push(createMessage({ channel: "foo" }));
+    source.setStatus({ kind: "reconnecting" });
+    source.setStatus({ kind: "ready" });
+
+    source.clearChannel("foo");
+
+    expect(store.messages).toHaveLength(1);
+    expect(store.messages[0]).toMatchObject({ kind: "disconnect" });
+  });
+
   it("stops listening after detach", () => {
     const { store, source, detach } = setup();
     detach();

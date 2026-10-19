@@ -23,7 +23,9 @@ anonymous via `@twurple/chat`.
 ## Code layout
 
 - `src/lib/chat/`: UI side, no `@twurple` imports.
-  - `ChatMessage.ts`: display model (`ParsedMessage`).
+  - `ChatMessage.ts`: display model (`ParsedMessage`). The timeline is a
+    list of `ChatEntry`: messages plus `DisconnectEntry` markers that the
+    store inserts when the connection comes back; check with `isMessage()`.
   - `ChatSource.ts`: `ChatSource` interface plus `ChatEmitter`. Events:
     `message`, `messageRemoved`, `userCleared`, `channelCleared`, `status`.
   - `ChatStore.svelte.ts`: message buffer and moderation removals.
@@ -56,6 +58,7 @@ anonymous via `@twurple/chat`.
 `/dev/chat` renders the real chat pipeline with fake data, no Twitch needed:
 
 - `/dev/chat?rate=10&delete=0.1`: live stream with random deletions
+- `/dev/chat?drop=10`: drop the connection for 3 s every 10 s
 - `/dev/chat?static&seed=42&count=50`: reproducible list
 - `?channels=a,b,c`, `?shadow=false`
 

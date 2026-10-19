@@ -31,3 +31,20 @@ export type ParsedMessage = {
   displayName: string;
   userColor: string | undefined;
 };
+
+/** Marks a gap in the timeline in which the chat was not connected */
+export type DisconnectEntry = {
+  kind: "disconnect";
+  id: string;
+  /** Last time the connection was known to work (ms since epoch) */
+  since: number;
+  /** When the connection was back (ms since epoch) */
+  until: number;
+};
+
+/** Anything shown in the chat timeline */
+export type ChatEntry = ParsedMessage | DisconnectEntry;
+
+export function isMessage(entry: ChatEntry): entry is ParsedMessage {
+  return !("kind" in entry);
+}

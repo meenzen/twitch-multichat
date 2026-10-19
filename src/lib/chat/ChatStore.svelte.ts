@@ -1,4 +1,9 @@
-import type { ParsedMessage } from "./ChatMessage";
+import {
+  isMessage,
+  type ChatEntry,
+  type DisconnectEntry,
+  type ParsedMessage,
+} from "./ChatMessage";
 import type { ChatSource, ChatStatus } from "./ChatSource";
 
 export type RemovalReason = "message" | "user" | "channel";
@@ -8,6 +13,8 @@ export type ChatStoreOptions = {
   bufferSize?: number;
   /** Called whenever messages were removed by moderation */
   onRemove?: (reason: RemovalReason, count: number) => void;
+  /** Clock, injectable for tests */
+  now?: () => number;
 };
 
 /**
@@ -15,7 +22,8 @@ export type ChatStoreOptions = {
  * events from a ChatSource and exposes the messages and connection status.
  */
 export class ChatStore {
-  messages: ParsedMessage[] = $state.raw([]);
+  /** Messages, plus a marker wherever the connection dropped */
+  messages: ChatEntry[] = $state.raw([]);
   status: ChatStatus = $state.raw({ kind: "idle" });
 
   /**
@@ -26,10 +34,14 @@ export class ChatStore {
 
   readonly bufferSize: number;
   private readonly onRemove?: ChatStoreOptions["onRemove"];
+  private readonly now: () => number;
+  /** Set while the connection is down */
+  private disconnectedSince?: number;
 
   constructor(options: ChatStoreOptions = {}) {
     this.bufferSize = options.bufferSize ?? 500;
     this.onRemove = options.onRemove;
+    this.now = options.now ?? Date.now;
   }
 
   get limit(): number {
@@ -45,18 +57,30 @@ export class ChatStore {
         this.clearUser(channel, user),
       ),
       source.on("channelCleared", (channel) => this.clearChannel(channel)),
-      source.on("status", (status) => (this.status = status)),
+      source.on("status", (status) => this.setStatus(status)),
     ];
     return () => unsubscribers.forEach((unsubscribe) => unsubscribe());
   }
 
-  add(message: ParsedMessage): void {
-    const next = [...this.messages, message];
+  add(entry: ChatEntry): void {
+    const next = [...this.messages, entry];
     const overflow = next.length - this.limit;
     if (overflow > 0) {
       next.splice(0, overflow);
     }
     this.messages = next;
+  }
+
+  setStatus(status: ChatStatus): void {
+    this.status = status;
+
+    if (status.kind === "reconnecting") {
+      // keep the start of the outage across failed reconnect attempts
+      this.disconnectedSince ??= status.since ?? this.now();
+    } else if (status.kind === "ready" && this.disconnectedSince != null) {
+      this.markDisconnect(this.disconnectedSince, this.now());
+      this.disconnectedSince = undefined;
+    }
   }
 
   removeMessage(id: string): void {
@@ -78,11 +102,22 @@ export class ChatStore {
     this.removeWhere("channel", (m) => m.channel === c);
   }
 
+  private markDisconnect(since: number, until: number): void {
+    const last = this.messages.at(-1);
+    if (last && !isMessage(last)) {
+      // nothing arrived in between, so it is one gap
+      const merged: DisconnectEntry = { ...last, until };
+      this.messages = [...this.messages.slice(0, -1), merged];
+      return;
+    }
+    this.add({ kind: "disconnect", id: `disconnect-${since}`, since, until });
+  }
+
   private removeWhere(
     reason: RemovalReason,
     predicate: (message: ParsedMessage) => boolean,
   ): void {
-    const next = this.messages.filter((m) => !predicate(m));
+    const next = this.messages.filter((m) => !isMessage(m) || !predicate(m));
     const removed = this.messages.length - next.length;
     if (removed > 0) {
       this.messages = next;

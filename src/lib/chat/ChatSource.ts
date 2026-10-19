@@ -6,7 +6,11 @@ export type ChatStatus =
   | { kind: "joining"; channel: string }
   | { kind: "ready" }
   /** The connection dropped unexpectedly, a reconnect is underway */
-  | { kind: "reconnecting" }
+  | {
+      kind: "reconnecting";
+      /** Last time the connection was known to work (ms since epoch) */
+      since?: number;
+    }
   | { kind: "error"; message: string };
 
 export type ChatEvents = {

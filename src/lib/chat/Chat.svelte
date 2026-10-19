@@ -4,6 +4,7 @@
   import { ChatStore } from "./ChatStore.svelte";
   import type { ChatSource } from "./ChatSource";
   import type { ChannelFilter } from "./ChannelFilter.svelte";
+  import { isMessage } from "./ChatMessage";
 
   // Connects any ChatSource to a ChatStore and renders it.
   let {
@@ -23,7 +24,8 @@
 
   let messages = $derived(
     filter?.active
-      ? store.messages.filter((m) => filter.isShown(m.channel))
+      ? // disconnects affect every channel, so markers always stay
+        store.messages.filter((m) => !isMessage(m) || filter.isShown(m.channel))
       : store.messages,
   );
 

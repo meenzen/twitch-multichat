@@ -20,6 +20,8 @@ export class FakeChatSource extends ChatEmitter {
 
   private timer: ReturnType<typeof setInterval> | undefined;
   private recent: ParsedMessage[] = [];
+  /** While true, the stream produces no messages */
+  private offline = false;
 
   async connect(channels: string[]): Promise<void> {
     this.connectedChannels = channels;
@@ -55,10 +57,21 @@ export class FakeChatSource extends ChatEmitter {
     this.emit("status", status);
   }
 
+  /** Pretend the connection drops for a while, like TwitchChatSource does */
+  drop(durationMs: number): void {
+    this.offline = true;
+    this.setStatus({ kind: "reconnecting", since: Date.now() });
+    setTimeout(() => {
+      this.offline = false;
+      this.setStatus({ kind: "ready" });
+    }, durationMs);
+  }
+
   stream(options: FakeStreamOptions = {}): void {
     const { rate = 5, deleteChance = 0, random = Math.random } = options;
     this.stop();
     this.timer = setInterval(() => {
+      if (this.offline) return;
       const channels = this.connectedChannels?.length
         ? this.connectedChannels
         : undefined;

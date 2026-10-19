@@ -74,6 +74,19 @@ describe("Chat", () => {
     expect(screen.getByText("from bar")).toBeTruthy();
   });
 
+  it("keeps disconnect markers while channels are filtered", async () => {
+    const source = new FakeChatSource();
+    const filter = new ChannelFilter(["foo", "bar"]);
+    render(Chat, { source, channels: ["foo", "bar"], filter });
+    source.setStatus({ kind: "reconnecting" });
+    source.setStatus({ kind: "ready" });
+
+    filter.toggle("foo");
+    await tick();
+
+    expect(screen.getByRole("separator").textContent).toContain("Disconnected");
+  });
+
   it("disconnects when unmounted", () => {
     const source = new FakeChatSource();
     const { unmount } = render(Chat, { source, channels: ["foo"] });

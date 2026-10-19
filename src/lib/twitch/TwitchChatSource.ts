@@ -37,6 +37,8 @@ export class TwitchChatSource extends ChatEmitter {
   /** Incremented to cancel a join round that is still running */
   private joinRound = 0;
   private lastCheck = 0;
+  /** When the last line arrived from Twitch, including PONGs */
+  private lastSeen?: number;
   private resolveFirstJoin?: () => void;
   private unwatchPage?: () => void;
 
@@ -88,6 +90,10 @@ export class TwitchChatSource extends ChatEmitter {
       this.emit("channelCleared", channel);
     });
 
+    // twurple pings after a minute without traffic, so this stays fresh
+    // while the connection works
+    this.client.irc.onAnyMessage(() => (this.lastSeen = Date.now()));
+
     // fires after every successful (re)connect, once joining is possible
     this.client.onAuthenticationSuccess(() => {
       if (this.active) void this.joinChannels();
@@ -97,7 +103,10 @@ export class TwitchChatSource extends ChatEmitter {
       if (manually || !this.active) return;
       console.warn("Disconnected from Twitch, reconnecting:", reason);
       this.joinRound++;
-      this.emit("status", { kind: "reconnecting" });
+      this.emit("status", {
+        kind: "reconnecting",
+        since: this.lastSeen ?? Date.now(),
+      });
     });
   }
 
