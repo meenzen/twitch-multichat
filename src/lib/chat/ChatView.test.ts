@@ -86,7 +86,7 @@ describe("ChatView", () => {
     expect(screen.getByText("stays")).toBeTruthy();
   });
 
-  it("shows loading messages while connecting and joining", async () => {
+  it("shows loading messages while connecting, joining and reconnecting", async () => {
     const { rerender } = render(ChatView, {
       messages: [],
       status: { kind: "connecting" },
@@ -98,6 +98,9 @@ describe("ChatView", () => {
       status: { kind: "joining", channel: "foo" },
     });
     expect(screen.getByText("Joining: foo...")).toBeTruthy();
+
+    await rerender({ messages: [], status: { kind: "reconnecting" } });
+    expect(screen.getByText("Reconnecting...")).toBeTruthy();
 
     await rerender({ messages: [], status: { kind: "ready" } });
     expect(screen.queryByText(/Joining/)).toBeNull();

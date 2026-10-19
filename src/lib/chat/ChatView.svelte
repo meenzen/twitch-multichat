@@ -32,6 +32,8 @@
         return "Connecting to Twitch...";
       case "joining":
         return `Joining: ${status.channel}...`;
+      case "reconnecting":
+        return "Reconnecting...";
       default:
         return "";
     }

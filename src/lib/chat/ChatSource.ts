@@ -5,6 +5,8 @@ export type ChatStatus =
   | { kind: "connecting" }
   | { kind: "joining"; channel: string }
   | { kind: "ready" }
+  /** The connection dropped unexpectedly, a reconnect is underway */
+  | { kind: "reconnecting" }
   | { kind: "error"; message: string };
 
 export type ChatEvents = {
