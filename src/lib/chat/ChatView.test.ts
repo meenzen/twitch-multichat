@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "bun:test";
-import { cleanup, render, screen } from "@testing-library/svelte";
+import { cleanup, fireEvent, render, screen } from "@testing-library/svelte";
 import ChatView from "./ChatView.svelte";
 import { MessagePartType, MessageType } from "./ChatMessage";
 import { createMessage } from "#lib/fake/fixtures.ts";
@@ -115,5 +115,20 @@ describe("ChatView", () => {
     expect(screen.getByRole("alert").textContent).toContain(
       "Failed to connect to twitch chat.",
     );
+  });
+});
+
+describe("ChatView scrolling", () => {
+  it("offers to jump back once the user scrolled up", async () => {
+    render(ChatView, { messages: [createMessage({ text: "hello" })] });
+    expect(screen.queryByText("More messages below")).toBeNull();
+
+    await fireEvent.wheel(screen.getByTestId("chat-scroller"), {
+      deltaY: -100,
+    });
+    const button = screen.getByText("More messages below");
+
+    await fireEvent.click(button);
+    expect(screen.queryByText("More messages below")).toBeNull();
   });
 });

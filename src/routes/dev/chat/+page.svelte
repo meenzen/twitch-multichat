@@ -5,7 +5,7 @@
   import Chat from "#lib/chat/Chat.svelte";
   import ChatView from "#lib/chat/ChatView.svelte";
   import { ChannelFilter } from "#lib/chat/ChannelFilter.svelte.ts";
-  import TwitchChannelList from "#lib/TwitchChannelList.svelte";
+  import ChatScreen from "#lib/components/ChatScreen.svelte";
   import { FakeChatSource } from "#lib/fake/FakeChatSource.ts";
   import {
     defaultChannels,
@@ -41,11 +41,15 @@
         channels,
       )
     : [];
+  let shownStaticMessages = $derived(
+    staticMessages.filter((m) => filter.isShown(m.channel)),
+  );
 </script>
 
-{#if isStatic}
-  <ChatView messages={staticMessages} {shadow} />
-{:else}
-  <TwitchChannelList {channels} {filter} />
-  <Chat {source} {channels} {shadow} {filter} />
-{/if}
+<ChatScreen {channels} {filter}>
+  {#if isStatic}
+    <ChatView messages={shownStaticMessages} {shadow} />
+  {:else}
+    <Chat {source} {channels} {shadow} {filter} />
+  {/if}
+</ChatScreen>
