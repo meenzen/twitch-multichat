@@ -52,6 +52,28 @@ describe("ChatView", () => {
     );
   });
 
+  it("renders links that open in a new tab", () => {
+    render(ChatView, {
+      messages: [
+        createMessage({
+          parts: [
+            { type: MessagePartType.Text, content: "see " },
+            {
+              type: MessagePartType.Link,
+              content: "twitch.tv/foo",
+              href: "http://twitch.tv/foo",
+            },
+          ],
+        }),
+      ],
+    });
+
+    const link = screen.getByRole("link", { name: "twitch.tv/foo" });
+    expect(link.getAttribute("href")).toBe("http://twitch.tv/foo");
+    expect(link.getAttribute("target")).toBe("_blank");
+    expect(link.getAttribute("rel")).toContain("noopener");
+  });
+
   it("italicizes actions and omits the colon", () => {
     const { container } = render(ChatView, {
       messages: [createMessage({ type: MessageType.Action, text: "waves" })],

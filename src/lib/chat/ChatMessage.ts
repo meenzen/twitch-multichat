@@ -9,12 +9,15 @@ export enum MessageType {
 export enum MessagePartType {
   Text,
   Emote,
+  Link,
 }
 
 export type MessagePart = {
   type: MessagePartType;
   content: string;
   emoteName?: string;
+  /** Target of a link part, `content` holds the text as written */
+  href?: string;
 };
 
 export type ParsedMessage = {

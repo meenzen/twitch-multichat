@@ -6,6 +6,7 @@ import {
   type MessagePart,
   type ParsedMessage,
 } from "#lib/chat/ChatMessage.ts";
+import { splitLinks } from "#lib/chat/links.ts";
 
 export type RawMessage = {
   message: ChatMessage;
@@ -60,7 +61,7 @@ export function parseMessage(raw: RawMessage): ParsedMessage {
 
   return {
     type: raw.type,
-    parts: parts,
+    parts: splitLinks(parts),
     id: raw.message.id,
     channel: raw.message.target.replace(/^#/, "").toLowerCase(),
     userId: raw.message.userInfo.userId,

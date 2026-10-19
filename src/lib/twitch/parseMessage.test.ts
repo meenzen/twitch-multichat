@@ -62,4 +62,21 @@ describe("parseMessage", () => {
       { type: MessagePartType.Text, content: "waves" },
     ]);
   });
+
+  it("turns URLs into link parts", () => {
+    const parsed = parseMessage({
+      message: privmsg("Kappa twitch.tv/foo", { emotes: "25:0-4" }),
+      type: MessageType.Normal,
+    });
+
+    expect(parsed.parts).toEqual([
+      { type: MessagePartType.Emote, content: "25", emoteName: "Kappa" },
+      { type: MessagePartType.Text, content: " " },
+      {
+        type: MessagePartType.Link,
+        content: "twitch.tv/foo",
+        href: "http://twitch.tv/foo",
+      },
+    ]);
+  });
 });
