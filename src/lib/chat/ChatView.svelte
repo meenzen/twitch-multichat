@@ -1,30 +1,30 @@
 <script lang="ts">
+  import { untrack } from "svelte";
   import TwitchMessage from "#lib/TwitchMessage.svelte";
   import Modal from "#lib/components/modal/Modal.svelte";
-  import ElementChecker from "#lib/ElementChecker.ts";
   import type { ParsedMessage } from "./ChatMessage";
   import type { ChatStatus } from "./ChatSource";
+  import { StickToBottom } from "./StickToBottom";
 
   // Pure presentation: renders whatever messages it is given. All data comes
   // in through props, so layouts can be iterated on with fixture data.
+  // Fills its parent, which needs a definite height.
   let {
     messages,
     status = { kind: "ready" },
     shadow = true,
-    autoScroll = true,
     following = $bindable(true),
   }: {
     messages: ParsedMessage[];
     status?: ChatStatus;
     shadow?: boolean;
-    /** Scroll to the newest message on load. Disable for embedded previews. */
-    autoScroll?: boolean;
+    /** Whether the view is pinned to the newest message */
     following?: boolean;
   } = $props();
 
-  let anchor = $state(null as HTMLDivElement | null);
-  let autoScrolled = false;
-  let autoScrolledVerified = false;
+  let scroller = $state(null as HTMLDivElement | null);
+  let content = $state(null as HTMLDivElement | null);
+  let stick: StickToBottom | undefined;
 
   let loadingMessage = $derived.by(() => {
     switch (status.kind) {
@@ -39,72 +39,83 @@
     }
   });
 
-  function updateAnchorVisibility() {
-    following = ElementChecker.isVisible(anchor);
-  }
-
-  function scrollToBottom() {
-    anchor?.scrollIntoView({ behavior: "instant", block: "end" });
-  }
-
-  function initialScroll() {
-    if (!autoScroll || anchor == null || autoScrolledVerified) {
-      return;
-    }
-
-    if (autoScrolled && following) {
-      autoScrolledVerified = true;
-    }
-
-    if (!following) {
-      autoScrolled = true;
-      scrollToBottom();
-    }
-  }
+  $effect(() => {
+    if (!scroller || !content) return;
+    const instance = new StickToBottom(scroller, {
+      observe: [scroller, content],
+      onChange: (value) => (following = value),
+    });
+    stick = instance;
+    untrack(() => (following = instance.following));
+    return () => instance.destroy();
+  });
 
   $effect(() => {
-    // re-run after every change of the message list has been rendered
+    // re-pin after every rendered change of the message list
     void messages;
-    updateAnchorVisibility();
-    initialScroll();
+    untrack(() => stick?.update());
   });
 </script>
 
-<div
-  class="twitch-chat"
-  role="button"
-  tabindex="0"
-  onclick={scrollToBottom}
-  onkeydown={scrollToBottom}
-  onscroll={updateAnchorVisibility}
->
-  {#each messages as message (message.id)}
-    <TwitchMessage {message} {shadow} />
-  {/each}
+<div class="chat-view">
+  <div
+    class="twitch-chat"
+    class:following
+    bind:this={scroller}
+    data-testid="chat-scroller"
+  >
+    <div bind:this={content}>
+      {#each messages as message (message.id)}
+        <TwitchMessage {message} {shadow} />
+      {/each}
+
+      {#if status.kind === "error"}
+        <div class="error-message" role="alert">
+          <span class="message-text">Failed to connect to twitch chat.</span>
+          <span class="message-text">Please try to refresh the page.</span>
+        </div>
+      {/if}
+    </div>
+  </div>
+
+  {#if !following}
+    <button
+      class="jump-to-latest"
+      type="button"
+      onclick={() => stick?.follow()}
+    >
+      More messages below
+    </button>
+  {/if}
 
   {#if loadingMessage}
     <Modal message={loadingMessage} />
   {/if}
-
-  {#if status.kind === "error"}
-    <div class="error-message" role="alert">
-      <span class="message-text">Failed to connect to twitch chat.</span>
-      <span class="message-text">Please try to refresh the page.</span>
-    </div>
-  {/if}
-
-  <div class="chat-end-marker" bind:this={anchor}></div>
 </div>
 
 <style>
+  .chat-view {
+    position: relative;
+    height: 100%;
+    width: 100%;
+  }
+
   .twitch-chat {
     overflow-y: auto;
+    overscroll-behavior: contain;
     height: 100%;
     width: 100%;
     padding-left: 5px;
     padding-right: 5px;
     box-sizing: border-box;
     font-size: 13px;
+  }
+
+  /* While following, StickToBottom owns the scroll position. Otherwise let
+     the browser keep the messages being read in place when old ones are
+     trimmed from the top. */
+  .twitch-chat.following {
+    overflow-anchor: none;
   }
 
   .error-message {
@@ -116,15 +127,21 @@
     overflow-wrap: break-word;
   }
 
-  /* https://css-tricks.com/books/greatest-css-tricks/pin-scrolling-to-bottom/ */
-  :global(.twitch-chat *) {
-    overflow-anchor: none;
-  }
-
-  :global(.chat-end-marker) {
-    overflow-anchor: auto;
-    height: 50px;
-    margin-top: -50px;
-    z-index: -100;
+  .jump-to-latest {
+    position: absolute;
+    bottom: 12px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 6px 14px;
+    border: none;
+    border-radius: 999px;
+    background-color: var(--twitch-purple);
+    color: var(--text-color);
+    font-family: var(--twitch-font-family);
+    font-size: 13px;
+    font-weight: 700;
+    white-space: nowrap;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 50%);
   }
 </style>

@@ -167,3 +167,18 @@ describe("ChatView", () => {
     );
   });
 });
+
+describe("ChatView scrolling", () => {
+  it("offers to jump back once the user scrolled up", async () => {
+    render(ChatView, { messages: [createMessage({ text: "hello" })] });
+    expect(screen.queryByText("More messages below")).toBeNull();
+
+    await fireEvent.wheel(screen.getByTestId("chat-scroller"), {
+      deltaY: -100,
+    });
+    const button = screen.getByText("More messages below");
+
+    await fireEvent.click(button);
+    expect(screen.queryByText("More messages below")).toBeNull();
+  });
+});
