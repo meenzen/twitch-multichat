@@ -39,10 +39,5 @@ in {
     forbid-new-submodules.enable = true;
     nil.enable = true;
     trim-trailing-whitespace.enable = true;
-    ci = {
-      enable = true;
-      entry = "ci";
-      pass_filenames = false;
-    };
   };
 }
