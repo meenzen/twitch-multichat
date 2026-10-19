@@ -5,28 +5,18 @@ import { CacheFirst } from "workbox-strategies";
 import { ExpirationPlugin } from "workbox-expiration";
 import { assets, immutable } from "$app/manifest";
 import { version } from "$app/env";
+import { isTwitchEmote, precacheEntries } from "./precache";
 
 declare let self: ServiceWorkerGlobalScope;
 
-const precacheable = /\.(js|css|ico|png|svg|webp|woff2?)$/;
-
-precacheAndRoute([
-  // hashed build output, the filename changes with its content
-  ...immutable
-    .filter(({ path }) => precacheable.test(path))
-    .map(({ path }) => ({ url: path, revision: null })),
-  // files from static/ keep their name, so revision them by app version
-  ...assets
-    .filter(({ path }) => precacheable.test(path))
-    .map(({ path }) => ({ url: path, revision: version })),
-]);
+precacheAndRoute(precacheEntries(immutable, assets, version));
 
 // clean old assets
 cleanupOutdatedCaches();
 
 // cache twitch emotes
 registerRoute(
-  ({ url }) => url.origin === "https://static-cdn.jtvnw.net",
+  ({ url }) => isTwitchEmote(url),
   new CacheFirst({
     cacheName: "twitch-emotes",
     plugins: [
@@ -50,5 +40,6 @@ registerRoute(new NavigationRoute(
 ))
 */
 
+// activate new versions immediately instead of waiting for all tabs to close
 self.skipWaiting();
 clientsClaim();
