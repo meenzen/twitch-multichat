@@ -20,7 +20,13 @@ export default defineConfig({
     }),
     enhancedImages(),
     sveltekit({
-      adapter: adapter(),
+      adapter: adapter({
+        // 404.html is the app shell instead of "Not Found". Once the
+        // Functions limit is used up, Pages serves only static files and
+        // chat pages get 404.html, so the chat still works client-side.
+        // See e2e/functions-limit.test.ts.
+        fallback: "spa",
+      }),
       preprocess: vitePreprocess(),
       compilerOptions: {
         runes: true,
