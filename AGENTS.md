@@ -115,11 +115,16 @@ anonymous via `@twurple/chat`.
 ## Verifying in a real browser
 
 - To see a service worker update: `bun run build && bun run preview`, open the
-  home page, run `bun run build` again in a second shell (preview serves the
-  new files without a restart), then reload. Every build gets a new version.
-- `bun run preview` returns HTTP 500 for chat routes (`/-/<channels>`): SSR
-  fails in `MetaTags.svelte` under Node, while the deployed site works. Use
-  `bun run dev` for chat routes; the prerendered home page works in preview.
+  home page, stop preview, run `bun run build && bun run preview` again, then
+  reload the page. Every build gets a new version.
+- Restart `bun run preview` after every build, and don't build while a
+  preview runs from the same checkout (`ci` and `test:e2e` build too). A
+  preview process that outlives a rebuild can mix server code from different
+  builds. SSR routes such as `/-/<channels>` then fail with odd errors
+  (seen: HTTP 500, `Cannot create property 'toString' on string` in
+  `MetaTags.svelte`, with stack traces pointing at the wrong functions). If
+  that happens, check for a stale `vite preview` with `pgrep -af "vite preview"`
+  before debugging the app.
 - When automating the dev server with frozen pages or broken sockets, Vite's
   dev-server WebSocket reloads the page once it reconnects, which hides what
   the app itself does. Only break Twitch sockets, or keep Vite's socket from
