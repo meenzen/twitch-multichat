@@ -42,6 +42,7 @@ export default ts.config(
   {
     ignores: [
       "**/.svelte-kit/**",
+      ".e2e/**",
       "**/build/**",
       "**/dist/**",
       "**/node_modules/**",

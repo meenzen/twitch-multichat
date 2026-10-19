@@ -1,0 +1,4 @@
+# Real browser tests, run without the happy-dom preload of the unit tests
+[test]
+root = "."
+timeout = 60000
