@@ -33,11 +33,13 @@
 {/if}
 
 <style>
-  /* covers the page so the message stays readable on busy pages */
+  /* covers the page so the message stays readable on busy pages, but lets
+     clicks through (e.g. the chat's click to scroll down) */
   .backdrop {
     position: fixed;
     inset: 0;
     z-index: 100;
+    pointer-events: none;
     display: flex;
     justify-content: center;
     align-items: center;
