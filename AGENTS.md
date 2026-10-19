@@ -76,6 +76,12 @@ anonymous via `@twurple/chat`.
   editing a preview component, restart `vite dev`: hot reloads leave the
   renderer failing until a restart, which looks like a broken design.
   `LandingPreviewImage.svelte` is the image without channels.
+- `src/lib/cacheControl.ts`: Cache-Control per route for responses from the
+  Pages Function, applied in `hooks.server.ts`. Add new dynamic routes there.
+  Pages runs Functions before its CDN cache, so only browser and scraper
+  caches save requests (repeat requests from the same client). Chat pages
+  are `no-cache`: their HTML references the current build's hashed scripts,
+  and a cached copy could load a previous build after a deploy.
 - Design tokens live in `src/app.html` (`--background-color`,
   `--twitch-purple`, ...). Reuse them instead of hard-coding colours.
 
