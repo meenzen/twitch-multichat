@@ -1,29 +1,23 @@
 <script lang="ts">
   import ColorGenerator from "#lib/ColorGenerator.ts";
-  import type { ChatSettings } from "#lib/ChatSettings.ts";
-  import { MessageType, type ParsedMessage } from "./MessageParser";
+  import { MessageType, type ParsedMessage } from "#lib/chat/ChatMessage.ts";
 
   const normalSpacer = ":";
   const actionSpacer = "";
 
-  let {
-    message,
-    settings = $bindable(),
-  }: {
-    message: ParsedMessage;
-    settings: ChatSettings;
-  } = $props();
+  let { message, shadow = true }: { message: ParsedMessage; shadow?: boolean } =
+    $props();
 
   let spacer = $derived(
     message.type === MessageType.Action ? actionSpacer : normalSpacer,
   );
   let color = $derived(message.userColor || "white");
   let username = $derived(message.displayName);
-  let channel = $derived(message.target.substring(1));
+  let channel = $derived(message.channel);
   let channelColor = $derived(ColorGenerator.generate(channel));
 </script>
 
-<span class:shadow={settings.shadow}>
+<span class:shadow>
   <span class="message-text channel-name" style="color: {channelColor}"
     >[{channel}]
   </span>

@@ -1,35 +1,15 @@
 import type { ChatMessage } from "@twurple/chat";
 import { parseChatMessage, type ParsedMessagePart } from "@twurple/chat";
-
-export enum MessageType {
-  Normal,
-  Action,
-}
+import {
+  MessagePartType,
+  MessageType,
+  type MessagePart,
+  type ParsedMessage,
+} from "#lib/chat/ChatMessage.ts";
 
 export type RawMessage = {
   message: ChatMessage;
   type: MessageType;
-};
-
-export type ParsedMessage = {
-  type: MessageType;
-  parts: Array<MessagePart>;
-  id: string;
-  target: string;
-  userName: string;
-  displayName: string;
-  userColor: string | undefined;
-};
-
-export enum MessagePartType {
-  Text,
-  Emote,
-}
-
-export type MessagePart = {
-  type: MessagePartType;
-  content: string;
-  emoteName?: string;
 };
 
 export function parseMessage(raw: RawMessage): ParsedMessage {
@@ -82,7 +62,8 @@ export function parseMessage(raw: RawMessage): ParsedMessage {
     type: raw.type,
     parts: parts,
     id: raw.message.id,
-    target: raw.message.target,
+    channel: raw.message.target.replace(/^#/, "").toLowerCase(),
+    userId: raw.message.userInfo.userId,
     userName: raw.message.userInfo.userName,
     displayName: raw.message.userInfo.displayName,
     userColor: raw.message.userInfo.color,

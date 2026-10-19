@@ -3,21 +3,18 @@
     MessagePartType,
     MessageType,
     type ParsedMessage,
-  } from "#lib/MessageParser.ts";
+  } from "#lib/chat/ChatMessage.ts";
   import TwitchEmote from "#lib/TwitchEmote.svelte";
   import TwitchUsername from "#lib/TwitchUsername.svelte";
   import FormattedMessage from "#lib/FormattedMessage.svelte";
-  import type { ChatSettings } from "#lib/ChatSettings.ts";
 
-  let {
-    message,
-    settings = $bindable(),
-  }: { message: ParsedMessage; settings: ChatSettings } = $props();
+  let { message, shadow = true }: { message: ParsedMessage; shadow?: boolean } =
+    $props();
   let isAction = $derived(message.type === MessageType.Action);
 </script>
 
 <div class="message">
-  <TwitchUsername {message} bind:settings />
+  <TwitchUsername {message} {shadow} />
   <FormattedMessage italicized={isAction}>
     {#each message.parts as part (part)}
       {#if part.type === MessagePartType.Text}
