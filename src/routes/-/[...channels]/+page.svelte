@@ -23,7 +23,7 @@
 {#if browser}
   {#if shouldConnect}
     <TwitchChannelList bind:settings={data} />
-    <TwitchChat bind:settings={data} />
+    <TwitchChat settings={data} />
   {:else}
     <p class="alert">No valid channels selected</p>
   {/if}
