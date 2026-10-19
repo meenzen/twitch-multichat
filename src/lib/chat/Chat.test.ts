@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it } from "bun:test";
 import { cleanup, render, screen } from "@testing-library/svelte";
 import { tick } from "svelte";
 import Chat from "./Chat.svelte";
+import { ChannelFilter } from "./ChannelFilter.svelte";
 import { FakeChatSource } from "#lib/fake/FakeChatSource.ts";
 import { createMessage } from "#lib/fake/fixtures.ts";
 
@@ -52,6 +53,25 @@ describe("Chat", () => {
     await tick();
 
     expect(screen.getByText("Joining: foo...")).toBeTruthy();
+  });
+
+  it("hides filtered channels and keeps their messages", async () => {
+    const source = new FakeChatSource();
+    const filter = new ChannelFilter(["foo", "bar"]);
+    render(Chat, { source, channels: ["foo", "bar"], filter });
+    source.push(
+      createMessage({ channel: "foo", text: "from foo" }),
+      createMessage({ channel: "bar", text: "from bar" }),
+    );
+
+    filter.toggle("foo");
+    await tick();
+    expect(screen.getByText("from foo")).toBeTruthy();
+    expect(screen.queryByText("from bar")).toBeNull();
+
+    filter.showAll();
+    await tick();
+    expect(screen.getByText("from bar")).toBeTruthy();
   });
 
   it("disconnects when unmounted", () => {

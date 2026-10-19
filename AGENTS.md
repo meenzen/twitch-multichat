@@ -29,6 +29,9 @@ anonymous via `@twurple/chat`.
   - `ChatStore.svelte.ts`: message buffer and moderation removals.
   - `ChatView.svelte`: pure presentation, props only.
   - `Chat.svelte`: connects a source to a store and a view.
+  - `ChannelFilter.svelte.ts`: which channels are shown, toggled from the
+    channel list (`TwitchChannelList.svelte`). `Chat` filters the store's
+    messages, the store itself keeps hidden channels' messages.
 - `src/lib/twitch/`: the only place that touches twurple
   (`TwitchChatSource`, `parseMessage`).
 - `src/lib/fake/`: `FakeChatSource` (drive it by hand or call `stream()`) and

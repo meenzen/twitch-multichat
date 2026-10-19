@@ -4,6 +4,8 @@
   import { page } from "$app/state";
   import Chat from "#lib/chat/Chat.svelte";
   import ChatView from "#lib/chat/ChatView.svelte";
+  import { ChannelFilter } from "#lib/chat/ChannelFilter.svelte.ts";
+  import TwitchChannelList from "#lib/TwitchChannelList.svelte";
   import { FakeChatSource } from "#lib/fake/FakeChatSource.ts";
   import {
     defaultChannels,
@@ -24,6 +26,7 @@
   const seed = Number(params.get("seed") ?? 1);
 
   const source = new FakeChatSource();
+  const filter = new ChannelFilter(channels);
   if (!isStatic) {
     source.stream({
       rate: Number(params.get("rate") ?? 5),
@@ -43,5 +46,6 @@
 {#if isStatic}
   <ChatView messages={staticMessages} {shadow} />
 {:else}
-  <Chat {source} {channels} {shadow} />
+  <TwitchChannelList {channels} {filter} />
+  <Chat {source} {channels} {shadow} {filter} />
 {/if}
