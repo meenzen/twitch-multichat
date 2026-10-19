@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it } from "bun:test";
-import { cleanup, render, screen } from "@testing-library/svelte";
+import { afterEach, describe, expect, it, mock } from "bun:test";
+import { cleanup, fireEvent, render, screen } from "@testing-library/svelte";
 import ChatView from "./ChatView.svelte";
 import { MessagePartType, MessageType } from "./ChatMessage";
 import { createMessage } from "#lib/fake/fixtures.ts";
@@ -50,6 +50,56 @@ describe("ChatView", () => {
     expect(emote.getAttribute("src")).toBe(
       "https://static-cdn.jtvnw.net/emoticons/v2/25/default/dark/1.0",
     );
+  });
+
+  it("renders links that open in a new tab", () => {
+    render(ChatView, {
+      messages: [
+        createMessage({
+          parts: [
+            { type: MessagePartType.Text, content: "see " },
+            {
+              type: MessagePartType.Link,
+              content: "twitch.tv/foo",
+              href: "http://twitch.tv/foo",
+            },
+          ],
+        }),
+      ],
+    });
+
+    const link = screen.getByRole("link", { name: "twitch.tv/foo" });
+    expect(link.getAttribute("href")).toBe("http://twitch.tv/foo");
+    expect(link.getAttribute("target")).toBe("_blank");
+    expect(link.getAttribute("rel")).toContain("noopener");
+  });
+
+  it("does not jump to the newest message when a link is clicked", () => {
+    const { container } = render(ChatView, {
+      messages: [
+        createMessage({
+          parts: [
+            {
+              type: MessagePartType.Link,
+              content: "example.com",
+              href: "http://example.com",
+            },
+          ],
+        }),
+      ],
+    });
+    const anchor = container.querySelector(".chat-end-marker") as HTMLElement;
+    const scrolls = mock();
+    anchor.scrollIntoView = scrolls;
+    const link = screen.getByRole("link");
+    // don't let happy-dom open the page
+    link.addEventListener("click", (event) => event.preventDefault());
+
+    fireEvent.click(link);
+    expect(scrolls).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole("button"));
+    expect(scrolls).toHaveBeenCalled();
   });
 
   it("italicizes actions and omits the colon", () => {

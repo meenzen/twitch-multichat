@@ -21,6 +21,15 @@
         <span class="message-text">{part.content}</span>
       {:else if part.type === MessagePartType.Emote}
         <TwitchEmote id={part.content} name={part.emoteName} />
+      {:else if part.type === MessagePartType.Link}
+        <!-- clicking the chat scrolls to the newest message, not for links -->
+        <a
+          class="message-link"
+          href={part.href}
+          target="_blank"
+          rel="noopener noreferrer nofollow"
+          onclick={(event) => event.stopPropagation()}>{part.content}</a
+        >
       {/if}
     {/each}
   </FormattedMessage>
@@ -34,5 +43,13 @@
   }
   .message-text {
     white-space: pre-wrap;
+  }
+  .message-link {
+    color: var(--link-color);
+    text-decoration: none;
+  }
+  .message-link:hover,
+  .message-link:focus-visible {
+    text-decoration: underline;
   }
 </style>

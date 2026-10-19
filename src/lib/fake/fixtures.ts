@@ -5,6 +5,7 @@ import {
   type MessagePart,
   type ParsedMessage,
 } from "#lib/chat/ChatMessage.ts";
+import { splitLinks } from "#lib/chat/links.ts";
 
 const texts = [
   "Hi",
@@ -111,7 +112,7 @@ export function randomMessage(
     userName: user.toLowerCase(),
     displayName: user,
     userColor: random() < 0.2 ? undefined : ColorGenerator.generate(user),
-    parts,
+    parts: splitLinks(parts),
   });
 }
 

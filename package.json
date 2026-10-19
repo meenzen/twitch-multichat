@@ -35,6 +35,7 @@
     "espree": "^11.2.0",
     "fast-glob": "^3.3.3",
     "globals": "^17.5.0",
+    "linkifyjs": "^4.3.3",
     "prettier": "^3.8.3",
     "prettier-plugin-svelte": "^4.0.0",
     "svelte": "^5.55.4",
