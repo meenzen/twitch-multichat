@@ -4,12 +4,14 @@
   import TwitchChat from "#lib/TwitchChat.svelte";
   import ChatScreen from "#lib/components/ChatScreen.svelte";
   import MetaTags from "#lib/components/MetaTags.svelte";
+  import { ChannelFilter } from "#lib/chat/ChannelFilter.svelte.ts";
   import { browser } from "$app/env";
 
   let { data = $bindable() } = $props();
 
   let selectedChannels = data.channels;
   let shouldConnect = selectedChannels.length > 0;
+  const filter = new ChannelFilter(selectedChannels);
   if (browser && shouldConnect) {
     console.log("Selected channels:", selectedChannels);
   }
@@ -22,8 +24,8 @@
 
 {#if browser}
   {#if shouldConnect}
-    <ChatScreen channels={data.channels}>
-      <TwitchChat settings={data} />
+    <ChatScreen channels={data.channels} {filter}>
+      <TwitchChat settings={data} {filter} />
     </ChatScreen>
   {:else}
     <p class="alert">No valid channels selected</p>

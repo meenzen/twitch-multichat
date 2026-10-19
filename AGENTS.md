@@ -33,6 +33,9 @@ anonymous via `@twurple/chat`.
     go when the user scrolls up (scrollTop decreasing, wheel/keys up). No
     layout, so it is unit tested with a fake scroller.
   - `Chat.svelte`: connects a source to a store and a view.
+  - `ChannelFilter.svelte.ts`: which channels are shown, toggled from the
+    channel list (`TwitchChannelList.svelte`). `Chat` filters the store's
+    messages, the store itself keeps hidden channels' messages.
 - `src/lib/components/ChatScreen.svelte`: full-screen layout (100dvh) with the
   channel list as one row on top. Only the chat scrolls, never the page.
 - `src/lib/twitch/`: the only place that touches twurple

@@ -4,6 +4,7 @@
   import { page } from "$app/state";
   import Chat from "#lib/chat/Chat.svelte";
   import ChatView from "#lib/chat/ChatView.svelte";
+  import { ChannelFilter } from "#lib/chat/ChannelFilter.svelte.ts";
   import ChatScreen from "#lib/components/ChatScreen.svelte";
   import { FakeChatSource } from "#lib/fake/FakeChatSource.ts";
   import {
@@ -25,6 +26,7 @@
   const seed = Number(params.get("seed") ?? 1);
 
   const source = new FakeChatSource();
+  const filter = new ChannelFilter(channels);
   if (!isStatic) {
     source.stream({
       rate: Number(params.get("rate") ?? 5),
@@ -39,12 +41,15 @@
         channels,
       )
     : [];
+  let shownStaticMessages = $derived(
+    staticMessages.filter((m) => filter.isShown(m.channel)),
+  );
 </script>
 
-<ChatScreen {channels}>
+<ChatScreen {channels} {filter}>
   {#if isStatic}
-    <ChatView messages={staticMessages} {shadow} />
+    <ChatView messages={shownStaticMessages} {shadow} />
   {:else}
-    <Chat {source} {channels} {shadow} />
+    <Chat {source} {channels} {shadow} {filter} />
   {/if}
 </ChatScreen>

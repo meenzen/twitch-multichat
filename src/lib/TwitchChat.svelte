@@ -2,11 +2,13 @@
   import * as Sentry from "@sentry/sveltekit";
   import { dev } from "$app/env";
   import type { ChatSettings } from "#lib/ChatSettings.ts";
+  import type { ChannelFilter } from "#lib/chat/ChannelFilter.svelte.ts";
   import Chat from "#lib/chat/Chat.svelte";
   import { ChatStore } from "#lib/chat/ChatStore.svelte.ts";
   import { TwitchChatSource } from "#lib/twitch/TwitchChatSource.ts";
 
-  let { settings }: { settings: ChatSettings } = $props();
+  let { settings, filter }: { settings: ChatSettings; filter?: ChannelFilter } =
+    $props();
 
   const source = new TwitchChatSource({ debug: dev });
   const store = new ChatStore({
@@ -28,4 +30,10 @@
   });
 </script>
 
-<Chat {source} {store} channels={settings.channels} shadow={settings.shadow} />
+<Chat
+  {source}
+  {store}
+  {filter}
+  channels={settings.channels}
+  shadow={settings.shadow}
+/>
