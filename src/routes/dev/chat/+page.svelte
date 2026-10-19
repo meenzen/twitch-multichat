@@ -1,11 +1,14 @@
 <script lang="ts">
   import "@fontsource/inter";
   import "@fontsource/inter/700.css";
+  import { goto } from "$app/navigation";
   import { page } from "$app/state";
   import Chat from "#lib/chat/Chat.svelte";
   import ChatView from "#lib/chat/ChatView.svelte";
   import { ChannelFilter } from "#lib/chat/ChannelFilter.svelte.ts";
   import ChatScreen from "#lib/components/ChatScreen.svelte";
+  import { fontSizes, parseSettings } from "#lib/settings/ChatSettings.ts";
+  import { Settings, persistInUrl } from "#lib/settings/Settings.svelte.ts";
   import { FakeChatSource } from "#lib/fake/FakeChatSource.ts";
   import {
     defaultChannels,
@@ -19,12 +22,25 @@
   //   ?rate=20                       messages per second (live)
   //   ?delete=0.1                    chance to delete a recent message (live)
   //   ?drop=10                       drop the connection for 3s every 10s (live)
-  //   ?channels=a,b,c  ?shadow=false ?seed=42  ?count=50
+  //   ?channels=a,b,c  ?seed=42  ?count=50
+  //   plus the chat settings, e.g. ?shadow=false&size=large&overlay=true
   const params = page.url.searchParams;
   const isStatic = params.has("static");
   const channels = params.get("channels")?.split(",") ?? defaultChannels;
-  const shadow = params.get("shadow") !== "false";
   const seed = Number(params.get("seed") ?? 1);
+
+  const settings = new Settings(parseSettings(params));
+  $effect(() =>
+    persistInUrl(settings, {
+      replace: (url) => goto(url, { shallow: true, replace: true }),
+    }),
+  );
+  let display = $derived({
+    shadow: settings.values.shadow,
+    channelTag: settings.values.channelTag,
+    timestamps: settings.values.timestamps,
+    fontSize: fontSizes[settings.values.fontSize],
+  });
 
   const source = new FakeChatSource();
   const filter = new ChannelFilter(channels);
@@ -51,10 +67,10 @@
   );
 </script>
 
-<ChatScreen {channels} {filter}>
+<ChatScreen {channels} {filter} {settings}>
   {#if isStatic}
-    <ChatView messages={shownStaticMessages} {shadow} />
+    <ChatView messages={shownStaticMessages} {...display} />
   {:else}
-    <Chat {source} {channels} {shadow} {filter} />
+    <Chat {source} {channels} {filter} {...display} />
   {/if}
 </ChatScreen>

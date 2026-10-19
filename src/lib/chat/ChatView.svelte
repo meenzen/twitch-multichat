@@ -14,11 +14,20 @@
     messages,
     status = { kind: "ready" },
     shadow = true,
+    channelTag = true,
+    timestamps = false,
+    fontSize = 13,
     following = $bindable(true),
   }: {
     messages: ChatEntry[];
     status?: ChatStatus;
     shadow?: boolean;
+    /** Show the [channel] prefix */
+    channelTag?: boolean;
+    /** Show when each message was sent */
+    timestamps?: boolean;
+    /** Text size in px */
+    fontSize?: number;
     /** Whether the view is pinned to the newest message */
     following?: boolean;
   } = $props();
@@ -62,13 +71,14 @@
   <div
     class="twitch-chat"
     class:following
+    style:font-size="{fontSize}px"
     bind:this={scroller}
     data-testid="chat-scroller"
   >
     <div bind:this={content}>
       {#each messages as entry (entry.id)}
         {#if isMessage(entry)}
-          <TwitchMessage message={entry} {shadow} />
+          <TwitchMessage message={entry} {shadow} {channelTag} {timestamps} />
         {:else}
           <DisconnectMarker {entry} />
         {/if}
@@ -113,7 +123,6 @@
     padding-left: 5px;
     padding-right: 5px;
     box-sizing: border-box;
-    font-size: 13px;
   }
 
   /* While following, StickToBottom owns the scroll position. Otherwise let

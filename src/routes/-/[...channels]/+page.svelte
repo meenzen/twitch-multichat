@@ -5,13 +5,22 @@
   import ChatScreen from "#lib/components/ChatScreen.svelte";
   import MetaTags from "#lib/components/MetaTags.svelte";
   import { ChannelFilter } from "#lib/chat/ChannelFilter.svelte.ts";
+  import { Settings, persistInUrl } from "#lib/settings/Settings.svelte.ts";
   import { browser } from "$app/env";
+  import { goto } from "$app/navigation";
+  import { resolve } from "$app/paths";
 
   let { data = $bindable() } = $props();
 
   let selectedChannels = data.channels;
   let shouldConnect = selectedChannels.length > 0;
   const filter = new ChannelFilter(selectedChannels);
+  const settings = new Settings(data.settings);
+  $effect(() =>
+    persistInUrl(settings, {
+      replace: (url) => goto(url, { shallow: true, replace: true }),
+    }),
+  );
   if (browser && shouldConnect) {
     console.log("Selected channels:", selectedChannels);
   }
@@ -24,8 +33,17 @@
 
 {#if browser}
   {#if shouldConnect}
-    <ChatScreen channels={data.channels} {filter}>
-      <TwitchChat settings={data} {filter} />
+    <ChatScreen
+      channels={data.channels}
+      {filter}
+      {settings}
+      homeHref={resolve("/")}
+    >
+      <TwitchChat
+        channels={data.channels}
+        settings={settings.values}
+        {filter}
+      />
     </ChatScreen>
   {:else}
     <p class="alert">No valid channels selected</p>

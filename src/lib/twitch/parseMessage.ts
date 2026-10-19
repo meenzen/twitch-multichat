@@ -59,6 +59,8 @@ export function parseMessage(raw: RawMessage): ParsedMessage {
     }
   }
 
+  const sentAt = raw.message.date.getTime();
+
   return {
     type: raw.type,
     parts: splitLinks(parts),
@@ -68,5 +70,7 @@ export function parseMessage(raw: RawMessage): ParsedMessage {
     userName: raw.message.userInfo.userName,
     displayName: raw.message.userInfo.displayName,
     userColor: raw.message.userInfo.color,
+    // tmi-sent-ts, missing on hand-made messages
+    timestamp: Number.isNaN(sentAt) ? Date.now() : sentAt,
   };
 }

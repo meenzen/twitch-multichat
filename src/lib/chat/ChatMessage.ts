@@ -30,6 +30,8 @@ export type ParsedMessage = {
   userName: string;
   displayName: string;
   userColor: string | undefined;
+  /** When the message was sent (ms since epoch) */
+  timestamp: number;
 };
 
 /** Marks a gap in the timeline in which the chat was not connected */

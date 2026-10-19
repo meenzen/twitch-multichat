@@ -325,6 +325,7 @@ export function createMessage(
     displayName: userName,
     userColor: ColorGenerator.generate(userName),
     parts: [{ type: MessagePartType.Text, content: text }],
+    timestamp: Date.now(),
     ...rest,
   };
 }

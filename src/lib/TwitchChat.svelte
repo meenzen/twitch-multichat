@@ -1,13 +1,17 @@
 <script lang="ts">
   import * as Sentry from "@sentry/sveltekit";
   import { dev } from "$app/env";
-  import type { ChatSettings } from "#lib/ChatSettings.ts";
+  import { fontSizes, type ChatSettings } from "#lib/settings/ChatSettings.ts";
   import type { ChannelFilter } from "#lib/chat/ChannelFilter.svelte.ts";
   import Chat from "#lib/chat/Chat.svelte";
   import { ChatStore } from "#lib/chat/ChatStore.svelte.ts";
   import { TwitchChatSource } from "#lib/twitch/TwitchChatSource.ts";
 
-  let { settings, filter }: { settings: ChatSettings; filter?: ChannelFilter } =
+  let {
+    channels,
+    settings,
+    filter,
+  }: { channels: string[]; settings: ChatSettings; filter?: ChannelFilter } =
     $props();
 
   const source = new TwitchChatSource({ debug: dev });
@@ -25,7 +29,7 @@
   source.on("message", () => Sentry.metrics.count("twitch_messages_received"));
   source.on("status", (status) => {
     if (status.kind === "ready") {
-      Sentry.metrics.count("twitch_channels_joined", settings.channels.length);
+      Sentry.metrics.count("twitch_channels_joined", channels.length);
     }
   });
 </script>
@@ -34,6 +38,9 @@
   {source}
   {store}
   {filter}
-  channels={settings.channels}
+  {channels}
   shadow={settings.shadow}
+  channelTag={settings.channelTag}
+  timestamps={settings.timestamps}
+  fontSize={fontSizes[settings.fontSize]}
 />
