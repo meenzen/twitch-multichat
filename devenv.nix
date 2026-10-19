@@ -4,8 +4,18 @@
   config,
   inputs,
   ...
-}: {
+}: let
+  # Browser for the e2e tests (Bun.WebView). An LD_LIBRARY_PATH inherited from
+  # the host can inject libraries built against a newer glibc, so drop it.
+  # --no-sandbox: Ubuntu 24.04 runners block the user namespaces Chromium's
+  # sandbox needs; it only ever loads the locally served test build.
+  e2eChromium = pkgs.writeShellScript "e2e-chromium" ''
+    unset LD_LIBRARY_PATH
+    exec ${pkgs.chromium}/bin/chromium --no-sandbox "$@"
+  '';
+in {
   packages = [pkgs.git];
+  env.BUN_CHROME_PATH = lib.mkIf pkgs.stdenv.isLinux "${e2eChromium}";
   languages.javascript = {
     enable = true;
     bun.enable = true;
@@ -18,6 +28,7 @@
     bun run check
     bun run test
     bun run build
+    bun run test:e2e
   '';
   git-hooks.hooks = {
     alejandra.enable = true;
