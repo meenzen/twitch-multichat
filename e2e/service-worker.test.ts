@@ -1,6 +1,6 @@
 import { afterAll, beforeAll, describe, expect, it } from "bun:test";
-import { cp, mkdir, rm } from "node:fs/promises";
-import { join, resolve } from "node:path";
+import { join } from "node:path";
+import { deploys, ensureDeploy, versionOf } from "./deploys";
 
 // End-to-end check of the service worker update flow: two real builds are
 // served from the same origin, a headless Chrome (Bun.WebView) installs the
@@ -8,8 +8,6 @@ import { join, resolve } from "node:path";
 //
 // Set E2E_REUSE_BUILD=1 to skip rebuilding when .e2e/v1 and .e2e/v2 exist.
 
-const root = resolve(import.meta.dir, "..");
-const deploys = join(root, ".e2e");
 const timings: Record<string, number> = {};
 
 async function timed<T>(label: string, fn: () => Promise<T>): Promise<T> {
@@ -19,24 +17,6 @@ async function timed<T>(label: string, fn: () => Promise<T>): Promise<T> {
   } finally {
     timings[label] = Math.round(performance.now() - start);
   }
-}
-
-async function build(name: string) {
-  const proc = Bun.spawn(["bun", "run", "build"], {
-    cwd: root,
-    stdout: "ignore",
-    stderr: "inherit",
-  });
-  if ((await proc.exited) !== 0) throw new Error(`build ${name} failed`);
-  await rm(join(deploys, name), { recursive: true, force: true });
-  await cp(join(root, ".svelte-kit/cloudflare"), join(deploys, name), {
-    recursive: true,
-  });
-}
-
-async function versionOf(name: string): Promise<string> {
-  const file = Bun.file(join(deploys, name, "_app/version.json"));
-  return (await file.json()).version;
 }
 
 let current = "v1";
@@ -87,16 +67,8 @@ function emoteRevisions(state: PrecacheState): (string | null)[] {
 }
 
 beforeAll(async () => {
-  await mkdir(deploys, { recursive: true });
-  const reuse =
-    process.env.E2E_REUSE_BUILD &&
-    (await Bun.file(join(deploys, "v1/_app/version.json")).exists()) &&
-    (await Bun.file(join(deploys, "v2/_app/version.json")).exists());
-
-  if (!reuse) {
-    await timed("build v1", () => build("v1"));
-    await timed("build v2", () => build("v2"));
-  }
+  await timed("build v1", () => ensureDeploy("v1"));
+  await timed("build v2", () => ensureDeploy("v2"));
 
   server = Bun.serve({
     port: 0,

@@ -121,8 +121,14 @@ anonymous via `@twurple/chat`.
 - E2E tests (`e2e/`) use `Bun.WebView` (headless Chromium) and `Bun.serve`.
   They have their own `e2e/bunfig.toml` because the happy-dom preload replaces
   the global `Response` that `Bun.serve` needs.
-  - The service worker test builds the app twice (two real deploys) into
-    `.e2e/`. Set `E2E_REUSE_BUILD=1` to skip the builds while iterating.
+  - Real builds ("deploys") go to `.e2e/<name>` via `ensureDeploy()` in
+    `e2e/deploys.ts`, built once per run and shared between test files. Set
+    `E2E_REUSE_BUILD=1` to skip the builds while iterating.
+  - The service worker test serves two deploys (`v1`, `v2`) from one origin.
+  - `functions-limit.test.ts` serves `v1` like Cloudflare Pages after the
+    Functions limit ("fail open": static files only, `404.html` for
+    everything else) and checks that chat pages still boot. This relies on
+    the adapter's `fallback: "spa"` in `vite.config.ts`.
   - The chat scroll test skips vite: it bundles `e2e/chat-scroll/harness.ts`
     (real components, `FakeChatSource` driven via `window.chat`) with
     `Bun.build` and the Svelte plugin, served inside `src/app.html`. Use
