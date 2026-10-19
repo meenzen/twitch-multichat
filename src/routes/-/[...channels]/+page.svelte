@@ -2,7 +2,7 @@
   import "@fontsource/inter";
   import "@fontsource/inter/700.css";
   import TwitchChat from "#lib/TwitchChat.svelte";
-  import TwitchChannelList from "#lib/TwitchChannelList.svelte";
+  import ChatScreen from "#lib/components/ChatScreen.svelte";
   import MetaTags from "#lib/components/MetaTags.svelte";
   import { browser } from "$app/env";
 
@@ -22,8 +22,9 @@
 
 {#if browser}
   {#if shouldConnect}
-    <TwitchChannelList bind:settings={data} />
-    <TwitchChat settings={data} />
+    <ChatScreen channels={data.channels}>
+      <TwitchChat settings={data} />
+    </ChatScreen>
   {:else}
     <p class="alert">No valid channels selected</p>
   {/if}

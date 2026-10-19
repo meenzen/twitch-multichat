@@ -1,33 +1,37 @@
 <script lang="ts">
   import ColorGenerator from "#lib/ColorGenerator.ts";
-  import type { ChatSettings } from "#lib/ChatSettings.ts";
 
-  let { settings = $bindable() }: { settings: ChatSettings } = $props();
+  let { channels }: { channels: string[] } = $props();
 </script>
 
-<div class="channel-list">
-  <table>
-    <tbody>
-      {#each settings.channels as channel (channel)}
-        <tr>
-          <td style="color: {ColorGenerator.generate(channel)}">{channel}</td>
-        </tr>
-      {/each}
-    </tbody>
-  </table>
-</div>
+<!-- single row so it takes the same space for any number of channels;
+     scrolls sideways when they don't fit -->
+<ul class="channel-list">
+  {#each channels as channel (channel)}
+    <li style="color: {ColorGenerator.generate(channel)}">{channel}</li>
+  {/each}
+</ul>
 
 <style>
-  table,
-  tbody,
-  td {
-    width: 100%;
-    text-align: center;
+  .channel-list {
+    display: flex;
+    gap: 1em;
+    margin: 0;
+    padding: 4px 8px;
+    list-style: none;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    white-space: nowrap;
+    font-size: 18px;
+    font-family: var(--font-family);
   }
 
-  .channel-list {
-    font-size: var(--text-size);
-    font-family: var(--font-family);
-    width: 100%;
+  /* centered while it fits, scrollable from the first channel otherwise */
+  li:first-child {
+    margin-left: auto;
+  }
+
+  li:last-child {
+    margin-right: auto;
   }
 </style>

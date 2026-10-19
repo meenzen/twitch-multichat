@@ -27,8 +27,14 @@ anonymous via `@twurple/chat`.
   - `ChatSource.ts`: `ChatSource` interface plus `ChatEmitter`. Events:
     `message`, `messageRemoved`, `userCleared`, `channelCleared`, `status`.
   - `ChatStore.svelte.ts`: message buffer and moderation removals.
-  - `ChatView.svelte`: pure presentation, props only.
+  - `ChatView.svelte`: pure presentation, props only. Fills its parent,
+    which needs a definite height.
+  - `StickToBottom.ts`: keeps the chat pinned to the newest message and lets
+    go when the user scrolls up (scrollTop decreasing, wheel/keys up). No
+    layout, so it is unit tested with a fake scroller.
   - `Chat.svelte`: connects a source to a store and a view.
+- `src/lib/components/ChatScreen.svelte`: full-screen layout (100dvh) with the
+  channel list as one row on top. Only the chat scrolls, never the page.
 - `src/lib/twitch/`: the only place that touches twurple
   (`TwitchChatSource`, `parseMessage`).
 - `src/lib/fake/`: `FakeChatSource` (drive it by hand or call `stream()`) and
@@ -54,8 +60,9 @@ anonymous via `@twurple/chat`.
 
 - Unit and component tests use `bun test` (not vitest). Put `*.test.ts` next
   to the code.
-- `test/setup.ts` (preload) registers happy-dom and a Bun plugin that compiles
-  `.svelte` and `.svelte.ts/js` files. Tests must run with
+- `test/setup.ts` (preload) registers happy-dom and the Bun plugin from
+  `test/sveltePlugin.ts` that compiles `.svelte` and `.svelte.ts/js` files.
+  Tests must run with
   `--conditions=browser`; the `test` script already passes it.
 - Render components with `@testing-library/svelte`; call `cleanup` in
   `afterEach`. Await `tick()` after pushing data into a store or source.
@@ -77,6 +84,11 @@ anonymous via `@twurple/chat`.
   the global `Response` that `Bun.serve` needs.
   - The service worker test builds the app twice (two real deploys) into
     `.e2e/`. Set `E2E_REUSE_BUILD=1` to skip the builds while iterating.
+  - The chat scroll test skips vite: it bundles `e2e/chat-scroll/harness.ts`
+    (real components, `FakeChatSource` driven via `window.chat`) with
+    `Bun.build` and the Svelte plugin, served inside `src/app.html`. Use
+    `view.scroll()` for trusted wheel input and `Input.dispatchTouchEvent`
+    for swipes; headless Chrome ignores `Input.synthesizeScrollGesture`.
   - devenv sets `BUN_CHROME_PATH` to a Chromium wrapper (Linux only). It
     clears `LD_LIBRARY_PATH`, because a host value can load libraries built
     for a newer glibc, and passes `--no-sandbox`, because Ubuntu 24.04 CI

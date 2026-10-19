@@ -4,6 +4,7 @@
   import { page } from "$app/state";
   import Chat from "#lib/chat/Chat.svelte";
   import ChatView from "#lib/chat/ChatView.svelte";
+  import ChatScreen from "#lib/components/ChatScreen.svelte";
   import { FakeChatSource } from "#lib/fake/FakeChatSource.ts";
   import {
     defaultChannels,
@@ -40,8 +41,10 @@
     : [];
 </script>
 
-{#if isStatic}
-  <ChatView messages={staticMessages} {shadow} />
-{:else}
-  <Chat {source} {channels} {shadow} />
-{/if}
+<ChatScreen {channels}>
+  {#if isStatic}
+    <ChatView messages={staticMessages} {shadow} />
+  {:else}
+    <Chat {source} {channels} {shadow} />
+  {/if}
+</ChatScreen>
