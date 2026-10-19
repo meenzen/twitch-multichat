@@ -16,7 +16,7 @@
   }
 
   .spinner > div {
-    background-color: #333;
+    background-color: var(--twitch-purple);
     height: 100%;
     width: 6px;
     display: inline-block;
