@@ -7,19 +7,89 @@ on:
   pull_request:
     branches:
       - main
-  # started by bun-nix.yml after it pushes to a Renovate branch
+  # started by the bun-nix job after it pushes to a Renovate branch
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
+  # Renovate changes bun.lock but can't run bun2nix, so this commits the
+  # regenerated bun.nix to its branch. Pushes with GITHUB_TOKEN start no
+  # workflows, so it starts this one for the new commit, and the tests run
+  # there instead of on the outdated commit.
+  bun-nix:
+    if: github.event_name == 'pull_request' && startsWith(github.head_ref, 'renovate/') && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      actions: write
+    outputs:
+      pushed: ${{ steps.commit.outputs.pushed }}
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          ref: ${{ github.head_ref }}
+          # the token is only handed to git for the push
+          persist-credentials: false
+      - uses: cachix/install-nix-action@448cde739abec1eaf0646249e3d25bb8d9bc7702 # v31
+      - uses: ryanccn/attic-action@dc99f5eb1d5c0495aa26f7b56337b30011fa153e # v0.5.2
+        with:
+          endpoint: https://attic.mnzn.dev
+          cache: main
+          token: ${{ secrets.ATTIC_TOKEN }}
+
+      # the bun2nix pinned in flake.lock
+      - name: Regenerate bun.nix
+        run: nix run --inputs-from . bun2nix -- -o bun.nix
+
+      - name: Commit and start the tests
+        id: commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          if git diff --quiet bun.nix; then
+            echo "bun.nix is up to date"
+            exit 0
+          fi
+          # listed in renovate.json's gitIgnoredAuthors, so Renovate keeps
+          # rebasing the branch
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore(deps): update bun.nix" bun.nix
+          gh auth setup-git
+          git push origin "HEAD:$BRANCH"
+          gh workflow run test.yml --ref "$BRANCH"
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+
+  # One job for everything, so Nix and the cache are set up once: the
+  # pipeline in the dev shell, then git hooks, the package and the NixOS VM
+  # test (nix/test.nix).
   tests:
+    needs: bun-nix
+    # also when bun-nix was skipped; not when it pushed a new commit
+    if: ${{ !cancelled() && needs.bun-nix.result != 'failure' && needs.bun-nix.outputs.pushed != 'true' }}
     strategy:
       matrix:
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v7
-      - uses: cachix/install-nix-action@v31
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          persist-credentials: false
+      - name: Enable KVM
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
+            | sudo tee /etc/udev/rules.d/99-kvm.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - uses: cachix/install-nix-action@448cde739abec1eaf0646249e3d25bb8d9bc7702 # v31
+        with:
+          extra_nix_config: |
+            system-features = nixos-test benchmark big-parallel kvm
       # pulls from and pushes to the cache the servers deploy from
       - uses: ryanccn/attic-action@dc99f5eb1d5c0495aa26f7b56337b30011fa153e # v0.5.2
         with:
@@ -37,29 +107,5 @@ jobs:
             exit 1
           }
 
-  # git hooks on all files, the Nix package and the NixOS module (VM test,
-  # see nix/test.nix)
-  nix:
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v7
-      - name: Enable KVM
-        run: |
-          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' \
-            | sudo tee /etc/udev/rules.d/99-kvm.rules
-          sudo udevadm control --reload-rules
-          sudo udevadm trigger --name-match=kvm
-      - uses: cachix/install-nix-action@v31
-        with:
-          extra_nix_config: |
-            system-features = nixos-test benchmark big-parallel kvm
-      # pulls from and pushes to the cache the servers deploy from
-      - uses: ryanccn/attic-action@dc99f5eb1d5c0495aa26f7b56337b30011fa153e # v0.5.2
-        with:
-          endpoint: https://attic.mnzn.dev
-          cache: main
-          token: ${{ secrets.ATTIC_TOKEN }}
-
-      - name: Build the package and run the NixOS test
+      - name: Git hooks, Nix package and NixOS VM test
         run: nix flake check -L
