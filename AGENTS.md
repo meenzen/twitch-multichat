@@ -138,6 +138,10 @@ and anonymous via `@twurple/chat`.
   'selector.type'"): Bun's transpiler escapes the `¶` in a regex literal
   whose `.source` the library string-replaces. `patches/ultrahtml@*.patch`
   fixes that; Node and workerd are unaffected.
+  `patches/@ethercorps%2Fsveltekit-og@*.patch` passes the markup to
+  satori-html's `html()` as a template array: given a string, it loops per
+  character and copies the string each step, quadratic in the markup's
+  length (the inlined logo made that seconds and over a GiB per image).
 - `src/lib/cacheControl.ts`: Cache-Control per route for responses from the
   Pages Function (and the Node server), applied in `hooks.server.ts`. Add new dynamic routes there.
   Pages runs Functions before its CDN cache, so only browser and scraper
@@ -177,7 +181,8 @@ and anonymous via `@twurple/chat`.
 - Packaging pitfalls, all handled in `nix/package.nix`:
   - `bun install` from bun2nix's cache ignores `patchedDependencies`; the
     patches are applied to the cache instead (`patchedDependenciesToOverrides`).
-    Without them the preview image is empty (the ultrahtml bug under Bun).
+    Without them the preview image is empty (the ultrahtml bug under Bun)
+    and takes seconds (the sveltekit-og one).
   - sharp's prebuilt binaries (enhanced-img, build time only) need
     `libstdc++`, provided via `LD_LIBRARY_PATH` in the build.
   - sveltekit-og loads resvg's `.wasm` from `node_modules` at runtime and
