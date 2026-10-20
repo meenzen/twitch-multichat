@@ -33,3 +33,7 @@ devenv.local.yaml
 
 # Claude Code (agent worktrees)
 /.claude
+
+# Nix build output
+result
+result-*
