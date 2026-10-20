@@ -77,7 +77,12 @@ export class ChatStore {
     if (status.kind === "reconnecting") {
       // keep the start of the outage across failed reconnect attempts
       this.disconnectedSince ??= status.since ?? this.now();
-    } else if (status.kind === "ready" && this.disconnectedSince != null) {
+    } else if (
+      // channels are rejoined one by one and the first ones deliver messages
+      // before the last join is done, so mark as soon as joining starts
+      (status.kind === "joining" || status.kind === "ready") &&
+      this.disconnectedSince != null
+    ) {
       this.markDisconnect(this.disconnectedSince, this.now());
       this.disconnectedSince = undefined;
     }
