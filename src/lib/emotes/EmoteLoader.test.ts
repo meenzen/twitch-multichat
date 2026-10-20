@@ -11,7 +11,12 @@ import type { Emote, EmoteProvider } from "./Emote";
 import { EmoteLoader } from "./EmoteLoader";
 
 function emote(code: string, id = code): Emote {
-  return { id, code, url: `https://cdn.example/${id}`, provider: "bttv" };
+  return {
+    id,
+    code,
+    images: [{ url: `https://cdn.example/${id}`, density: 1 }],
+    provider: "bttv",
+  };
 }
 
 function fakeProvider(
@@ -86,6 +91,24 @@ describe("EmoteLoader", () => {
     const emotes = await new EmoteLoader([provider]).load("1");
 
     expect([...emotes.keys()]).toEqual(["KKona"]);
+  });
+
+  it("keeps a channel's emotes when a refresh fails", async () => {
+    let down = false;
+    const provider = fakeProvider(
+      async () => [],
+      async () => {
+        if (down) throw new Error("down");
+        return [emote("forsenE")];
+      },
+    );
+    const loader = new EmoteLoader([provider]);
+
+    expect((await loader.load("1")).has("forsenE")).toBe(true);
+    down = true;
+    expect((await loader.load("1")).has("forsenE")).toBe(true);
+    // other channels don't get them
+    expect((await loader.load("2")).has("forsenE")).toBe(false);
   });
 
   it("retries global emotes that failed", async () => {

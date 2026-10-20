@@ -1,6 +1,8 @@
 // Display model for chat messages. Deliberately free of any @twurple imports so
 // that the UI can be rendered and tested without a Twitch connection.
 
+import type { EmoteImage } from "#lib/emotes/Emote.ts";
+
 export enum MessageType {
   Normal,
   Action,
@@ -16,8 +18,12 @@ export type MessagePart = {
   type: MessagePartType;
   content: string;
   emoteName?: string;
-  /** Image of a third-party emote; Twitch emotes are looked up by id */
-  emoteUrl?: string;
+  /** Images of a third-party emote; Twitch emotes are looked up by id */
+  emoteImages?: EmoteImage[];
+  /** Height of a third-party emote relative to a normal one (default 1) */
+  emoteHeightScale?: number;
+  /** Width / height of a third-party emote, if known (default 1) */
+  emoteAspectRatio?: number;
   /** The service a third-party emote comes from, e.g. "bttv" */
   emoteProvider?: string;
   /** Zero-width emotes drawn on top of this emote, in order */

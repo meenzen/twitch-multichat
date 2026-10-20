@@ -7,6 +7,8 @@ import type { Emote, EmoteMap, EmoteProvider } from "./Emote";
  */
 export class EmoteLoader {
   private globals = new Map<EmoteProvider, Promise<Emote[]>>();
+  /** Last channel lists that loaded, by provider and channel id */
+  private channels = new Map<string, Emote[]>();
 
   constructor(private readonly providers: EmoteProvider[]) {}
 
@@ -17,17 +19,31 @@ export class EmoteLoader {
   async load(channelId: string): Promise<EmoteMap> {
     const lists = await Promise.all([
       ...this.providers.map((provider) => this.global(provider)),
-      ...this.providers.map((provider) =>
-        provider.channel(channelId).catch((error: unknown) => {
-          console.warn(`Failed to load ${provider.name} emotes:`, error);
-          return [];
-        }),
-      ),
+      ...this.providers.map((provider) => this.channel(provider, channelId)),
     ]);
 
     const emotes = new Map<string, Emote>();
     for (const emote of lists.flat()) emotes.set(emote.code, emote);
     return emotes;
+  }
+
+  /**
+   * A failed refresh (on rejoin) keeps the list that loaded before, so an
+   * outage doesn't take away emotes the channel already had.
+   */
+  private async channel(
+    provider: EmoteProvider,
+    channelId: string,
+  ): Promise<Emote[]> {
+    const key = `${provider.name}/${channelId}`;
+    try {
+      const list = await provider.channel(channelId);
+      this.channels.set(key, list);
+      return list;
+    } catch (error) {
+      console.warn(`Failed to load ${provider.name} emotes:`, error);
+      return this.channels.get(key) ?? [];
+    }
   }
 
   private global(provider: EmoteProvider): Promise<Emote[]> {

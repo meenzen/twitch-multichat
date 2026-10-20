@@ -54,12 +54,116 @@ describe("ChatView", () => {
     expect(emote.getAttribute("crossorigin")).toBe("anonymous");
   });
 
+  it("offers larger images, accounting for the text size", async () => {
+    const kappa = {
+      type: MessagePartType.Emote,
+      content: "25",
+      emoteName: "Kappa",
+    };
+    const base = "https://static-cdn.jtvnw.net/emoticons/v2/25/default/dark";
+    const view = render(ChatView, {
+      messages: [createMessage({ parts: [kappa] })],
+    });
+
+    expect(screen.getByAltText("Kappa").getAttribute("srcset")).toBe(
+      `${base}/1.0 1x, ${base}/2.0 2x, ${base}/3.0 4x`,
+    );
+
+    // twice the text size: the 2x image is the one for normal screens
+    await view.rerender({ fontSize: 26 });
+
+    expect(screen.getByAltText("Kappa").getAttribute("srcset")).toBe(
+      `${base}/1.0 0.5x, ${base}/2.0 1x, ${base}/3.0 2x`,
+    );
+  });
+
+  it("shows the name of an emote whose image fails to load", async () => {
+    render(ChatView, {
+      messages: [
+        createMessage({
+          parts: [
+            { type: MessagePartType.Text, content: "nice " },
+            { type: MessagePartType.Emote, content: "25", emoteName: "Kappa" },
+          ],
+        }),
+      ],
+    });
+
+    await fireEvent.error(screen.getByAltText("Kappa"));
+
+    expect(screen.queryByAltText("Kappa")).toBeNull();
+    expect(screen.getByText("Kappa").tagName).toBe("SPAN");
+  });
+
+  it("keeps room for emotes while they load", () => {
+    render(ChatView, {
+      messages: [
+        createMessage({
+          parts: [
+            {
+              type: MessagePartType.Emote,
+              content: "w1",
+              emoteName: "WIDEGIGACHAD",
+              emoteImages: [
+                { url: "https://cdn.7tv.app/emote/w1/1x.webp", density: 1 },
+              ],
+              emoteProvider: "7tv",
+              emoteAspectRatio: 3,
+            },
+            { type: MessagePartType.Emote, content: "25", emoteName: "Kappa" },
+          ],
+        }),
+      ],
+    });
+
+    expect(
+      screen
+        .getByAltText("WIDEGIGACHAD")
+        .style.getPropertyValue("--aspect-ratio"),
+    ).toBe("3");
+    // unknown: the stylesheet's square default
+    expect(
+      screen.getByAltText("Kappa").style.getPropertyValue("--aspect-ratio"),
+    ).toBe("");
+  });
+
+  it("draws emotes that are shorter than normal shorter", () => {
+    render(ChatView, {
+      messages: [
+        createMessage({
+          parts: [
+            {
+              type: MessagePartType.Emote,
+              content: "r1",
+              emoteName: "respect",
+              emoteImages: [
+                { url: "https://cdn.7tv.app/emote/r1/1x.webp", density: 1 },
+              ],
+              emoteProvider: "7tv",
+              emoteHeightScale: 0.5,
+            },
+            { type: MessagePartType.Emote, content: "25", emoteName: "Kappa" },
+          ],
+        }),
+      ],
+    });
+
+    expect(
+      screen.getByAltText("respect").style.getPropertyValue("--height-scale"),
+    ).toBe("0.5");
+    expect(
+      screen.getByAltText("Kappa").style.getPropertyValue("--height-scale"),
+    ).toBe("");
+  });
+
   it("renders third-party emotes from their URL unless hidden", async () => {
     const bttv = {
       type: MessagePartType.Emote,
       content: "k1",
       emoteName: "KKona",
-      emoteUrl: "https://cdn.betterttv.net/emote/k1/1x.webp",
+      emoteImages: [
+        { url: "https://cdn.betterttv.net/emote/k1/1x.webp", density: 1 },
+      ],
       emoteProvider: "bttv",
     };
     const view = render(ChatView, {
@@ -67,7 +171,7 @@ describe("ChatView", () => {
     });
 
     const emote = screen.getByAltText("KKona") as HTMLImageElement;
-    expect(emote.getAttribute("src")).toBe(bttv.emoteUrl);
+    expect(emote.getAttribute("src")).toBe(bttv.emoteImages[0].url);
     // the BetterTTV CDN sends no CORS headers
     expect(emote.hasAttribute("crossorigin")).toBe(false);
 
@@ -82,7 +186,9 @@ describe("ChatView", () => {
       type: MessagePartType.Emote,
       content: "r1",
       emoteName: "RainTime",
-      emoteUrl: "https://cdn.7tv.app/emote/r1/1x.webp",
+      emoteImages: [
+        { url: "https://cdn.7tv.app/emote/r1/1x.webp", density: 1 },
+      ],
       emoteProvider: "7tv",
     };
     const stacked = {

@@ -24,22 +24,88 @@ describe("SevenTvEmotes", () => {
       },
     });
 
+    // no file list: only the 1x image is known to exist
     expect(await new SevenTvEmotes(fetch).global()).toEqual([
       {
         id: "e1",
         code: "PepePls",
-        url: "https://cdn.7tv.app/emote/e1/1x.webp",
+        images: [{ url: "https://cdn.7tv.app/emote/e1/1x.webp", density: 1 }],
         provider: "7tv",
         zeroWidth: false,
       },
       {
         id: "e2",
         code: "RainTime",
-        url: "https://cdn.7tv.app/emote/e2/1x.webp",
+        images: [{ url: "https://cdn.7tv.app/emote/e2/1x.webp", density: 1 }],
         provider: "7tv",
         zeroWidth: true,
       },
     ]);
+  });
+
+  it("offers the WebP sizes the emote has, from our CDN", async () => {
+    const fetch = fakeFetch({
+      [`${api}/emote-sets/global`]: {
+        emotes: [
+          {
+            id: "e1",
+            name: "Wide",
+            data: {
+              host: {
+                url: "//evil.example/emote/e1",
+                files: [
+                  { name: "1x.avif", height: 32 },
+                  { name: "2x.webp", height: 64 },
+                  { name: "1x.webp", width: 96, height: 32 },
+                  { name: "3x.webp", height: 96 },
+                ],
+              },
+            },
+          },
+        ],
+      },
+    });
+
+    const [emote] = await new SevenTvEmotes(fetch).global();
+
+    expect(emote.images).toEqual(
+      [1, 2, 3].map((density) => ({
+        url: `https://cdn.7tv.app/emote/e1/${density}x.webp`,
+        density,
+      })),
+    );
+    expect(emote.heightScale).toBeUndefined();
+    expect(emote.aspectRatio).toBe(3);
+  });
+
+  it("scales emotes shorter than the normal 32px down", async () => {
+    const fetch = fakeFetch({
+      [`${api}/emote-sets/global`]: {
+        emotes: [
+          {
+            id: "r",
+            name: "respect",
+            data: {
+              host: { files: [{ name: "1x.webp", width: 96, height: 19 }] },
+            },
+          },
+          {
+            id: "b",
+            name: "broken",
+            data: {
+              host: { files: [{ name: "1x.webp", width: 96, height: "x" }] },
+            },
+          },
+        ],
+      },
+    });
+
+    const [short, broken] = await new SevenTvEmotes(fetch).global();
+
+    expect(short.heightScale).toBeCloseTo(19 / 32);
+    expect(short.aspectRatio).toBeCloseTo(96 / 19);
+    expect(broken.heightScale).toBeUndefined();
+    expect(broken.aspectRatio).toBeUndefined();
   });
 
   it("uses the channel's names and zero-width flags", async () => {

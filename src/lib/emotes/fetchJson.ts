@@ -1,6 +1,16 @@
-export type Fetch = (url: string) => Promise<Response>;
+export type Fetch = (
+  url: string,
+  init?: { signal?: AbortSignal },
+) => Promise<Response>;
 
-export const defaultFetch: Fetch = (url) => globalThis.fetch(url);
+export const defaultFetch: Fetch = (url, init) => globalThis.fetch(url, init);
+
+/**
+ * Requests longer than this fail like any other error. Without a limit a
+ * hanging API would keep its emotes, and those of every other service
+ * loaded together with it, from ever arriving.
+ */
+const defaultTimeoutMs = 10_000;
 
 /**
  * GET a JSON document. undefined for 404, which the emote APIs answer for
@@ -9,8 +19,12 @@ export const defaultFetch: Fetch = (url) => globalThis.fetch(url);
 export async function fetchJson<T>(
   fetch: Fetch,
   url: string,
+  timeoutMs = defaultTimeoutMs,
 ): Promise<T | undefined> {
-  const response = await fetch(url);
+  // also covers reading the body, which is streamed
+  const response = await fetch(url, {
+    signal: AbortSignal.timeout(timeoutMs),
+  });
   if (response.status === 404) return undefined;
   if (!response.ok) {
     throw new Error(`${url} responded with ${response.status}`);

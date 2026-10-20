@@ -34,13 +34,20 @@ export function splitEmotes(
 }
 
 function emotePart(emote: Emote): MessagePart {
-  return {
+  const part: MessagePart = {
     type: MessagePartType.Emote,
     content: emote.id,
     emoteName: emote.code,
-    emoteUrl: emote.url,
+    emoteImages: emote.images,
     emoteProvider: emote.provider,
   };
+  if (emote.heightScale !== undefined) {
+    part.emoteHeightScale = emote.heightScale;
+  }
+  if (emote.aspectRatio !== undefined) {
+    part.emoteAspectRatio = emote.aspectRatio;
+  }
+  return part;
 }
 
 function appendText(parts: MessagePart[], text: string): void {

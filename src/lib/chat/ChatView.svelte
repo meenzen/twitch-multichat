@@ -87,6 +87,7 @@
             {channelTag}
             {timestamps}
             {hiddenEmotes}
+            {fontSize}
           />
         {:else}
           <DisconnectMarker {entry} />

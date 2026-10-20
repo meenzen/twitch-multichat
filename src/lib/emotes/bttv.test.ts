@@ -24,7 +24,10 @@ describe("BttvEmotes", () => {
       {
         id: "a1",
         code: "monkaS",
-        url: "https://cdn.betterttv.net/emote/a1/1x.webp",
+        images: [1, 2, 3].map((density) => ({
+          url: `https://cdn.betterttv.net/emote/a1/${density}x.webp`,
+          density,
+        })),
         provider: "bttv",
       },
     ]);

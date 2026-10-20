@@ -6,7 +6,7 @@ import { splitEmotes } from "./splitEmotes";
 const kkona: Emote = {
   id: "k1",
   code: "KKona",
-  url: "https://cdn.betterttv.net/emote/k1/1x.webp",
+  images: [{ url: "https://cdn.betterttv.net/emote/k1/1x.webp", density: 1 }],
   provider: "bttv",
 };
 const emotes = new Map([["KKona", kkona]]);
@@ -20,7 +20,9 @@ const kkonaPart: MessagePart = {
   type: MessagePartType.Emote,
   content: "k1",
   emoteName: "KKona",
-  emoteUrl: "https://cdn.betterttv.net/emote/k1/1x.webp",
+  emoteImages: [
+    { url: "https://cdn.betterttv.net/emote/k1/1x.webp", density: 1 },
+  ],
   emoteProvider: "bttv",
 };
 
@@ -65,7 +67,7 @@ describe("splitEmotes with zero-width emotes", () => {
   const rain: Emote = {
     id: "r1",
     code: "RainTime",
-    url: "https://cdn.7tv.app/emote/r1/1x.webp",
+    images: [{ url: "https://cdn.7tv.app/emote/r1/1x.webp", density: 1 }],
     provider: "7tv",
     zeroWidth: true,
   };
@@ -77,7 +79,7 @@ describe("splitEmotes with zero-width emotes", () => {
     type: MessagePartType.Emote,
     content: "r1",
     emoteName: "RainTime",
-    emoteUrl: "https://cdn.7tv.app/emote/r1/1x.webp",
+    emoteImages: [{ url: "https://cdn.7tv.app/emote/r1/1x.webp", density: 1 }],
     emoteProvider: "7tv",
   };
 

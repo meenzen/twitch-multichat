@@ -59,10 +59,10 @@ function precacheState(): Promise<PrecacheState> {
   })()`);
 }
 
-/** Revisions workbox stored for /emote.png, which is revisioned by app version */
-function emoteRevisions(state: PrecacheState): (string | null)[] {
+/** Revisions workbox stored for a file from static/, revisioned by app version */
+function staticRevisions(state: PrecacheState): (string | null)[] {
   return state.urls
-    .filter((u) => new URL(u).pathname === "/emote.png")
+    .filter((u) => new URL(u).pathname === "/favicon-32x32.png")
     .map((u) => new URL(u).searchParams.get("__WB_REVISION__"));
 }
 
@@ -111,7 +111,7 @@ describe("service worker updates", () => {
 
     const state = await precacheState();
     expect(state.urls.length).toBeGreaterThan(0);
-    expect(emoteRevisions(state)).toEqual([await versionOf("v1")]);
+    expect(staticRevisions(state)).toEqual([await versionOf("v1")]);
   });
 
   it("does not replace the worker when nothing was deployed", async () => {
@@ -168,7 +168,7 @@ describe("service worker updates", () => {
     ).toBe(false);
 
     const state = await precacheState();
-    expect(emoteRevisions(state)).toEqual([await versionOf("v2")]);
+    expect(staticRevisions(state)).toEqual([await versionOf("v2")]);
     expect(state.cacheNames.filter((n) => n.includes("precache"))).toHaveLength(
       1,
     );

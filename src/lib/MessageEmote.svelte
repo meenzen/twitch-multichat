@@ -7,47 +7,63 @@
   let {
     part,
     hiddenEmotes = [],
+    fontSize,
   }: {
     part: MessagePart;
     /** Third-party emote providers whose emotes show as text */
     hiddenEmotes?: readonly string[];
+    /** Text size in px */
+    fontSize?: number;
   } = $props();
 
-  // Svelte trims whitespace at the edges of an element, but not expressions
-  const space = " ";
+  /** Text, or images drawn on top of each other (just one: no stack) */
+  type Piece = { text: string } | { images: MessagePart[] };
 
   const isShown = (emote: MessagePart) =>
     !emote.emoteProvider || !hiddenEmotes.includes(emote.emoteProvider);
 
-  let baseShown = $derived(isShown(part));
-  let overlays = $derived((part.emoteOverlays ?? []).filter(isShown));
-  let hiddenOverlays = $derived(
-    (part.emoteOverlays ?? []).filter((o) => !isShown(o)),
-  );
+  // Rendered by a single #each: whitespace between top-level blocks would
+  // show up as extra spaces next to the message's own.
+  let pieces = $derived.by((): Piece[] => {
+    const overlays = part.emoteOverlays ?? [];
+    const shown = overlays.filter(isShown);
+    const hidden = overlays
+      .filter((o) => !isShown(o))
+      .map((o) => ({ text: ` ${o.emoteName}` }));
+
+    if (isShown(part)) return [{ images: [part, ...shown] }, ...hidden];
+    // nothing to stack on, the overlays stand on their own
+    return [
+      { text: part.emoteName ?? "" },
+      ...shown.flatMap((o) => [{ text: " " }, { images: [o] }]),
+      ...hidden,
+    ];
+  });
 </script>
 
 {#snippet image(emote: MessagePart)}
-  <TwitchEmote id={emote.content} name={emote.emoteName} url={emote.emoteUrl} />
+  <TwitchEmote
+    id={emote.content}
+    name={emote.emoteName}
+    images={emote.emoteImages}
+    heightScale={emote.emoteHeightScale}
+    aspectRatio={emote.emoteAspectRatio}
+    {fontSize}
+  />
 {/snippet}
 
-{#if !baseShown}
-  <span class="message-text">{part.emoteName}</span>
-  <!-- nothing to stack on, the overlays stand on their own -->
-  {#each overlays as overlay, i (i)}
-    <span class="message-text">{space}</span>{@render image(overlay)}
-  {/each}
-{:else if overlays.length > 0}
-  <span class="emote-stack">
-    {@render image(part)}
-    {#each overlays as overlay, i (i)}
-      {@render image(overlay)}
-    {/each}
-  </span>
-{:else}
-  {@render image(part)}
-{/if}
-{#each hiddenOverlays as overlay, i (i)}
-  <span class="message-text">{space}{overlay.emoteName}</span>
+{#each pieces as piece, i (i)}
+  {#if "text" in piece}
+    <span class="message-text">{piece.text}</span>
+  {:else if piece.images.length > 1}
+    <span class="emote-stack">
+      {#each piece.images as emote, j (j)}
+        {@render image(emote)}
+      {/each}
+    </span>
+  {:else}
+    {@render image(piece.images[0])}
+  {/if}
 {/each}
 
 <style>
