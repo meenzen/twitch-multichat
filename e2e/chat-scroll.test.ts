@@ -119,7 +119,6 @@ beforeAll(async () => {
 afterAll(async () => {
   await view?.evaluate("window.chat?.stopStream()").catch(() => {});
   await view?.close();
-  Bun.WebView.closeAll();
   server?.stop(true);
 });
 

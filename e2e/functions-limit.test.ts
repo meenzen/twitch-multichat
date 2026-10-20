@@ -62,7 +62,6 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await view?.close();
-  Bun.WebView.closeAll();
   server?.stop(true);
 });
 
