@@ -32,10 +32,43 @@ export type EmoteImage = {
 /** Emotes usable in a channel, by code */
 export type EmoteMap = ReadonlyMap<string, Emote>;
 
+/** A change to a channel's emotes, pushed by the service while watching */
+export type EmoteChange =
+  | { kind: "add"; emote: Emote }
+  | { kind: "remove"; id: string }
+  /** The emote with this id was renamed or changed otherwise */
+  | { kind: "update"; emote: Emote }
+  /** Too much changed (another emote set, missed updates): fetch again */
+  | { kind: "reload" };
+
 export interface EmoteProvider {
   readonly name: EmoteProviderName;
   /** Emotes available in every channel */
   global(): Promise<Emote[]>;
   /** Emotes of one channel, by Twitch user id; empty for unknown channels */
   channel(channelId: string): Promise<Emote[]>;
+  /**
+   * Live changes to a channel's emotes, for services that push them.
+   * Returns a function that stops watching.
+   */
+  watch?(
+    channelId: string,
+    onChange: (change: EmoteChange) => void,
+  ): () => void;
+}
+
+/** Emotes per channel, kept up to date by the services */
+export interface ChannelEmotes {
+  load(channelId: string): Promise<EmoteMap>;
+  /**
+   * Called with a channel's new emotes after a live change, and what
+   * changed, e.g. `7TV added "Clap"`
+   */
+  onChange?(
+    listener: (
+      channelId: string,
+      emotes: EmoteMap,
+      description: string,
+    ) => void,
+  ): () => void;
 }

@@ -1,7 +1,7 @@
 import { ChatClient, RoomState, type ChatMessage } from "@twurple/chat";
 import { MessageType } from "#lib/chat/ChatMessage.ts";
 import { ChatEmitter } from "#lib/chat/ChatSource.ts";
-import type { EmoteMap } from "#lib/emotes/Emote.ts";
+import type { ChannelEmotes, EmoteMap } from "#lib/emotes/Emote.ts";
 import { EmoteGate } from "#lib/emotes/EmoteGate.ts";
 import { parseMessage } from "./parseMessage";
 
@@ -15,8 +15,8 @@ export type TwitchChatSourceOptions = {
   /** Page lifecycle event targets, injectable for tests */
   document?: PageEvents & Pick<Document, "visibilityState">;
   window?: PageEvents;
-  /** Third-party emotes of a channel, by Twitch user id */
-  loadEmotes?: (channelId: string) => Promise<EmoteMap>;
+  /** Third-party emotes of the channels, by Twitch user id */
+  emotes?: ChannelEmotes;
   /** How long a channel's messages wait for its emotes */
   emoteTimeoutMs?: number;
 };
@@ -44,6 +44,9 @@ export class TwitchChatSource extends ChatEmitter {
   private readonly document?: TwitchChatSourceOptions["document"];
   private readonly window?: PageEvents;
   private readonly emotes?: EmoteGate;
+  /** Channel names by Twitch user id, to apply live emote changes */
+  private channelIds = new Map<string, string>();
+  private unwatchEmotes?: () => void;
 
   private channels: string[] = [];
   private active = false;
@@ -60,8 +63,19 @@ export class TwitchChatSource extends ChatEmitter {
     this.debug = options.debug ?? false;
     this.document = options.document ?? globalThis.document;
     this.window = options.window ?? globalThis.window;
-    if (options.loadEmotes) {
-      this.emotes = new EmoteGate(options.loadEmotes, options.emoteTimeoutMs);
+    const emotes = options.emotes;
+    if (emotes) {
+      this.emotes = new EmoteGate(
+        (channelId) => emotes.load(channelId),
+        options.emoteTimeoutMs,
+      );
+      // affects new messages only, the ones on screen stay as they were
+      this.unwatchEmotes = emotes.onChange?.((channelId, map, description) => {
+        const channel = this.channelIds.get(channelId);
+        if (!channel) return;
+        console.log(`Emotes of ${channel}: ${description}`);
+        this.emotes?.update(channel, map);
+      });
     }
     this.client =
       options.client ??
@@ -108,7 +122,9 @@ export class TwitchChatSource extends ChatEmitter {
       // emotes. Rejoining sends it again, which refreshes them.
       const roomId = msg.tags.get("room-id");
       if (msg.command === RoomState.COMMAND && roomId) {
-        this.emotes?.load(channelName(msg.rawParamValues[0] ?? ""), roomId);
+        const channel = channelName(msg.rawParamValues[0] ?? "");
+        this.channelIds.set(roomId, channel);
+        this.emotes?.load(channel, roomId);
       }
     });
 
@@ -151,6 +167,8 @@ export class TwitchChatSource extends ChatEmitter {
     this.active = false;
     this.joinRound++;
     this.unwatchPage?.();
+    this.unwatchEmotes?.();
+    this.unwatchEmotes = undefined;
     this.client.quit();
   }
 
@@ -200,7 +218,10 @@ export class TwitchChatSource extends ChatEmitter {
 
   private receive(msg: ChatMessage, type: MessageType): void {
     const channel = channelName(msg.target);
-    if (msg.channelId) this.emotes?.ensure(channel, msg.channelId);
+    if (msg.channelId) {
+      this.channelIds.set(msg.channelId, channel);
+      this.emotes?.ensure(channel, msg.channelId);
+    }
     this.inOrder(channel, (emotes) =>
       this.emit("message", parseMessage({ message: msg, type }, emotes)),
     );

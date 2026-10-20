@@ -320,9 +320,19 @@ describe("TwitchChatSource page resume", () => {
       const loadEmotes = mock(
         () => new Promise<EmoteMap>((resolve) => pending.push(resolve)),
       );
+      let changed:
+        | ((channelId: string, emotes: EmoteMap, description: string) => void)
+        | undefined;
+      const unwatch = mock();
       const source = new TwitchChatSource({
         client: client as unknown as ChatClient,
-        loadEmotes,
+        emotes: {
+          load: loadEmotes,
+          onChange: (listener) => {
+            changed = listener;
+            return unwatch;
+          },
+        },
         ...fakePage(),
       });
       const events: unknown[] = [];
@@ -330,7 +340,9 @@ describe("TwitchChatSource page resume", () => {
         events.push(m.parts.map((p) => p.emoteName ?? p.content).join("|")),
       );
       source.on("messageRemoved", (id) => events.push(`removed ${id}`));
-      return { fire, loadEmotes, pending, events };
+      const change = (channelId: string, emotes: EmoteMap) =>
+        changed?.(channelId, emotes, '7TV added "KKona"');
+      return { fire, source, loadEmotes, pending, events, change, unwatch };
     }
 
     const kkona: EmoteMap = new Map([
@@ -373,6 +385,31 @@ describe("TwitchChatSource page resume", () => {
       await flush();
 
       expect(events).toEqual(["hi |KKona", "removed m1"]);
+    });
+
+    it("uses live emote changes for new messages", async () => {
+      const { fire, pending, events, change } = setupEmotes();
+      fire("message", "chan", "bob", "hi KKona", privmsg("m1", "hi KKona"));
+      pending[0](new Map());
+      await flush();
+
+      change("123", kkona);
+      // other channels' changes don't apply
+      change("456", new Map());
+      fire("message", "chan", "bob", "hi KKona", privmsg("m2", "hi KKona"));
+
+      expect(events).toEqual(["hi KKona", "hi |KKona"]);
+      expect(console.log).toHaveBeenCalledWith(
+        'Emotes of chan: 7TV added "KKona"',
+      );
+    });
+
+    it("stops listening for emote changes on disconnect", () => {
+      const { source, unwatch } = setupEmotes();
+
+      source.disconnect();
+
+      expect(unwatch).toHaveBeenCalled();
     });
 
     it("passes messages through without a loader", () => {

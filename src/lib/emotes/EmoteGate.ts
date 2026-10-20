@@ -53,6 +53,13 @@ export class EmoteGate {
     });
   }
 
+  /** New emotes for a channel that is loaded or loading, e.g. live changes */
+  update(channel: string, emotes: EmoteMap): void {
+    if (this.emotes.has(channel) || this.held.has(channel)) {
+      this.emotes.set(channel, emotes);
+    }
+  }
+
   /** Run `event` with the channel's emotes, after its held events */
   run(channel: string, event: Held): void {
     const held = this.held.get(channel);
