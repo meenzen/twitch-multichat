@@ -24,28 +24,20 @@ jobs:
         with:
           name: meenzen
           authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-          extraPullNames: devenv
+          extraPullNames: nix-community
 
-      - name: Install tools
-        run: nix profile install nixpkgs#devenv
-
-      - name: Set up devenv
-        run: devenv allow
-
-      - name: Run devenv tests
-        run: devenv test
-
-      - name: Build project
-        run: devenv shell ci
+      - name: Build and test
+        run: nix develop -c ci
 
       - name: Check that bun.nix matches bun.lock
         run: |
           git diff --exit-code bun.nix || {
-            echo "::error file=bun.nix::bun.nix is out of date, run 'bun2nix -o bun.nix' in devenv and commit it"
+            echo "::error file=bun.nix::bun.nix is out of date, run 'bun2nix -o bun.nix' in nix develop and commit it"
             exit 1
           }
 
-  # the Nix package and the NixOS module (VM test, see nix/test.nix)
+  # git hooks on all files, the Nix package and the NixOS module (VM test,
+  # see nix/test.nix)
   nix:
     runs-on: ubuntu-latest
 

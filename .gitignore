@@ -10,13 +10,7 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 /.idea/
 .direnv
-.devenv
 .pre-commit-config.yaml
-
-# Devenv
-.devenv*
-devenv.local.nix
-devenv.local.yaml
 
 # direnv
 .direnv

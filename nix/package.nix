@@ -38,8 +38,8 @@ in
       makeWrapper
     ];
 
-    # generated from bun.lock by bun2nix (the git hook and `ci` in
-    # devenv.nix keep it current)
+    # generated from bun.lock by bun2nix (the git hook and `ci` keep it
+    # current)
     bunDeps = bun2nix.fetchBunDeps {
       bunNix = ../bun.nix;
       overrides = bun2nix.patchedDependenciesToOverrides {

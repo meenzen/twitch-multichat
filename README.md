@@ -83,13 +83,13 @@ Without `nginx.enable`, point your reverse proxy at
 
 ## Development
 
-Everything runs inside [devenv](https://devenv.sh), which provides Bun and a
-Chromium for the browser tests:
+Everything runs in the flake's dev shell, which provides Bun and a Chromium
+for the browser tests:
 
 ```bash
-devenv shell -- bun install
-devenv shell -- bun run dev      # development server
-devenv shell -- ci               # format, lint, check, test, build, e2e
+nix develop -c bun install
+nix develop -c bun run dev       # development server
+nix develop -c ci                # format, lint, check, test, build, e2e
 ```
 
 `/dev/chat` shows the chat with generated messages, no Twitch connection

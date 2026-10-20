@@ -7,16 +7,17 @@ and anonymous via `@twurple/chat`.
 
 ## Tooling
 
-- Everything runs inside devenv (Nix). Run commands as
-  `devenv shell -- bun run <script>`; `bun`/`node` are not on the host PATH.
-  If devenv serves a stale toolchain after a lock bump, add
-  `--refresh-eval-cache`.
-- `ci` (defined in `devenv.nix`) is the full pipeline and what GitHub Actions
-  runs: install, `bun.nix`, format, lint, check, unit tests, build, e2e
-  tests. Run `devenv shell -- ci` before pushing. It takes about 35 s.
-  GitHub Actions also runs `nix flake check` (package and VM test).
-- Git hooks (prek) only run quick checks (whitespace, nix formatting) and
-  regenerate `bun.nix` when `bun.lock` changes. They do not run `ci`.
+- Everything runs in the flake's dev shell (`nix/shell.nix`). Run commands
+  as `nix develop -c bun run <script>`; `bun`/`node` are not on the host
+  PATH. Development and the Nix package use the same nixpkgs, so the same
+  Bun.
+- `ci` (defined in `nix/shell.nix`) is the full pipeline and what GitHub
+  Actions runs: install, `bun.nix`, format, lint, check, unit tests, build,
+  e2e tests. Run `nix develop -c ci` before pushing. It takes about 35 s.
+  GitHub Actions also runs `nix flake check` (git hooks, package, VM test).
+- Git hooks (prek, `nix/hooks.nix`, installed when entering the dev shell)
+  only run quick checks (whitespace, nix formatting) and regenerate
+  `bun.nix` when `bun.lock` changes. They do not run `ci`.
 - Scripts: `bun run test` (unit), `bun run test:e2e`, `bun run check`
   (svelte-check + service worker `tsc`), `bun run lint`, `bun run format`.
 - Commits follow conventional commits (`feat:`, `fix:`, `test:`, `ci:`,
@@ -160,11 +161,11 @@ and anonymous via `@twurple/chat`.
   the server free of outgoing requests; it only renders pages and preview
   images.
 - `bun.nix` (npm dependencies for Nix) is generated from `bun.lock` by
-  bun2nix: `bun2nix -o bun.nix` in devenv, also run by the git hook and
-  `ci`; CI fails if it is stale. On Renovate PRs, `bun-nix.yml` commits
-  it and starts the tests for that commit (`workflow_dispatch`). bun2nix is pinned to the commit of
-  nix-community/bun2nix#110 (bun.lock version 2) in `flake.nix` and
-  `devenv.yaml`; switch both to a release once it includes it.
+  bun2nix: `bun2nix -o bun.nix` in the dev shell, also run by the git hook
+  and `ci`; CI fails if it is stale. On Renovate PRs, `bun-nix.yml` commits
+  it and starts the tests for that commit (`workflow_dispatch`). bun2nix is
+  pinned to the commit of nix-community/bun2nix#110 (bun.lock version 2) in
+  `flake.nix`; switch to a release once it includes it.
 - Flakes only see files tracked by git: `git add -N` new files before
   `nix build`.
 - Packaging pitfalls, all handled in `nix/package.nix`:
@@ -247,7 +248,7 @@ and anonymous via `@twurple/chat`.
   - Close views with `view.close()` only. `Bun.WebView.closeAll()` stops the
     shared Chrome, and later views in the same test process then fail with
     "Chrome process closed the pipe" instead of starting a new one.
-  - devenv sets `BUN_CHROME_PATH` to a Chromium wrapper (Linux only). It
+  - The dev shell sets `BUN_CHROME_PATH` to a Chromium wrapper (Linux only). It
     clears `LD_LIBRARY_PATH`, because a host value can load libraries built
     for a newer glibc, and passes `--no-sandbox`, because Ubuntu 24.04 CI
     runners block the sandbox's user namespaces.
