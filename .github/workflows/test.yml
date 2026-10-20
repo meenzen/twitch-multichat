@@ -20,11 +20,12 @@ jobs:
     steps:
       - uses: actions/checkout@v7
       - uses: cachix/install-nix-action@v31
-      - uses: cachix/cachix-action@v17
+      # pulls from and pushes to the cache the servers deploy from
+      - uses: ryanccn/attic-action@dc99f5eb1d5c0495aa26f7b56337b30011fa153e # v0.5.2
         with:
-          name: meenzen
-          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-          extraPullNames: nix-community
+          endpoint: https://attic.mnzn.dev
+          cache: main
+          token: ${{ secrets.ATTIC_TOKEN }}
 
       - name: Build and test
         run: nix develop -c ci
@@ -53,11 +54,12 @@ jobs:
         with:
           extra_nix_config: |
             system-features = nixos-test benchmark big-parallel kvm
-      - uses: cachix/cachix-action@v17
+      # pulls from and pushes to the cache the servers deploy from
+      - uses: ryanccn/attic-action@dc99f5eb1d5c0495aa26f7b56337b30011fa153e # v0.5.2
         with:
-          name: meenzen
-          authToken: ${{ secrets.CACHIX_AUTH_TOKEN }}
-          extraPullNames: nix-community
+          endpoint: https://attic.mnzn.dev
+          cache: main
+          token: ${{ secrets.ATTIC_TOKEN }}
 
       - name: Build the package and run the NixOS test
         run: nix flake check -L

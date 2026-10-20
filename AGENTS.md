@@ -168,6 +168,11 @@ and anonymous via `@twurple/chat`.
   `flake.nix`; switch to a release once it includes it.
 - Flakes only see files tracked by git: `git add -N` new files before
   `nix build`.
+- CI pushes everything it builds to the Attic cache `main` on
+  attic.mnzn.dev (secret `ATTIC_TOKEN`), which the servers use as a
+  substituter. A deploy only finds the package there if it builds the same
+  derivation: the same commit (CI builds every push to `main`) and this
+  flake's own nixpkgs, so no `inputs.nixpkgs.follows` on this input.
 - Packaging pitfalls, all handled in `nix/package.nix`:
   - `bun install` from bun2nix's cache ignores `patchedDependencies`; the
     patches are applied to the cache instead (`patchedDependenciesToOverrides`).
