@@ -9,6 +9,9 @@
 }: let
   cfg = config.services.twitch-multichat;
   inherit (lib) mkEnableOption mkIf mkMerge mkOption types;
+  originPattern = "(https?)://([^/]+)";
+  # [protocol host], the forwarded headers the app builds its URL from
+  originParts = builtins.match originPattern (toString cfg.origin);
 in {
   options.services.twitch-multichat = {
     enable = mkEnableOption "Twitch Multichat";
@@ -35,14 +38,18 @@ in {
     };
 
     origin = mkOption {
-      type = types.nullOr types.str;
+      type = types.nullOr (types.strMatching originPattern);
       default = null;
       example = "https://multichat.example.com";
       description = ''
-        Public URL of the site, used for absolute URLs in link previews.
-        When null, the URL is taken from the reverse proxy's
-        `X-Forwarded-Proto` and `X-Forwarded-Host` headers, which the nginx
-        virtual host of this module sets.
+        Public URL of the site, used for absolute URLs in link previews and
+        drawn into the preview image. Required with `nginx.enable`, which
+        then passes it to the app instead of the request's Host header (a
+        client could put any name there).
+
+        The app takes its URL from the `X-Forwarded-Proto` and
+        `X-Forwarded-Host` headers. Without `nginx.enable`, set them in your
+        reverse proxy to fixed values, never the client's Host.
       '';
     };
 
@@ -73,25 +80,20 @@ in {
         wantedBy = ["multi-user.target"];
         after = ["network.target"];
 
-        environment =
-          {
-            SOCKET_PATH = cfg.socketPath;
-            # adapter-node passes these to listen() next to the socket path,
-            # and Bun rejects a socket path with a host. Empty is ignored.
-            HOST = "";
-            PORT = "";
-            NODE_ENV = "production";
-            # Bun's transpiler cache would need a writable home
-            BUN_RUNTIME_TRANSPILER_CACHE_PATH = "0";
-          }
-          // (
-            if cfg.origin != null
-            then {ORIGIN = cfg.origin;}
-            else {
-              PROTOCOL_HEADER = "x-forwarded-proto";
-              HOST_HEADER = "x-forwarded-host";
-            }
-          );
+        environment = {
+          SOCKET_PATH = cfg.socketPath;
+          # adapter-node passes these to listen() next to the socket path,
+          # and Bun rejects a socket path with a host. Empty is ignored.
+          HOST = "";
+          PORT = "";
+          # the request URL's origin, set by the proxy. adapter-node has no
+          # ORIGIN variable (it is kit.paths.origin, fixed at build time).
+          PROTOCOL_HEADER = "x-forwarded-proto";
+          HOST_HEADER = "x-forwarded-host";
+          NODE_ENV = "production";
+          # Bun's transpiler cache would need a writable home
+          BUN_RUNTIME_TRANSPILER_CACHE_PATH = "0";
+        };
 
         serviceConfig = {
           ExecStart = lib.getExe cfg.package;
@@ -142,6 +144,17 @@ in {
     }
 
     (mkIf cfg.nginx.enable {
+      assertions = [
+        {
+          assertion = cfg.origin != null;
+          message = ''
+            services.twitch-multichat.origin must be set to the site's public
+            URL, e.g. "https://multichat.example.com". Taking it from the
+            Host header would let clients choose the URLs in link previews.
+          '';
+        }
+      ];
+
       users.users.${config.services.nginx.user}.extraGroups = [cfg.group];
 
       services.nginx = {
@@ -174,12 +187,11 @@ in {
             };
             "@app" = {
               proxyPass = "http://unix:${cfg.socketPath}";
-              # only the headers the app reads (see `origin`)
+              # only the headers the app reads, fixed to `origin`
               recommendedProxySettings = false;
               extraConfig = ''
-                proxy_set_header Host $host;
-                proxy_set_header X-Forwarded-Proto $scheme;
-                proxy_set_header X-Forwarded-Host $host;
+                proxy_set_header X-Forwarded-Proto ${builtins.elemAt originParts 0};
+                proxy_set_header X-Forwarded-Host ${builtins.elemAt originParts 1};
               '';
             };
           };
