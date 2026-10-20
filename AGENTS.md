@@ -202,6 +202,11 @@ and anonymous via `@twurple/chat`.
 - nginx: store files all have mtime 1, so nginx's `Last-Modified` and ETag
   (mtime and size) can't tell versions apart. The virtual host disables
   ETags and `If-Modified-Since` handling.
+- The app's URL (link preview URLs, the host in the preview image) comes
+  from `X-Forwarded-Proto` and `X-Forwarded-Host`, which the virtual host
+  sets to the fixed `origin`, never the client's `Host`. adapter-node 6 has
+  no `ORIGIN` variable: its origin is `kit.paths.origin`, fixed at build
+  time, and setting it would make the package site-specific.
 
 ## Iterating on the chat UI
 

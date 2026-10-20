@@ -8,6 +8,7 @@
     imports = [nixosModule];
     services.twitch-multichat = {
       enable = true;
+      origin = "http://multichat.test";
       nginx = {
         enable = true;
         virtualHost = "multichat.test";
@@ -53,6 +54,11 @@
         page = curl("/-/foo/bar")
         assert "http://multichat.test/images/preview.png?channel=foo&amp;channel=bar" in page, page
         assert "cache-control: no-cache" in headers("/-/foo/bar")
+
+    with subtest("a spoofed Host header doesn't reach the page"):
+        page = machine.succeed("curl -fsS -H 'Host: evil.test' http://localhost/-/foo")
+        assert "evil.test" not in page, page
+        assert "http://multichat.test/images/preview.png?channel=foo" in page, page
 
     with subtest("preview images render offline, same as the snapshot"):
         curl("/images/preview.png?channel=foo&channel=bar", "-o /tmp/preview.png")

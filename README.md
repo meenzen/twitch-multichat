@@ -59,6 +59,7 @@ sandboxed by systemd.
         {
           services.twitch-multichat = {
             enable = true;
+            origin = "https://multichat.example.com";
             nginx = {
               enable = true;
               virtualHost = "multichat.example.com";
@@ -78,8 +79,9 @@ sandboxed by systemd.
 
 Without `nginx.enable`, point your reverse proxy at
 `services.twitch-multichat.socketPath`, add its user to
-`services.twitch-multichat.group` and set `services.twitch-multichat.origin`
-(or forward `X-Forwarded-Proto` and `X-Forwarded-Host`).
+`services.twitch-multichat.group` and set `X-Forwarded-Proto` and
+`X-Forwarded-Host` to your site's fixed scheme and host. Never pass the
+client's `Host` on: the app builds link preview URLs from these headers.
 
 ## Development
 
