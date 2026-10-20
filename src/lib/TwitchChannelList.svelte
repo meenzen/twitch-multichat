@@ -42,7 +42,10 @@
     padding: 4px 8px;
     list-style: none;
     overflow-x: auto;
+    /* standard scrollbar properties turn off the ::-webkit-scrollbar
+       styles in app.html, so the colours have to be set here too */
     scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb-color) var(--scrollbar-color);
     white-space: nowrap;
     font-size: 18px;
     font-family: var(--font-family);
