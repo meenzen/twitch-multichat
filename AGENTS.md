@@ -123,7 +123,9 @@ anonymous via `@twurple/chat`.
   the response is then empty (curl: "Empty reply from server"). After
   editing a preview component, restart `vite dev`: hot reloads leave the
   renderer failing until a restart, which looks like a broken design.
-  `LandingPreviewImage.svelte` is the image without channels.
+  `PreviewImage.svelte` is the image for every page: chat pages show their
+  first channels (as many as `previewChannels.ts` estimates to fit), the
+  landing page made-up ones.
 - `src/lib/cacheControl.ts`: Cache-Control per route for responses from the
   Pages Function, applied in `hooks.server.ts`. Add new dynamic routes there.
   Pages runs Functions before its CDN cache, so only browser and scraper
