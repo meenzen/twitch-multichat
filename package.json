@@ -60,6 +60,7 @@
     "#lib/*": "./src/lib/*"
   },
   "patchedDependencies": {
-    "ultrahtml@1.7.0": "patches/ultrahtml@1.7.0.patch"
+    "ultrahtml@1.7.0": "patches/ultrahtml@1.7.0.patch",
+    "@ethercorps/sveltekit-og@4.3.0": "patches/@ethercorps%2Fsveltekit-og@4.3.0.patch"
   }
 }
