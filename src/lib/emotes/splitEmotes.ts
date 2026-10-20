@@ -44,6 +44,9 @@ function emotePart(emote: Emote): MessagePart {
   if (emote.heightScale !== undefined) {
     part.emoteHeightScale = emote.heightScale;
   }
+  if (emote.aspectRatio !== undefined) {
+    part.emoteAspectRatio = emote.aspectRatio;
+  }
   return part;
 }
 

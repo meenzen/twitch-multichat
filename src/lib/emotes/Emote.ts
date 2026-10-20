@@ -19,6 +19,8 @@ export type Emote = {
    * shorter on purpose. Missing means 1.
    */
   heightScale?: number;
+  /** Width / height, when the service says; keeps room while loading */
+  aspectRatio?: number;
 };
 
 export type EmoteImage = {

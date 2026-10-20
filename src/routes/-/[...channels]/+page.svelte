@@ -30,7 +30,6 @@
 <svelte:head>
   <!-- endless channel combinations, only the landing page is indexed -->
   <MetaTags url={page.url} channels={selectedChannels} noindex />
-  <link rel="preload" as="image" href="/emote.png" />
 </svelte:head>
 
 {#if browser}

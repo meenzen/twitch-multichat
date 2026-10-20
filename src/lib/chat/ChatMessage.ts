@@ -22,6 +22,8 @@ export type MessagePart = {
   emoteImages?: EmoteImage[];
   /** Height of a third-party emote relative to a normal one (default 1) */
   emoteHeightScale?: number;
+  /** Width / height of a third-party emote, if known (default 1) */
+  emoteAspectRatio?: number;
   /** The service a third-party emote comes from, e.g. "bttv" */
   emoteProvider?: string;
   /** Zero-width emotes drawn on top of this emote, in order */

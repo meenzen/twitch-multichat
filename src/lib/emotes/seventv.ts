@@ -4,7 +4,7 @@ import { defaultFetch, fetchJson, type Fetch } from "./fetchJson";
 // https://7tv.io/docs (v3 REST, read anonymously)
 const api = "https://7tv.io/v3";
 
-type SevenTvFile = { name?: string; height?: number };
+type SevenTvFile = { name?: string; width?: number; height?: number };
 
 /** An emote as it is added to a set */
 type SevenTvActiveEmote = {
@@ -88,18 +88,27 @@ export class SevenTvEmotes implements EmoteProvider {
             ((e.flags ?? 0) & zeroWidthInSet) !== 0 ||
             ((e.data?.flags ?? 0) & zeroWidthEmote) !== 0,
         };
-        const heightScale = this.heightScale(files);
-        if (heightScale !== undefined) emote.heightScale = heightScale;
+        const size = imageSize(files);
+        if (size) {
+          emote.aspectRatio = size.width / size.height;
+          if (size.height < normalHeight) {
+            emote.heightScale = size.height / normalHeight;
+          }
+        }
         return emote;
       });
   }
+}
 
-  /** For emotes shorter than normal, from the size of the 1x image */
-  private heightScale(files: SevenTvFile[]): number | undefined {
-    const height = files.find((f) => f?.name === "1x.webp")?.height;
-    if (typeof height !== "number" || !(height > 0)) return undefined;
-    return height < normalHeight ? height / normalHeight : undefined;
-  }
+/** Size of the 1x image, if the API reports a usable one */
+function imageSize(
+  files: SevenTvFile[],
+): { width: number; height: number } | undefined {
+  const file = files.find((f) => f?.name === "1x.webp");
+  const { width, height } = file ?? {};
+  if (typeof width !== "number" || typeof height !== "number") return;
+  if (!(width > 0 && height > 0)) return;
+  return { width, height };
 }
 
 /** Sizes the emote is available in; 1x only when the API doesn't say */

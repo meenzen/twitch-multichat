@@ -56,7 +56,7 @@ describe("SevenTvEmotes", () => {
                 files: [
                   { name: "1x.avif", height: 32 },
                   { name: "2x.webp", height: 64 },
-                  { name: "1x.webp", height: 32 },
+                  { name: "1x.webp", width: 96, height: 32 },
                   { name: "3x.webp", height: 96 },
                 ],
               },
@@ -75,6 +75,7 @@ describe("SevenTvEmotes", () => {
       })),
     );
     expect(emote.heightScale).toBeUndefined();
+    expect(emote.aspectRatio).toBe(3);
   });
 
   it("scales emotes shorter than the normal 32px down", async () => {
@@ -84,12 +85,16 @@ describe("SevenTvEmotes", () => {
           {
             id: "r",
             name: "respect",
-            data: { host: { files: [{ name: "1x.webp", height: 19 }] } },
+            data: {
+              host: { files: [{ name: "1x.webp", width: 96, height: 19 }] },
+            },
           },
           {
             id: "b",
             name: "broken",
-            data: { host: { files: [{ name: "1x.webp", height: "x" }] } },
+            data: {
+              host: { files: [{ name: "1x.webp", width: 96, height: "x" }] },
+            },
           },
         ],
       },
@@ -98,7 +103,9 @@ describe("SevenTvEmotes", () => {
     const [short, broken] = await new SevenTvEmotes(fetch).global();
 
     expect(short.heightScale).toBeCloseTo(19 / 32);
+    expect(short.aspectRatio).toBeCloseTo(96 / 19);
     expect(broken.heightScale).toBeUndefined();
+    expect(broken.aspectRatio).toBeUndefined();
   });
 
   it("uses the channel's names and zero-width flags", async () => {

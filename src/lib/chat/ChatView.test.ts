@@ -77,6 +77,56 @@ describe("ChatView", () => {
     );
   });
 
+  it("shows the name of an emote whose image fails to load", async () => {
+    render(ChatView, {
+      messages: [
+        createMessage({
+          parts: [
+            { type: MessagePartType.Text, content: "nice " },
+            { type: MessagePartType.Emote, content: "25", emoteName: "Kappa" },
+          ],
+        }),
+      ],
+    });
+
+    await fireEvent.error(screen.getByAltText("Kappa"));
+
+    expect(screen.queryByAltText("Kappa")).toBeNull();
+    expect(screen.getByText("Kappa").tagName).toBe("SPAN");
+  });
+
+  it("keeps room for emotes while they load", () => {
+    render(ChatView, {
+      messages: [
+        createMessage({
+          parts: [
+            {
+              type: MessagePartType.Emote,
+              content: "w1",
+              emoteName: "WIDEGIGACHAD",
+              emoteImages: [
+                { url: "https://cdn.7tv.app/emote/w1/1x.webp", density: 1 },
+              ],
+              emoteProvider: "7tv",
+              emoteAspectRatio: 3,
+            },
+            { type: MessagePartType.Emote, content: "25", emoteName: "Kappa" },
+          ],
+        }),
+      ],
+    });
+
+    expect(
+      screen
+        .getByAltText("WIDEGIGACHAD")
+        .style.getPropertyValue("--aspect-ratio"),
+    ).toBe("3");
+    // unknown: the stylesheet's square default
+    expect(
+      screen.getByAltText("Kappa").style.getPropertyValue("--aspect-ratio"),
+    ).toBe("");
+  });
+
   it("draws emotes that are shorter than normal shorter", () => {
     render(ChatView, {
       messages: [

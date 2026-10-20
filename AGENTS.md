@@ -74,7 +74,13 @@ anonymous via `@twurple/chat`.
   the per-provider setting only hides them at render time (`hiddenEmotes`),
   so toggling needs no reload. `TwitchEmote` turns the images into a
   `srcset` whose densities are divided by the text scale
-  (`emotes/images.ts`), so larger text loads larger images.
+  (`emotes/images.ts`), so larger text loads larger images. While loading
+  an emote keeps an empty box of its size (CSS `aspect-ratio`, square unless
+  7TV reports the size); if the image fails it is replaced by its name. A
+  placeholder `src` swapped for the real one does not help: Chrome shows
+  nothing until the new image is there, and the broken icon on errors.
+  `MessageEmote` renders through a single `{#each}`: whitespace between
+  top-level blocks would add spaces next to the message's own.
 - `src/lib/fake/`: `FakeChatSource` (drive it by hand or call `stream()`) and
   seeded fixtures (`createMessage`, `randomMessages`).
 - `src/lib/components/modal/`: shared `Modal` plus `modalStack`. Only the top
