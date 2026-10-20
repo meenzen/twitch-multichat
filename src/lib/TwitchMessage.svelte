@@ -15,6 +15,7 @@
     channelTag = true,
     timestamps = false,
     hiddenEmotes = [],
+    fontSize,
   }: {
     message: ParsedMessage;
     shadow?: boolean;
@@ -22,6 +23,8 @@
     timestamps?: boolean;
     /** Third-party emote providers whose emotes show as text */
     hiddenEmotes?: readonly string[];
+    /** Text size in px, to load sharp enough emote images */
+    fontSize?: number;
   } = $props();
   let isAction = $derived(message.type === MessageType.Action);
 </script>
@@ -36,7 +39,7 @@
       {#if part.type === MessagePartType.Text}
         <span class="message-text">{part.content}</span>
       {:else if part.type === MessagePartType.Emote}
-        <MessageEmote {part} {hiddenEmotes} />
+        <MessageEmote {part} {hiddenEmotes} {fontSize} />
       {:else if part.type === MessagePartType.Link}
         <a
           class="message-link"

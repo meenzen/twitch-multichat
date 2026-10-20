@@ -7,10 +7,13 @@
   let {
     part,
     hiddenEmotes = [],
+    fontSize,
   }: {
     part: MessagePart;
     /** Third-party emote providers whose emotes show as text */
     hiddenEmotes?: readonly string[];
+    /** Text size in px */
+    fontSize?: number;
   } = $props();
 
   // Svelte trims whitespace at the edges of an element, but not expressions
@@ -27,7 +30,13 @@
 </script>
 
 {#snippet image(emote: MessagePart)}
-  <TwitchEmote id={emote.content} name={emote.emoteName} url={emote.emoteUrl} />
+  <TwitchEmote
+    id={emote.content}
+    name={emote.emoteName}
+    images={emote.emoteImages}
+    heightScale={emote.emoteHeightScale}
+    {fontSize}
+  />
 {/snippet}
 
 {#if !baseShown}

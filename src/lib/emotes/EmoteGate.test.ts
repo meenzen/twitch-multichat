@@ -14,7 +14,7 @@ function emotes(...codes: string[]): EmoteMap {
   return new Map(
     codes.map((code): [string, Emote] => [
       code,
-      { id: code, code, url: "", provider: "bttv" },
+      { id: code, code, images: [], provider: "bttv" },
     ]),
   );
 }

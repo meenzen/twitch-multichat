@@ -1,4 +1,4 @@
-import type { Emote, EmoteProvider } from "./Emote";
+import type { Emote, EmoteImage, EmoteProvider } from "./Emote";
 import { defaultFetch, fetchJson, type Fetch } from "./fetchJson";
 
 // https://betterttv.com/developers/api
@@ -11,8 +11,13 @@ type BttvUser = {
   sharedEmotes?: BttvEmote[];
 };
 
-export function bttvEmoteUrl(id: string): string {
-  return `https://cdn.betterttv.net/emote/${encodeURIComponent(id)}/1x.webp`;
+/** Every BetterTTV emote comes in 1x (28px high), 2x and 3x */
+export function bttvEmoteImages(id: string): EmoteImage[] {
+  const base = `https://cdn.betterttv.net/emote/${encodeURIComponent(id)}`;
+  return [1, 2, 3].map((density) => ({
+    url: `${base}/${density}x.webp`,
+    density,
+  }));
 }
 
 /** BetterTTV emotes, read anonymously from the public API */
@@ -56,7 +61,7 @@ export class BttvEmotes implements EmoteProvider {
         .map((e) => ({
           id: e.id,
           code: e.code,
-          url: bttvEmoteUrl(e.id),
+          images: bttvEmoteImages(e.id),
           provider: this.name,
         }))
     );

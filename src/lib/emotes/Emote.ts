@@ -9,11 +9,22 @@ export type Emote = {
   id: string;
   /** The word that is replaced by the emote, case-sensitive */
   code: string;
-  /** Image at 1x scale */
-  url: string;
+  /** The emote in increasing sizes, starting at 1x */
+  images: EmoteImage[];
   provider: EmoteProviderName;
   /** Drawn on top of the emote before it, e.g. 7TV's RainTime */
   zeroWidth?: boolean;
+  /**
+   * Height relative to the service's normal emote height, for emotes made
+   * shorter on purpose. Missing means 1.
+   */
+  heightScale?: number;
+};
+
+export type EmoteImage = {
+  url: string;
+  /** Size relative to the 1x image */
+  density: number;
 };
 
 /** Emotes usable in a channel, by code */

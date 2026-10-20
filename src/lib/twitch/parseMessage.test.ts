@@ -84,7 +84,9 @@ describe("parseMessage", () => {
     const kkona = {
       id: "k1",
       code: "KKona",
-      url: "https://cdn.betterttv.net/emote/k1/1x.webp",
+      images: [
+        { url: "https://cdn.betterttv.net/emote/k1/1x.webp", density: 1 },
+      ],
       provider: "bttv" as const,
     };
     const emotes = new Map([["KKona", kkona]]);
@@ -92,7 +94,7 @@ describe("parseMessage", () => {
       type: MessagePartType.Emote,
       content: "k1",
       emoteName: "KKona",
-      emoteUrl: kkona.url,
+      emoteImages: kkona.images,
       emoteProvider: "bttv",
     };
 

@@ -66,9 +66,15 @@ anonymous via `@twurple/chat`.
   differ from the emote's own name.
   `TwitchChatSource` starts loading on ROOMSTATE (channels are looked up by
   `room-id`) and `EmoteGate` holds a channel's messages and removals until
-  its emotes are there (3 s timeout). Parts carry `emoteUrl` and
-  `emoteProvider`; the per-provider setting only hides them at render time
-  (`hiddenEmotes`), so toggling needs no reload.
+  its emotes are there (3 s timeout). API failures only cost emotes:
+  `fetchJson` gives up after 10 s, failed global lists are retried with the
+  next channel, and a failed refresh keeps the channel's last good list.
+  Parts carry `emoteImages` (every size, built from the id by the provider),
+  `emoteHeightScale` (7TV emotes shorter than 32px) and `emoteProvider`;
+  the per-provider setting only hides them at render time (`hiddenEmotes`),
+  so toggling needs no reload. `TwitchEmote` turns the images into a
+  `srcset` whose densities are divided by the text scale
+  (`emotes/images.ts`), so larger text loads larger images.
 - `src/lib/fake/`: `FakeChatSource` (drive it by hand or call `stream()`) and
   seeded fixtures (`createMessage`, `randomMessages`).
 - `src/lib/components/modal/`: shared `Modal` plus `modalStack`. Only the top

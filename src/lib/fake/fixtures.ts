@@ -6,8 +6,8 @@ import {
   type ParsedMessage,
 } from "#lib/chat/ChatMessage.ts";
 import { splitLinks } from "#lib/chat/links.ts";
-import { bttvEmoteUrl } from "#lib/emotes/bttv.ts";
-import { sevenTvEmoteUrl } from "#lib/emotes/seventv.ts";
+import { bttvEmoteImages } from "#lib/emotes/bttv.ts";
+import { sevenTvEmoteImages } from "#lib/emotes/seventv.ts";
 import type { Emote } from "#lib/emotes/Emote.ts";
 import { splitEmotes } from "#lib/emotes/splitEmotes.ts";
 
@@ -60,7 +60,7 @@ const thirdPartyEmotes = new Map<string, Emote>([
     haHAA: "555981336ba1901877765555",
   }).map(([code, id]): [string, Emote] => [
     code,
-    { id, code, url: bttvEmoteUrl(id), provider: "bttv" },
+    { id, code, images: bttvEmoteImages(id), provider: "bttv" },
   ]),
   ...Object.entries({
     PepePls: "01GCMQJGB0000D8ZK13J8KVCDX",
@@ -74,7 +74,7 @@ const thirdPartyEmotes = new Map<string, Emote>([
     {
       id,
       code,
-      url: sevenTvEmoteUrl(id),
+      images: sevenTvEmoteImages(id),
       provider: "7tv",
       zeroWidth: code === "RainTime",
     },

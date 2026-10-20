@@ -336,7 +336,12 @@ describe("TwitchChatSource page resume", () => {
     const kkona: EmoteMap = new Map([
       [
         "KKona",
-        { id: "k1", code: "KKona", url: "https://cdn/k1", provider: "bttv" },
+        {
+          id: "k1",
+          code: "KKona",
+          images: [{ url: "https://cdn/k1", density: 1 }],
+          provider: "bttv",
+        },
       ],
     ]);
 

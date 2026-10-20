@@ -1,8 +1,10 @@
-import type { Emote, EmoteProvider } from "./Emote";
+import type { Emote, EmoteImage, EmoteProvider } from "./Emote";
 import { defaultFetch, fetchJson, type Fetch } from "./fetchJson";
 
 // https://7tv.io/docs (v3 REST, read anonymously)
 const api = "https://7tv.io/v3";
+
+type SevenTvFile = { name?: string; height?: number };
 
 /** An emote as it is added to a set */
 type SevenTvActiveEmote = {
@@ -11,8 +13,11 @@ type SevenTvActiveEmote = {
   name: string;
   /** Bit 1: zero-width in this set */
   flags?: number;
-  /** Bit 256: the emote itself is made to be zero-width */
-  data?: { flags?: number };
+  data?: {
+    /** Bit 256: the emote itself is made to be zero-width */
+    flags?: number;
+    host?: { files?: SevenTvFile[] };
+  };
 };
 
 type SevenTvEmoteSet = { emotes?: SevenTvActiveEmote[] | null };
@@ -22,8 +27,20 @@ type SevenTvUser = { emote_set?: SevenTvEmoteSet | null };
 const zeroWidthInSet = 1;
 const zeroWidthEmote = 1 << 8;
 
-export function sevenTvEmoteUrl(id: string): string {
-  return `https://cdn.7tv.app/emote/${encodeURIComponent(id)}/1x.webp`;
+/** Height of a normal emote at 1x; shorter ones are drawn shorter */
+const normalHeight = 32;
+
+const webpFile = /^([1-4])x\.webp$/;
+
+export function sevenTvEmoteImages(
+  id: string,
+  densities: number[] = [1, 2, 3, 4],
+): EmoteImage[] {
+  const base = `https://cdn.7tv.app/emote/${encodeURIComponent(id)}`;
+  return densities.map((density) => ({
+    url: `${base}/${density}x.webp`,
+    density,
+  }));
 }
 
 /** 7TV emotes: the global set and each channel's active set */
@@ -58,14 +75,39 @@ export class SevenTvEmotes implements EmoteProvider {
           typeof e.name === "string" &&
           e.name !== "",
       )
-      .map((e) => ({
-        id: e.id,
-        code: e.name,
-        url: sevenTvEmoteUrl(e.id),
-        provider: this.name,
-        zeroWidth:
-          ((e.flags ?? 0) & zeroWidthInSet) !== 0 ||
-          ((e.data?.flags ?? 0) & zeroWidthEmote) !== 0,
-      }));
+      .map((e) => {
+        const files = Array.isArray(e.data?.host?.files)
+          ? e.data.host.files
+          : [];
+        const emote: Emote = {
+          id: e.id,
+          code: e.name,
+          images: sevenTvEmoteImages(e.id, densities(files)),
+          provider: this.name,
+          zeroWidth:
+            ((e.flags ?? 0) & zeroWidthInSet) !== 0 ||
+            ((e.data?.flags ?? 0) & zeroWidthEmote) !== 0,
+        };
+        const heightScale = this.heightScale(files);
+        if (heightScale !== undefined) emote.heightScale = heightScale;
+        return emote;
+      });
   }
+
+  /** For emotes shorter than normal, from the size of the 1x image */
+  private heightScale(files: SevenTvFile[]): number | undefined {
+    const height = files.find((f) => f?.name === "1x.webp")?.height;
+    if (typeof height !== "number" || !(height > 0)) return undefined;
+    return height < normalHeight ? height / normalHeight : undefined;
+  }
+}
+
+/** Sizes the emote is available in; 1x only when the API doesn't say */
+function densities(files: SevenTvFile[]): number[] {
+  const found = files
+    .map((f) => webpFile.exec(f?.name ?? "")?.[1])
+    .filter((d) => d !== undefined)
+    .map(Number)
+    .sort((a, b) => a - b);
+  return found[0] === 1 ? [...new Set(found)] : [1];
 }
