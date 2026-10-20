@@ -8,6 +8,7 @@
   } from "#lib/settings/ChatSettings.ts";
   import { BttvEmotes } from "#lib/emotes/bttv.ts";
   import { EmoteLoader } from "#lib/emotes/EmoteLoader.ts";
+  import { SevenTvEmotes } from "#lib/emotes/seventv.ts";
   import type { ChannelFilter } from "#lib/chat/ChannelFilter.svelte.ts";
   import Chat from "#lib/chat/Chat.svelte";
   import { ChatStore } from "#lib/chat/ChatStore.svelte.ts";
@@ -21,7 +22,8 @@
     $props();
 
   // loaded even when hidden, so turning the setting on works right away
-  const emotes = new EmoteLoader([new BttvEmotes()]);
+  // 7TV last: it wins name clashes, it's the one most channels use today
+  const emotes = new EmoteLoader([new BttvEmotes(), new SevenTvEmotes()]);
   const source = new TwitchChatSource({
     debug: dev,
     loadEmotes: (channelId) => emotes.load(channelId),

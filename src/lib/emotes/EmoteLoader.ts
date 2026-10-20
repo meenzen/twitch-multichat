@@ -10,17 +10,20 @@ export class EmoteLoader {
 
   constructor(private readonly providers: EmoteProvider[]) {}
 
-  /** Later entries win: channel over global, later providers over earlier */
+  /**
+   * On a name clash channel emotes beat global ones (of any provider), then
+   * later providers beat earlier ones.
+   */
   async load(channelId: string): Promise<EmoteMap> {
-    const lists = await Promise.all(
-      this.providers.flatMap((provider) => [
-        this.global(provider),
+    const lists = await Promise.all([
+      ...this.providers.map((provider) => this.global(provider)),
+      ...this.providers.map((provider) =>
         provider.channel(channelId).catch((error: unknown) => {
           console.warn(`Failed to load ${provider.name} emotes:`, error);
           return [];
         }),
-      ]),
-    );
+      ),
+    ]);
 
     const emotes = new Map<string, Emote>();
     for (const emote of lists.flat()) emotes.set(emote.code, emote);

@@ -20,6 +20,8 @@ export type MessagePart = {
   emoteUrl?: string;
   /** The service a third-party emote comes from, e.g. "bttv" */
   emoteProvider?: string;
+  /** Zero-width emotes drawn on top of this emote, in order */
+  emoteOverlays?: MessagePart[];
   /** Target of a link part, `content` holds the text as written */
   href?: string;
 };

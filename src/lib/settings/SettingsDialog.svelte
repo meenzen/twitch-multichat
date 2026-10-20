@@ -124,6 +124,10 @@
         <input type="checkbox" bind:checked={settings.values.bttv} />
         BetterTTV emotes
       </label>
+      <label class="toggle">
+        <input type="checkbox" bind:checked={settings.values.sevenTv} />
+        7TV emotes
+      </label>
     </fieldset>
 
     <fieldset>

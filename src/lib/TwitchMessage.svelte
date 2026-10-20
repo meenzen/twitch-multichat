@@ -4,7 +4,7 @@
     MessageType,
     type ParsedMessage,
   } from "#lib/chat/ChatMessage.ts";
-  import TwitchEmote from "#lib/TwitchEmote.svelte";
+  import MessageEmote from "#lib/MessageEmote.svelte";
   import TwitchUsername from "#lib/TwitchUsername.svelte";
   import FormattedMessage from "#lib/FormattedMessage.svelte";
   import { formatClock } from "#lib/chat/duration.ts";
@@ -36,15 +36,7 @@
       {#if part.type === MessagePartType.Text}
         <span class="message-text">{part.content}</span>
       {:else if part.type === MessagePartType.Emote}
-        {#if part.emoteProvider && hiddenEmotes.includes(part.emoteProvider)}
-          <span class="message-text">{part.emoteName}</span>
-        {:else}
-          <TwitchEmote
-            id={part.content}
-            name={part.emoteName}
-            url={part.emoteUrl}
-          />
-        {/if}
+        <MessageEmote {part} {hiddenEmotes} />
       {:else if part.type === MessagePartType.Link}
         <a
           class="message-link"

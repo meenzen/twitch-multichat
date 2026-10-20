@@ -56,9 +56,14 @@ anonymous via `@twurple/chat`.
   `@lucide/svelte/icons/<name>` so only used icons are bundled.
 - `src/lib/twitch/`: the only place that touches twurple
   (`TwitchChatSource`, `parseMessage`).
-- `src/lib/emotes/`: third-party emotes (BetterTTV). An `EmoteProvider` per
-  service (`bttv.ts`, fetch injectable), `EmoteLoader` merges global and
-  channel emotes, `splitEmotes` turns words into emote parts at parse time.
+- `src/lib/emotes/`: third-party emotes (BetterTTV, 7TV). An
+  `EmoteProvider` per service (`bttv.ts`, `seventv.ts`, fetch injectable),
+  `EmoteLoader` merges them: channel emotes over global ones, then later
+  providers (7TV) over earlier ones. `splitEmotes` turns words into emote
+  parts at parse time and stacks zero-width emotes (7TV's RainTime, ...) on
+  the emote before them as `emoteOverlays`, rendered by `MessageEmote`.
+  7TV emotes are matched by their name in the channel's set, which can
+  differ from the emote's own name.
   `TwitchChatSource` starts loading on ROOMSTATE (channels are looked up by
   `room-id`) and `EmoteGate` holds a channel's messages and removals until
   its emotes are there (3 s timeout). Parts carry `emoteUrl` and

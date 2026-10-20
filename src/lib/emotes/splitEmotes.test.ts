@@ -60,3 +60,58 @@ describe("splitEmotes", () => {
     expect(splitEmotes(parts, emotes)).toEqual(parts);
   });
 });
+
+describe("splitEmotes with zero-width emotes", () => {
+  const rain: Emote = {
+    id: "r1",
+    code: "RainTime",
+    url: "https://cdn.7tv.app/emote/r1/1x.webp",
+    provider: "7tv",
+    zeroWidth: true,
+  };
+  const withRain = new Map([
+    ["KKona", kkona],
+    ["RainTime", rain],
+  ]);
+  const rainPart: MessagePart = {
+    type: MessagePartType.Emote,
+    content: "r1",
+    emoteName: "RainTime",
+    emoteUrl: "https://cdn.7tv.app/emote/r1/1x.webp",
+    emoteProvider: "7tv",
+  };
+
+  it("stacks them on the emote before, dropping the space between", () => {
+    expect(
+      splitEmotes([text("look KKona  RainTime RainTime now")], withRain),
+    ).toEqual([
+      text("look "),
+      { ...kkonaPart, emoteOverlays: [rainPart, rainPart] },
+      text(" now"),
+    ]);
+  });
+
+  it("stacks them on Twitch emotes without changing the original part", () => {
+    const twitch: MessagePart = {
+      type: MessagePartType.Emote,
+      content: "25",
+      emoteName: "Kappa",
+    };
+
+    expect(splitEmotes([twitch, text(" RainTime")], withRain)).toEqual([
+      { ...twitch, emoteOverlays: [rainPart] },
+    ]);
+    expect(twitch.emoteOverlays).toBeUndefined();
+  });
+
+  it("shows them on their own without an emote before", () => {
+    expect(splitEmotes([text("RainTime here")], withRain)).toEqual([
+      rainPart,
+      text(" here"),
+    ]);
+    expect(splitEmotes([text("rain RainTime")], withRain)).toEqual([
+      text("rain "),
+      rainPart,
+    ]);
+  });
+});
