@@ -1,5 +1,10 @@
 import { describe, expect, it } from "bun:test";
-import { defaultSettings, parseSettings, settingsUrl } from "./ChatSettings";
+import {
+  defaultSettings,
+  hiddenEmoteProviders,
+  parseSettings,
+  settingsUrl,
+} from "./ChatSettings";
 
 const parse = (query: string) => parseSettings(new URLSearchParams(query));
 
@@ -11,13 +16,14 @@ describe("parseSettings", () => {
   it("reads every setting", () => {
     expect(
       parse(
-        "shadow=false&size=large&channel=false&timestamps=true&overlay=true",
+        "shadow=false&size=large&channel=false&timestamps=true&bttv=false&overlay=true",
       ),
     ).toEqual({
       shadow: false,
       fontSize: "large",
       channelTag: false,
       timestamps: true,
+      bttv: false,
       overlay: true,
     });
   });
@@ -26,6 +32,13 @@ describe("parseSettings", () => {
     expect(parse("shadow=nope&size=gigantic&timestamps=1")).toEqual(
       defaultSettings,
     );
+  });
+});
+
+describe("hiddenEmoteProviders", () => {
+  it("hides BetterTTV emotes when turned off", () => {
+    expect(hiddenEmoteProviders(defaultSettings)).toEqual([]);
+    expect(hiddenEmoteProviders({ bttv: false })).toEqual(["bttv"]);
   });
 });
 
@@ -67,6 +80,7 @@ describe("settingsUrl", () => {
       fontSize: "medium" as const,
       channelTag: false,
       timestamps: true,
+      bttv: false,
       overlay: true,
     };
     expect(parseSettings(settingsUrl(base, settings).searchParams)).toEqual(

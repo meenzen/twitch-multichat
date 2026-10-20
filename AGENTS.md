@@ -56,6 +56,14 @@ anonymous via `@twurple/chat`.
   `@lucide/svelte/icons/<name>` so only used icons are bundled.
 - `src/lib/twitch/`: the only place that touches twurple
   (`TwitchChatSource`, `parseMessage`).
+- `src/lib/emotes/`: third-party emotes (BetterTTV). An `EmoteProvider` per
+  service (`bttv.ts`, fetch injectable), `EmoteLoader` merges global and
+  channel emotes, `splitEmotes` turns words into emote parts at parse time.
+  `TwitchChatSource` starts loading on ROOMSTATE (channels are looked up by
+  `room-id`) and `EmoteGate` holds a channel's messages and removals until
+  its emotes are there (3 s timeout). Parts carry `emoteUrl` and
+  `emoteProvider`; the per-provider setting only hides them at render time
+  (`hiddenEmotes`), so toggling needs no reload.
 - `src/lib/fake/`: `FakeChatSource` (drive it by hand or call `stream()`) and
   seeded fixtures (`createMessage`, `randomMessages`).
 - `src/lib/components/modal/`: shared `Modal` plus `modalStack`. Only the top

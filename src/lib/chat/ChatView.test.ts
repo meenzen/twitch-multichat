@@ -52,6 +52,27 @@ describe("ChatView", () => {
     );
   });
 
+  it("renders third-party emotes from their URL unless hidden", async () => {
+    const bttv = {
+      type: MessagePartType.Emote,
+      content: "k1",
+      emoteName: "KKona",
+      emoteUrl: "https://cdn.betterttv.net/emote/k1/1x.webp",
+      emoteProvider: "bttv",
+    };
+    const view = render(ChatView, {
+      messages: [createMessage({ parts: [bttv] })],
+    });
+
+    const emote = screen.getByAltText("KKona") as HTMLImageElement;
+    expect(emote.getAttribute("src")).toBe(bttv.emoteUrl);
+
+    await view.rerender({ hiddenEmotes: ["bttv"] });
+
+    expect(screen.queryByAltText("KKona")).toBeNull();
+    expect(screen.getByText("KKona")).toBeTruthy();
+  });
+
   it("renders links that open in a new tab", () => {
     render(ChatView, {
       messages: [

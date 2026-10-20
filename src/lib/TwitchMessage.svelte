@@ -14,11 +14,14 @@
     shadow = true,
     channelTag = true,
     timestamps = false,
+    hiddenEmotes = [],
   }: {
     message: ParsedMessage;
     shadow?: boolean;
     channelTag?: boolean;
     timestamps?: boolean;
+    /** Third-party emote providers whose emotes show as text */
+    hiddenEmotes?: readonly string[];
   } = $props();
   let isAction = $derived(message.type === MessageType.Action);
 </script>
@@ -33,7 +36,15 @@
       {#if part.type === MessagePartType.Text}
         <span class="message-text">{part.content}</span>
       {:else if part.type === MessagePartType.Emote}
-        <TwitchEmote id={part.content} name={part.emoteName} />
+        {#if part.emoteProvider && hiddenEmotes.includes(part.emoteProvider)}
+          <span class="message-text">{part.emoteName}</span>
+        {:else}
+          <TwitchEmote
+            id={part.content}
+            name={part.emoteName}
+            url={part.emoteUrl}
+          />
+        {/if}
       {:else if part.type === MessagePartType.Link}
         <a
           class="message-link"

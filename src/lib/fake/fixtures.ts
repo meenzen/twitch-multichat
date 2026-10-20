@@ -6,6 +6,9 @@ import {
   type ParsedMessage,
 } from "#lib/chat/ChatMessage.ts";
 import { splitLinks } from "#lib/chat/links.ts";
+import { bttvEmoteUrl } from "#lib/emotes/bttv.ts";
+import type { Emote } from "#lib/emotes/Emote.ts";
+import { splitEmotes } from "#lib/emotes/splitEmotes.ts";
 
 // Real global Twitch emote ids, so they render from the CDN. Emote names in
 // the texts below become emote parts, like Twitch sends them.
@@ -44,7 +47,22 @@ const emotes = new Map(
   }),
 );
 
-const emoteNames = [...emotes.keys()];
+// Real global BetterTTV emotes, found in the text like TwitchChatSource does
+const bttvEmotes = new Map(
+  Object.entries({
+    FeelsBadMan: "566c9fc265dbbdab32ec053b",
+    FeelsGoodMan: "566c9fde65dbbdab32ec053e",
+    KKona: "566ca04265dbbdab32ec054a",
+    monkaS: "56e9f494fff3cc5c35e5287e",
+    SourPls: "566ca38765dbbdab32ec0560",
+    haHAA: "555981336ba1901877765555",
+  }).map(([code, id]): [string, Emote] => [
+    code,
+    { id, code, url: bttvEmoteUrl(id), provider: "bttv" },
+  ]),
+);
+
+const emoteNames = [...emotes.keys(), ...bttvEmotes.keys()];
 
 const texts = [
   // reactions
@@ -112,6 +130,13 @@ const texts = [
   "BloodTrail",
   "SMOrc SMOrc SMOrc",
   "MrDestructoid",
+  "monkaS",
+  "monkaS monkaS",
+  "FeelsGoodMan",
+  "FeelsBadMan",
+  "SourPls SourPls SourPls",
+  "KKona",
+  "haHAA",
   "o7",
   "o7 o7 o7",
   "F",
@@ -346,7 +371,7 @@ export function textToParts(text: string): MessagePart[] {
       parts.push({ type: MessagePartType.Text, content: word });
     }
   }
-  return splitLinks(parts);
+  return splitLinks(splitEmotes(parts, bttvEmotes));
 }
 
 export function randomMessage(

@@ -28,3 +28,7 @@ export function precacheEntries(
 export function isTwitchEmote(url: URL): boolean {
   return url.origin === "https://static-cdn.jtvnw.net";
 }
+
+export function isBttvEmote(url: URL): boolean {
+  return url.origin === "https://cdn.betterttv.net";
+}

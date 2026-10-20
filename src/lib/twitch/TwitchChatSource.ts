@@ -1,6 +1,8 @@
-import { ChatClient, type ChatMessage } from "@twurple/chat";
+import { ChatClient, RoomState, type ChatMessage } from "@twurple/chat";
 import { MessageType } from "#lib/chat/ChatMessage.ts";
 import { ChatEmitter } from "#lib/chat/ChatSource.ts";
+import type { EmoteMap } from "#lib/emotes/Emote.ts";
+import { EmoteGate } from "#lib/emotes/EmoteGate.ts";
 import { parseMessage } from "./parseMessage";
 
 type PageEvents = Pick<EventTarget, "addEventListener" | "removeEventListener">;
@@ -13,7 +15,17 @@ export type TwitchChatSourceOptions = {
   /** Page lifecycle event targets, injectable for tests */
   document?: PageEvents & Pick<Document, "visibilityState">;
   window?: PageEvents;
+  /** Third-party emotes of a channel, by Twitch user id */
+  loadEmotes?: (channelId: string) => Promise<EmoteMap>;
+  /** How long a channel's messages wait for its emotes */
+  emoteTimeoutMs?: number;
 };
+
+const noEmotes: EmoteMap = new Map();
+
+function channelName(channel: string): string {
+  return channel.replace(/^#/, "").toLowerCase();
+}
 
 /** Don't check the connection more often than this when the page resumes */
 const minCheckIntervalMs = 5000;
@@ -31,6 +43,7 @@ export class TwitchChatSource extends ChatEmitter {
   private readonly debug: boolean;
   private readonly document?: TwitchChatSourceOptions["document"];
   private readonly window?: PageEvents;
+  private readonly emotes?: EmoteGate;
 
   private channels: string[] = [];
   private active = false;
@@ -47,6 +60,9 @@ export class TwitchChatSource extends ChatEmitter {
     this.debug = options.debug ?? false;
     this.document = options.document ?? globalThis.document;
     this.window = options.window ?? globalThis.window;
+    if (options.loadEmotes) {
+      this.emotes = new EmoteGate(options.loadEmotes, options.emoteTimeoutMs);
+    }
     this.client =
       options.client ??
       new ChatClient({
@@ -55,44 +71,46 @@ export class TwitchChatSource extends ChatEmitter {
 
     this.client.onMessage((channel, user, text, msg) => {
       this.log("Message received:", { channel, user, text }, msg);
-      this.emit(
-        "message",
-        parseMessage({ message: msg, type: MessageType.Normal }),
-      );
+      this.receive(msg, MessageType.Normal);
     });
 
     this.client.onAction((channel, user, text, msg) => {
       this.log("Action message received:", { channel, user, text }, msg);
-      this.emit(
-        "message",
-        parseMessage({ message: msg, type: MessageType.Action }),
-      );
+      this.receive(msg, MessageType.Action);
     });
 
     this.client.onMessageRemove((channel, messageId) => {
       console.log("Clearing message:", { channel, messageId });
-      this.emit("messageRemoved", messageId);
+      this.inOrder(channel, () => this.emit("messageRemoved", messageId));
     });
 
     // twurple reports user-targeted CLEARCHAT as ban/timeout, not as chat clear
     this.client.onBan((channel, user) => {
       console.log("Clearing banned user:", { channel, user });
-      this.emit("userCleared", channel, user);
+      this.inOrder(channel, () => this.emit("userCleared", channel, user));
     });
 
     this.client.onTimeout((channel, user) => {
       console.log("Clearing timed out user:", { channel, user });
-      this.emit("userCleared", channel, user);
+      this.inOrder(channel, () => this.emit("userCleared", channel, user));
     });
 
     this.client.onChatClear((channel) => {
       console.log("Clearing channel:", { channel });
-      this.emit("channelCleared", channel);
+      this.inOrder(channel, () => this.emit("channelCleared", channel));
     });
 
     // twurple pings after a minute without traffic, so this stays fresh
     // while the connection works
-    this.client.irc.onAnyMessage(() => (this.lastSeen = Date.now()));
+    this.client.irc.onAnyMessage((msg) => {
+      this.lastSeen = Date.now();
+      // sent right after joining, before any messages: a head start for the
+      // emotes. Rejoining sends it again, which refreshes them.
+      const roomId = msg.tags.get("room-id");
+      if (msg.command === RoomState.COMMAND && roomId) {
+        this.emotes?.load(channelName(msg.rawParamValues[0] ?? ""), roomId);
+      }
+    });
 
     // fires after every successful (re)connect, once joining is possible
     this.client.onAuthenticationSuccess(() => {
@@ -178,6 +196,23 @@ export class TwitchChatSource extends ChatEmitter {
     this.emit("status", { kind: "ready" });
     this.resolveFirstJoin?.();
     this.resolveFirstJoin = undefined;
+  }
+
+  private receive(msg: ChatMessage, type: MessageType): void {
+    const channel = channelName(msg.target);
+    if (msg.channelId) this.emotes?.ensure(channel, msg.channelId);
+    this.inOrder(channel, (emotes) =>
+      this.emit("message", parseMessage({ message: msg, type }, emotes)),
+    );
+  }
+
+  /** Runs `event` once the channel's emotes are there, keeping the order */
+  private inOrder(channel: string, event: (emotes: EmoteMap) => void): void {
+    if (this.emotes) {
+      this.emotes.run(channelName(channel), event);
+    } else {
+      event(noEmotes);
+    }
   }
 
   private watchPage(): void {

@@ -6,7 +6,11 @@
   import ChatView from "#lib/chat/ChatView.svelte";
   import { ChannelFilter } from "#lib/chat/ChannelFilter.svelte.ts";
   import ChatScreen from "#lib/components/ChatScreen.svelte";
-  import { fontSizes, parseSettings } from "#lib/settings/ChatSettings.ts";
+  import {
+    fontSizes,
+    hiddenEmoteProviders,
+    parseSettings,
+  } from "#lib/settings/ChatSettings.ts";
   import { Settings, persistInUrl } from "#lib/settings/Settings.svelte.ts";
   import { replaceUrl } from "#lib/settings/replaceUrl.ts";
   import { FakeChatSource } from "#lib/fake/FakeChatSource.ts";
@@ -40,6 +44,7 @@
     channelTag: settings.values.channelTag,
     timestamps: settings.values.timestamps,
     fontSize: fontSizes[settings.values.fontSize],
+    hiddenEmotes: hiddenEmoteProviders(settings.values),
   });
 
   const source = new FakeChatSource();

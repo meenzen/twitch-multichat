@@ -119,6 +119,14 @@
     </fieldset>
 
     <fieldset>
+      <legend>Emotes</legend>
+      <label class="toggle">
+        <input type="checkbox" bind:checked={settings.values.bttv} />
+        BetterTTV emotes
+      </label>
+    </fieldset>
+
+    <fieldset>
       <legend>Overlay</legend>
       <p class="hint" id="overlay-hint">
         Use this URL as a browser source in OBS or other streaming software. It

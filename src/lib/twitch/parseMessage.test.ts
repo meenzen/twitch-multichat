@@ -80,6 +80,54 @@ describe("parseMessage", () => {
     ]);
   });
 
+  describe("third-party emotes", () => {
+    const kkona = {
+      id: "k1",
+      code: "KKona",
+      url: "https://cdn.betterttv.net/emote/k1/1x.webp",
+      provider: "bttv" as const,
+    };
+    const emotes = new Map([["KKona", kkona]]);
+    const kkonaPart = {
+      type: MessagePartType.Emote,
+      content: "k1",
+      emoteName: "KKona",
+      emoteUrl: kkona.url,
+      emoteProvider: "bttv",
+    };
+
+    it("finds them in the text around Twitch's own emotes", () => {
+      const parsed = parseMessage(
+        {
+          message: privmsg("Kappa KKona", { emotes: "25:0-4" }),
+          type: MessageType.Normal,
+        },
+        emotes,
+      );
+
+      expect(parsed.parts).toEqual([
+        { type: MessagePartType.Emote, content: "25", emoteName: "Kappa" },
+        { type: MessagePartType.Text, content: " " },
+        kkonaPart,
+      ]);
+    });
+
+    it("finds them at the end of /me messages", () => {
+      const parsed = parseMessage(
+        {
+          message: privmsg("\u0001ACTION waves KKona\u0001"),
+          type: MessageType.Action,
+        },
+        emotes,
+      );
+
+      expect(parsed.parts).toEqual([
+        { type: MessagePartType.Text, content: "waves " },
+        kkonaPart,
+      ]);
+    });
+  });
+
   it("takes the timestamp from the sent time", () => {
     const parsed = parseMessage({
       message: privmsg("hi", { "tmi-sent-ts": "1700000000000" }),

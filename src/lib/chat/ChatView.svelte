@@ -17,6 +17,7 @@
     channelTag = true,
     timestamps = false,
     fontSize = 13,
+    hiddenEmotes = [],
     following = $bindable(true),
   }: {
     messages: ChatEntry[];
@@ -28,6 +29,8 @@
     timestamps?: boolean;
     /** Text size in px */
     fontSize?: number;
+    /** Third-party emote providers whose emotes show as text */
+    hiddenEmotes?: readonly string[];
     /** Whether the view is pinned to the newest message */
     following?: boolean;
   } = $props();
@@ -78,7 +81,13 @@
     <div bind:this={content}>
       {#each messages as entry (entry.id)}
         {#if isMessage(entry)}
-          <TwitchMessage message={entry} {shadow} {channelTag} {timestamps} />
+          <TwitchMessage
+            message={entry}
+            {shadow}
+            {channelTag}
+            {timestamps}
+            {hiddenEmotes}
+          />
         {:else}
           <DisconnectMarker {entry} />
         {/if}

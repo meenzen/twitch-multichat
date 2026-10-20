@@ -2,6 +2,8 @@
 // from the default end up in the URL, so shared links stay short and pick up
 // new defaults.
 
+import type { EmoteProviderName } from "#lib/emotes/Emote.ts";
+
 /** Chat text size in px for each preset */
 export const fontSizes = {
   small: 13,
@@ -20,6 +22,8 @@ export type ChatSettings = {
   channelTag: boolean;
   /** HH:MM in front of every message */
   timestamps: boolean;
+  /** BetterTTV emotes as images instead of text */
+  bttv: boolean;
   /** For streaming software: no top bar, transparent background */
   overlay: boolean;
 };
@@ -29,8 +33,16 @@ export const defaultSettings: Readonly<ChatSettings> = Object.freeze({
   fontSize: "small",
   channelTag: true,
   timestamps: false,
+  bttv: true,
   overlay: false,
 });
+
+/** Third-party emote providers whose emotes are shown as text */
+export function hiddenEmoteProviders(
+  settings: Pick<ChatSettings, "bttv">,
+): EmoteProviderName[] {
+  return settings.bttv ? [] : ["bttv"];
+}
 
 type Codec<T> = {
   param: string;
@@ -57,6 +69,7 @@ const codecs: { [K in keyof ChatSettings]: Codec<ChatSettings[K]> } = {
   fontSize: oneOf("size", Object.keys(fontSizes) as FontSize[]),
   channelTag: boolean("channel"),
   timestamps: boolean("timestamps"),
+  bttv: boolean("bttv"),
   overlay: boolean("overlay"),
 };
 
