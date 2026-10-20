@@ -6,10 +6,6 @@
   },
   "packageRules": [
     {
-      "groupName": "sentry",
-      "matchPackageNames": ["@sentry/**"]
-    },
-    {
       "groupName": "svelte",
       "matchPackageNames": ["@sveltejs/**", "svelte", "svelte-check"]
     },

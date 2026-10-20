@@ -19,7 +19,6 @@ describe("cacheControl", () => {
   });
 
   it("leaves other requests alone", () => {
-    expect(cacheControl("POST", "/api/tunnel", 200)).toBeNull();
     expect(cacheControl("POST", "/images/preview.png", 200)).toBeNull();
     expect(cacheControl("GET", "/unknown", 200)).toBeNull();
     expect(cacheControl("GET", null, 404)).toBeNull();

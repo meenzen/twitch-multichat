@@ -1,5 +1,4 @@
 <script lang="ts">
-  import * as Sentry from "@sentry/sveltekit";
   import { onDestroy } from "svelte";
   import { dev } from "$app/env";
   import {
@@ -28,23 +27,7 @@
   const source = new TwitchChatSource({ debug: dev, emotes });
   // stops the live update sockets
   onDestroy(() => emotes.close());
-  const store = new ChatStore({
-    onRemove: (reason, count) => {
-      const metric = {
-        message: "twitch_messages_deleted",
-        user: "twitch_messages_deleted_user",
-        channel: "twitch_messages_deleted_channel",
-      }[reason];
-      Sentry.metrics.count(metric, count);
-    },
-  });
-
-  source.on("message", () => Sentry.metrics.count("twitch_messages_received"));
-  source.on("status", (status) => {
-    if (status.kind === "ready") {
-      Sentry.metrics.count("twitch_channels_joined", channels.length);
-    }
-  });
+  const store = new ChatStore();
 </script>
 
 <Chat
