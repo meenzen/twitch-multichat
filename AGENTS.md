@@ -161,7 +161,8 @@ and anonymous via `@twurple/chat`.
   images.
 - `bun.nix` (npm dependencies for Nix) is generated from `bun.lock` by
   bun2nix: `bun2nix -o bun.nix` in devenv, also run by the git hook and
-  `ci`; CI fails if it is stale. bun2nix is pinned to the commit of
+  `ci`; CI fails if it is stale. On Renovate PRs, `bun-nix.yml` commits
+  it and starts the tests for that commit (`workflow_dispatch`). bun2nix is pinned to the commit of
   nix-community/bun2nix#110 (bun.lock version 2) in `flake.nix` and
   `devenv.yaml`; switch both to a release once it includes it.
 - Flakes only see files tracked by git: `git add -N` new files before

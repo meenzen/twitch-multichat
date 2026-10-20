@@ -7,6 +7,8 @@ on:
   pull_request:
     branches:
       - main
+  # started by bun-nix.yml after it pushes to a Renovate branch
+  workflow_dispatch:
 
 jobs:
   tests:
