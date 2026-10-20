@@ -126,6 +126,12 @@ anonymous via `@twurple/chat`.
   `PreviewImage.svelte` is the image for every page: chat pages show their
   first channels (as many as `previewChannels.ts` estimates to fit), the
   landing page made-up ones.
+  `routes/images/preview.png/server.test.ts` renders the route and compares
+  the PNGs to `__snapshots__/` (see "Testing"). satori-html's CSS inliner
+  (ultrahtml) fails under Bun on every `<style>` ("evaluating
+  'selector.type'"): Bun's transpiler escapes the `¶` in a regex literal
+  whose `.source` the library string-replaces. `patches/ultrahtml@*.patch`
+  fixes that; Node and workerd are unaffected.
 - `src/lib/cacheControl.ts`: Cache-Control per route for responses from the
   Pages Function, applied in `hooks.server.ts`. Add new dynamic routes there.
   Pages runs Functions before its CDN cache, so only browser and scraper
@@ -162,6 +168,13 @@ anonymous via `@twurple/chat`.
   - `test/fakeServiceWorker.ts` for service worker APIs
   - an object with `on*` binders for the twurple client (see
     `TwitchChatSource.test.ts`)
+- Components are compiled for the browser. Import
+  `<path>.svelte?server` for a `svelte/server` build, e.g. via
+  `mock.module` for code that server-renders a component.
+- Image snapshots: `expectImageSnapshot()` from `test/imageSnapshot.ts`
+  compares a PNG to `__snapshots__/<name>.png` with exact colours. Run with
+  `UPDATE_SNAPSHOTS=1` to accept changes and look at the new images; a
+  mismatch writes `<name>.actual.png` and `<name>.diff.png` next to it.
 - Timers: `jest.useFakeTimers()` / `jest.advanceTimersByTime()` from
   `bun:test`.
 - `mock()` from `bun:test` does not return the instance when called with

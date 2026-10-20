@@ -27,3 +27,6 @@ devenv.local.yaml
 # Cloudflare
 .wrangler
 .e2e
+
+*.actual.png
+*.diff.png
