@@ -50,6 +50,8 @@ describe("ChatView", () => {
     expect(emote.getAttribute("src")).toBe(
       "https://static-cdn.jtvnw.net/emoticons/v2/25/default/dark/1.0",
     );
+    // the service worker only caches CORS responses
+    expect(emote.getAttribute("crossorigin")).toBe("anonymous");
   });
 
   it("renders third-party emotes from their URL unless hidden", async () => {
@@ -66,6 +68,8 @@ describe("ChatView", () => {
 
     const emote = screen.getByAltText("KKona") as HTMLImageElement;
     expect(emote.getAttribute("src")).toBe(bttv.emoteUrl);
+    // the BetterTTV CDN sends no CORS headers
+    expect(emote.hasAttribute("crossorigin")).toBe(false);
 
     await view.rerender({ hiddenEmotes: ["bttv"] });
 

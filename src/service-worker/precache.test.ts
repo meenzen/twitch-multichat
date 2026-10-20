@@ -1,5 +1,5 @@
 import { describe, expect, it } from "bun:test";
-import { isBttvEmote, isTwitchEmote, precacheEntries } from "./precache";
+import { isTwitchEmote, precacheEntries } from "./precache";
 
 const files = (...paths: string[]) => paths.map((path) => ({ path }));
 
@@ -88,17 +88,5 @@ describe("isTwitchEmote", () => {
     expect(
       isTwitchEmote(new URL("https://static-cdn.jtvnw.net.evil.com/x")),
     ).toBe(false);
-  });
-});
-
-describe("isBttvEmote", () => {
-  it("matches only the BetterTTV CDN", () => {
-    expect(
-      isBttvEmote(new URL("https://cdn.betterttv.net/emote/k1/1x.webp")),
-    ).toBe(true);
-    expect(isBttvEmote(new URL("https://api.betterttv.net/3/x"))).toBe(false);
-    expect(isBttvEmote(new URL("https://cdn.betterttv.net.evil.com/x"))).toBe(
-      false,
-    );
   });
 });

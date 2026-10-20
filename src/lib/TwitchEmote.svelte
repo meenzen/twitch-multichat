@@ -24,7 +24,15 @@
   });
 </script>
 
-<img {src} alt={name} class="twitch-emote" />
+<!-- Twitch emotes load with CORS: the service worker can only cache CORS
+     responses. BetterTTV's CDN sends no CORS headers, a crossorigin image
+     would fail; its long max-age leaves caching to the browser. -->
+<img
+  {src}
+  alt={name}
+  crossorigin={url ? undefined : "anonymous"}
+  class="twitch-emote"
+/>
 
 <style>
   img {

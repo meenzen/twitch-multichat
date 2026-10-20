@@ -177,6 +177,11 @@ anonymous via `@twurple/chat`.
 - The worker calls `skipWaiting()` and `clientsClaim()`. The page reloads on
   `controllerchange` only if a worker already controlled it; the first install
   is not an update.
+- `CacheFirst` does not store opaque (no-cors) responses, so cross-origin
+  images only land in a runtime cache when loaded with
+  `crossorigin="anonymous"` (Twitch emotes). That needs CORS headers from the
+  CDN; BetterTTV's CDN sends none, its images rely on the HTTP cache
+  (180 day `max-age`).
 - Static assets are precached with the app version as revision. Hashed build
   output has no revision.
 

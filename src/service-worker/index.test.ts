@@ -63,34 +63,30 @@ describe("service worker", () => {
     expect(workbox.cleanupOutdatedCaches).toHaveBeenCalledTimes(1);
   });
 
-  it.each([
-    [
-      0,
-      "twitch-emotes",
-      "https://static-cdn.jtvnw.net/emoticons/v2/25/default/dark/1.0",
-    ],
-    [1, "bttv-emotes", "https://cdn.betterttv.net/emote/k1/1x.webp"],
-  ])(
-    "caches emotes cache-first with expiration (route %i, %s)",
-    (index, cacheName, emoteUrl) => {
-      expect(workbox.registerRoute).toHaveBeenCalledTimes(2);
-      const [match, strategy] = workbox.registerRoute.mock.calls[index] as [
-        RouteMatcher,
-        { options: { cacheName: string; plugins: { options: object }[] } },
-      ];
+  it("caches twitch emotes cache-first with expiration", () => {
+    expect(workbox.registerRoute).toHaveBeenCalledTimes(1);
+    const [match, strategy] = workbox.registerRoute.mock.calls[0] as [
+      RouteMatcher,
+      { options: { cacheName: string; plugins: { options: object }[] } },
+    ];
 
-      expect(match({ url: new URL(emoteUrl) })).toBe(true);
-      expect(match({ url: new URL("https://example.com/emote.png") })).toBe(
-        false,
-      );
+    expect(
+      match({
+        url: new URL(
+          "https://static-cdn.jtvnw.net/emoticons/v2/25/default/dark/1.0",
+        ),
+      }),
+    ).toBe(true);
+    expect(match({ url: new URL("https://example.com/emote.png") })).toBe(
+      false,
+    );
 
-      expect(strategy).toBeInstanceOf(workbox.CacheFirst);
-      expect(strategy.options.cacheName).toBe(cacheName);
-      expect(strategy.options.plugins[0].options).toMatchObject({
-        maxEntries: 50000,
-        maxAgeSeconds: 60 * 60 * 24 * 30,
-        purgeOnQuotaError: true,
-      });
-    },
-  );
+    expect(strategy).toBeInstanceOf(workbox.CacheFirst);
+    expect(strategy.options.cacheName).toBe("twitch-emotes");
+    expect(strategy.options.plugins[0].options).toMatchObject({
+      maxEntries: 50000,
+      maxAgeSeconds: 60 * 60 * 24 * 30,
+      purgeOnQuotaError: true,
+    });
+  });
 });

@@ -5,7 +5,7 @@ import { CacheFirst } from "workbox-strategies";
 import { ExpirationPlugin } from "workbox-expiration";
 import { assets, immutable } from "$app/manifest";
 import { version } from "$app/env";
-import { isBttvEmote, isTwitchEmote, precacheEntries } from "./precache";
+import { isTwitchEmote, precacheEntries } from "./precache";
 
 declare let self: ServiceWorkerGlobalScope;
 
@@ -14,25 +14,21 @@ precacheAndRoute(precacheEntries(immutable, assets, version));
 // clean old assets
 cleanupOutdatedCaches();
 
-// cache emote images, an emote id always shows the same image
-function cacheEmotes(match: (url: URL) => boolean, cacheName: string) {
-  registerRoute(
-    ({ url }) => match(url),
-    new CacheFirst({
-      cacheName,
-      plugins: [
-        new ExpirationPlugin({
-          maxEntries: 50000,
-          maxAgeSeconds: 60 * 60 * 24 * 30, // 1 month
-          purgeOnQuotaError: true,
-        }),
-      ],
-    }),
-  );
-}
-
-cacheEmotes(isTwitchEmote, "twitch-emotes");
-cacheEmotes(isBttvEmote, "bttv-emotes");
+// cache twitch emotes. CacheFirst skips opaque responses, so this only works
+// because TwitchEmote loads them with crossorigin="anonymous".
+registerRoute(
+  ({ url }) => isTwitchEmote(url),
+  new CacheFirst({
+    cacheName: "twitch-emotes",
+    plugins: [
+      new ExpirationPlugin({
+        maxEntries: 50000,
+        maxAgeSeconds: 60 * 60 * 24 * 30, // 1 month
+        purgeOnQuotaError: true,
+      }),
+    ],
+  }),
+);
 
 /*
 let allowlist: undefined | RegExp[];
