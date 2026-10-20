@@ -27,3 +27,9 @@ devenv.local.yaml
 # Cloudflare
 .wrangler
 .e2e
+
+*.actual.png
+*.diff.png
+
+# Claude Code (agent worktrees)
+/.claude
