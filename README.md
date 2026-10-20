@@ -1,28 +1,58 @@
 # Twitch Multichat
 
-Combines multiple Twitch chats into one window.
+Combine the chats of several Twitch channels into one view, for collabs,
+multi-stream events or just your favourite streamers.
+
+Use it at [multichat.mnzn.dev](https://multichat.mnzn.dev) or host it
+yourself. No login needed: chats are read anonymously and read-only.
 
 ## Usage
 
-You can use the official deployment [multichat.mnzn.dev](https://multichat.mnzn.dev) or deploy this app yourself.
+Enter one channel per line on the start page and connect, or let "I'm
+feeling lucky" pick a few trending channels. The channels end up in the URL,
+so a chat can be bookmarked or shared:
 
-## Setup
-
-Install the dependencies with `bun install`, then start a development server:
-
-```bash
-bun run dev
-
-# or start the server and open the app in a new browser tab
-bun run dev -- --open
+```
+https://multichat.mnzn.dev/-/channel1/channel2/channel3
 ```
 
-## Building
+Settings are stored in the URL as well, e.g. `?size=large&timestamps=true`.
+For OBS and other streaming software, copy the overlay URL from the settings
+menu and add it as a browser source.
 
-To create a production version of the app:
+## Features
+
+- **One merged chat** for any number of channels, each message tagged with
+  its channel
+- **Hide channels** by clicking them in the top bar, without leaving the chat
+- **Emotes** from Twitch, [BetterTTV](https://betterttv.com) and
+  [7TV](https://7tv.app), including 7TV's stacked (zero-width) emotes.
+  BetterTTV and 7TV emotes update live when a channel changes them, and each
+  service can be turned off
+- **Moderation**: deleted messages, timeouts, bans and cleared chats are
+  removed
+- **Clickable links**
+- **Stays at the newest message**, and stops scrolling while you scroll up to
+  read
+- **Reconnects** after network problems or a sleeping device, and marks the
+  gap in the chat
+- **Settings**: text size, timestamps, channel names, name outlines
+- **Overlay mode** with a transparent background and no top bar, for
+  streaming software
+- **Installable** as an app, updates itself after a new deployment
+
+## Development
+
+Everything runs inside [devenv](https://devenv.sh), which provides Bun and a
+Chromium for the browser tests:
 
 ```bash
-bun run build
+devenv shell -- bun install
+devenv shell -- bun run dev      # development server
+devenv shell -- ci               # format, lint, check, test, build, e2e
 ```
 
-You can preview the production build with `bun run preview`.
+`/dev/chat` shows the chat with generated messages, no Twitch connection
+needed (e.g. `/dev/chat?rate=10`). The app is deployed to Cloudflare Pages.
+
+See [AGENTS.md](AGENTS.md) for the code layout, testing and known pitfalls.
