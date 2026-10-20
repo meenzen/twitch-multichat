@@ -1,7 +1,11 @@
 <script lang="ts">
   import "@fontsource/inter";
   import "@fontsource/inter/700.css";
+  import X from "@lucide/svelte/icons/x";
   import TwitchChannel from "#lib/TwitchChannel.ts";
+  import { readSelection } from "#lib/ChannelSelection.ts";
+  import { loadRecent, removeRecent } from "#lib/RecentChannels.ts";
+  import { browserStorage } from "#lib/storage.ts";
   import { onMount } from "svelte";
   import logo from "#lib/assets/logo.png?enhanced";
   import MetaTags from "#lib/components/MetaTags.svelte";
@@ -14,6 +18,10 @@
   let randomChannels = $state([] as string[]);
   let randomChannelsString = $derived(randomChannels.join("\n"));
   let channels = $state("");
+  // settings brought back from a chat (see ChannelSelection.ts); without
+  // them the chat uses the saved settings
+  let settingsQuery = $state("");
+  let recent = $state.raw([] as string[][]);
 
   function getChannels(channels: string) {
     return channels
@@ -30,7 +38,7 @@
       channels: channelString,
     });
 
-    return url;
+    return settingsQuery ? `${url}?${settingsQuery}` : url;
   }
 
   function isValid(): boolean {
@@ -57,6 +65,15 @@
   let valid = $derived(isValid());
 
   onMount(async () => {
+    // prerendered, so the query is only known in the browser
+    const selection = readSelection(
+      new URLSearchParams(window.location.search),
+    );
+    if (selection.channels.length > 0) {
+      channels = selection.channels.join("\n");
+    }
+    settingsQuery = selection.settingsQuery;
+    recent = loadRecent(browserStorage());
     randomChannels = await TwitchChannel.getRandomList(3);
   });
 </script>
@@ -96,6 +113,29 @@
     <a href={resolve("")} onclick={feelingLucky} style="margin-top: 15px"
       >I'm feeling lucky</a
     >
+
+    {#if recent.length > 0}
+      <section class="recent" aria-labelledby="recent-title">
+        <h2 id="recent-title">Recent</h2>
+        <ul>
+          {#each recent as list (list.join(","))}
+            {@const name = list.join(", ")}
+            <li>
+              <!-- eslint-disable-next-line svelte/no-navigation-without-resolve (getUrl resolves) -->
+              <a href={getUrl(list.join("\n"))}>{name}</a>
+              <button
+                type="button"
+                aria-label={`Remove ${name} from recent`}
+                title="Remove"
+                onclick={() => (recent = removeRecent(browserStorage(), list))}
+              >
+                <X size={16} aria-hidden="true" />
+              </button>
+            </li>
+          {/each}
+        </ul>
+      </section>
+    {/if}
   </div>
 
   <footer>
@@ -201,6 +241,76 @@
 
   .placeholder {
     color: var(--text-color);
+  }
+
+  .recent {
+    margin-top: 1.5rem;
+    width: 90%;
+    max-width: 300px;
+    font-family: "Inter", sans-serif;
+  }
+
+  .recent h2 {
+    margin: 0 0 0.5rem;
+    font-size: 0.875rem;
+    font-weight: normal;
+    text-align: center;
+    color: var(--muted-text-color);
+  }
+
+  .recent ul {
+    display: flex;
+    flex-direction: column;
+    gap: 0.375rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .recent li {
+    display: flex;
+    border: 1px solid var(--twitch-purple);
+    border-radius: 0.5rem;
+    overflow: hidden;
+  }
+
+  .recent a {
+    flex: 1;
+    min-width: 0;
+    padding: 0.5rem 0.75rem;
+    border: none;
+    border-radius: 0;
+    font-size: 1rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--text-color);
+    background-color: transparent;
+  }
+
+  .recent a:hover,
+  .recent a:focus-visible {
+    background-color: var(--twitch-purple);
+  }
+
+  .recent button {
+    display: flex;
+    align-items: center;
+    padding: 0 0.625rem;
+    border: none;
+    color: var(--muted-text-color);
+    background: none;
+    cursor: pointer;
+  }
+
+  .recent button:hover,
+  .recent button:focus-visible {
+    color: var(--text-color);
+  }
+
+  .recent :focus-visible {
+    outline: 2px solid var(--text-color);
+    outline-offset: -2px;
   }
 
   footer {

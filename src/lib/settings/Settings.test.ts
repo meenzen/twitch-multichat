@@ -1,6 +1,6 @@
 import { describe, expect, it, mock } from "bun:test";
 import { flushSync } from "svelte";
-import { Settings, persistInUrl } from "./Settings.svelte";
+import { Settings, persistInUrl, saveOnChange } from "./Settings.svelte";
 import { defaultSettings } from "./ChatSettings";
 
 describe("Settings", () => {
@@ -64,5 +64,48 @@ describe("persistInUrl", () => {
     settings.values.shadow = false;
     flushSync();
     expect(replace).not.toHaveBeenCalled();
+  });
+});
+
+describe("saveOnChange", () => {
+  function setup() {
+    const settings = new Settings({ fontSize: "large" });
+    const save = mock(() => {});
+    const stop = saveOnChange(settings, save);
+    flushSync();
+    return { settings, save, stop };
+  }
+
+  it("does not save the initial settings", () => {
+    const { save, stop } = setup();
+    expect(save).not.toHaveBeenCalled();
+    stop();
+  });
+
+  it("saves all settings once one changes", () => {
+    const { settings, save, stop } = setup();
+
+    settings.values.timestamps = true;
+    flushSync();
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(save).toHaveBeenLastCalledWith({
+      ...defaultSettings,
+      fontSize: "large",
+      timestamps: true,
+    });
+
+    settings.reset();
+    flushSync();
+    expect(save).toHaveBeenLastCalledWith(defaultSettings);
+    stop();
+  });
+
+  it("stops when the returned function is called", () => {
+    const { settings, save, stop } = setup();
+    stop();
+
+    settings.values.shadow = false;
+    flushSync();
+    expect(save).not.toHaveBeenCalled();
   });
 });

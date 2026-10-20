@@ -5,8 +5,19 @@
   import ChatScreen from "#lib/components/ChatScreen.svelte";
   import MetaTags from "#lib/components/MetaTags.svelte";
   import { ChannelFilter } from "#lib/chat/ChannelFilter.svelte.ts";
-  import { Settings, persistInUrl } from "#lib/settings/Settings.svelte.ts";
+  import {
+    Settings,
+    persistInUrl,
+    saveOnChange,
+  } from "#lib/settings/Settings.svelte.ts";
   import { replaceUrl } from "#lib/settings/replaceUrl.ts";
+  import {
+    initialSettings,
+    saveSettings,
+  } from "#lib/settings/savedSettings.ts";
+  import { selectionHref } from "#lib/ChannelSelection.ts";
+  import { addRecent } from "#lib/RecentChannels.ts";
+  import { browserStorage } from "#lib/storage.ts";
   import { browser } from "$app/env";
   import { resolve } from "$app/paths";
   import { page } from "$app/state";
@@ -16,15 +27,26 @@
   let selectedChannels = data.channels;
   let shouldConnect = selectedChannels.length > 0;
   const filter = new ChannelFilter(selectedChannels);
-  const settings = new Settings(data.settings);
+  const storage = browser ? browserStorage() : undefined;
+  const settings = new Settings(
+    browser ? initialSettings(page.url.searchParams, storage) : data.settings,
+  );
   $effect(() =>
     persistInUrl(settings, {
       replace: replaceUrl,
     }),
   );
+  $effect(() =>
+    saveOnChange(settings, (values) => saveSettings(storage, values)),
+  );
   if (browser && shouldConnect) {
     console.log("Selected channels:", selectedChannels);
+    addRecent(storage, selectedChannels);
   }
+
+  let homeHref = $derived(
+    selectionHref(resolve("/"), selectedChannels, settings.values),
+  );
 </script>
 
 <svelte:head>
@@ -34,12 +56,7 @@
 
 {#if browser}
   {#if shouldConnect}
-    <ChatScreen
-      channels={data.channels}
-      {filter}
-      {settings}
-      homeHref={resolve("/")}
-    >
+    <ChatScreen channels={data.channels} {filter} {settings} {homeHref}>
       <TwitchChat
         channels={data.channels}
         settings={settings.values}

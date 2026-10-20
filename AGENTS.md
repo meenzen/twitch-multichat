@@ -52,6 +52,17 @@ anonymous via `@twurple/chat`.
     which loses the settings.
   - `SettingsDialog.svelte`: the menu, a native `<dialog>` (focus trap and
     focus return come from the browser).
+  - `savedSettings.ts`: the user's own settings in localStorage (never
+    overlay mode). A chat link without setting parameters starts with them;
+    a link with any shows exactly its settings (`initialSettings`). They are
+    saved only when changed (`saveOnChange`), so opening a shared link
+    doesn't overwrite them.
+- `src/lib/ChannelSelection.ts`: the back arrow links to
+  `/?channels=a,b&<settings>`; the landing page prefills the channels and
+  passes the settings on to Connect and the recent selections
+  (`RecentChannels.ts`, recorded when a chat opens).
+- `src/lib/storage.ts`: localStorage access that never throws. Pass a
+  `KeyValueStorage` in, tests use `test/fakeStorage.ts`.
 - Icons come from `@lucide/svelte`. Import each icon from
   `@lucide/svelte/icons/<name>` so only used icons are bundled.
 - `src/lib/twitch/`: the only place that touches twurple
