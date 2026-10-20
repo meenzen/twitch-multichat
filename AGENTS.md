@@ -134,6 +134,9 @@ anonymous via `@twurple/chat`.
     `Bun.build` and the Svelte plugin, served inside `src/app.html`. Use
     `view.scroll()` for trusted wheel input and `Input.dispatchTouchEvent`
     for swipes; headless Chrome ignores `Input.synthesizeScrollGesture`.
+  - Close views with `view.close()` only. `Bun.WebView.closeAll()` stops the
+    shared Chrome, and later views in the same test process then fail with
+    "Chrome process closed the pipe" instead of starting a new one.
   - devenv sets `BUN_CHROME_PATH` to a Chromium wrapper (Linux only). It
     clears `LD_LIBRARY_PATH`, because a host value can load libraries built
     for a newer glibc, and passes `--no-sandbox`, because Ubuntu 24.04 CI

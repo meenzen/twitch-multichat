@@ -141,6 +141,25 @@ describe("ChatStore", () => {
     ]);
   });
 
+  it("marks the gap before messages of channels rejoined first", () => {
+    let now = 0;
+    const { store, source } = setup({ now: () => now });
+    source.setStatus({ kind: "reconnecting", since: 1_000 });
+
+    now = 2_000;
+    source.setStatus({ kind: "joining", channel: "foo" });
+    const early = createMessage({ channel: "foo" });
+    source.push(early);
+    now = 3_000;
+    source.setStatus({ kind: "joining", channel: "bar" });
+    source.setStatus({ kind: "ready" });
+
+    expect(store.messages).toEqual([
+      { kind: "disconnect", id: "disconnect-1000", since: 1_000, until: 2_000 },
+      early,
+    ]);
+  });
+
   it("falls back to the time the drop was reported", () => {
     let now = 5_000;
     const { store, source } = setup({ now: () => now });
