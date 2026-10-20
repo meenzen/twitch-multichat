@@ -16,11 +16,10 @@ const origin = "https://multichat.test";
 const staticDir = join(import.meta.dir, "../../../../static");
 
 // satori fetches the logo from the site itself, served here from static/.
-// Google Fonts goes through Bun's own fetch: the global one is happy-dom's,
-// which blocks cross-origin requests.
+// Nothing else may be fetched: fonts are bundled.
 const realFetch = globalThis.fetch;
 beforeAll(() => {
-  globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+  globalThis.fetch = (async (input: RequestInfo | URL) => {
     const url = new URL(input instanceof Request ? input.url : input);
     if (url.origin === origin) {
       const file = Bun.file(join(staticDir, url.pathname));
@@ -28,7 +27,7 @@ beforeAll(() => {
         headers: { "Content-Type": file.type },
       });
     }
-    return Bun.fetch(input, init);
+    throw new Error(`Unexpected fetch: ${url}`);
   }) as typeof fetch;
 });
 afterAll(() => {
