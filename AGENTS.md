@@ -69,6 +69,18 @@ anonymous via `@twurple/chat`.
   its emotes are there (3 s timeout). API failures only cost emotes:
   `fetchJson` gives up after 10 s, failed global lists are retried with the
   next channel, and a failed refresh keeps the channel's last good list.
+  Live updates: providers implement `watch()` (one `LiveSocket` per
+  service, reconnecting with backoff) and push `EmoteChange`s, which
+  `EmoteLoader` applies and `TwitchChatSource` hands to `EmoteGate`, for new
+  messages only. Changes are logged as `Emotes of <channel>: 7TV added
+"X"`. Neither service replays missed events, so every reconnect reloads.
+  7TV: subscribe by `object_id` (the channel's emote set and its 7TV user,
+  for set switches); the channel condition (`ctx: "channel"`) does not
+  deliver channel emote changes but floods with chatters' personal emote
+  sets, badges and paints. Subscribing twice closes the connection (4009),
+  hence `sync()`. Three missed heartbeats (from the hello) mean a dead
+  socket. BTTV: `join_channel` with `twitch:<id>`; it sends no heartbeats,
+  so a quiet socket is normal.
   Parts carry `emoteImages` (every size, built from the id by the provider),
   `emoteHeightScale` (7TV emotes shorter than 32px) and `emoteProvider`;
   the per-provider setting only hides them at render time (`hiddenEmotes`),

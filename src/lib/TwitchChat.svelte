@@ -1,5 +1,6 @@
 <script lang="ts">
   import * as Sentry from "@sentry/sveltekit";
+  import { onDestroy } from "svelte";
   import { dev } from "$app/env";
   import {
     fontSizes,
@@ -24,10 +25,9 @@
   // loaded even when hidden, so turning the setting on works right away
   // 7TV last: it wins name clashes, it's the one most channels use today
   const emotes = new EmoteLoader([new BttvEmotes(), new SevenTvEmotes()]);
-  const source = new TwitchChatSource({
-    debug: dev,
-    loadEmotes: (channelId) => emotes.load(channelId),
-  });
+  const source = new TwitchChatSource({ debug: dev, emotes });
+  // stops the live update sockets
+  onDestroy(() => emotes.close());
   const store = new ChatStore({
     onRemove: (reason, count) => {
       const metric = {
