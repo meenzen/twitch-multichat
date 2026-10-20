@@ -16,6 +16,10 @@ export type MessagePart = {
   type: MessagePartType;
   content: string;
   emoteName?: string;
+  /** Image of a third-party emote; Twitch emotes are looked up by id */
+  emoteUrl?: string;
+  /** The service a third-party emote comes from, e.g. "bttv" */
+  emoteProvider?: string;
   /** Target of a link part, `content` holds the text as written */
   href?: string;
 };

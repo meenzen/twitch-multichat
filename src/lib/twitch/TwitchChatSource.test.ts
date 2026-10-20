@@ -8,8 +8,9 @@ import {
   mock,
 } from "bun:test";
 import { parseTwitchMessage, type ChatClient } from "@twurple/chat";
-import { MessageType } from "#lib/chat/ChatMessage.ts";
+import { MessagePartType, MessageType } from "#lib/chat/ChatMessage.ts";
 import type { ChatStatus } from "#lib/chat/ChatSource.ts";
+import type { EmoteMap } from "#lib/emotes/Emote.ts";
 import { TwitchChatSource } from "./TwitchChatSource";
 
 type Handler = (...args: unknown[]) => void;
@@ -212,7 +213,10 @@ describe("TwitchChatSource reconnecting", () => {
       await source.connect(["one"]);
 
       jest.setSystemTime(new Date(1_000_000));
-      fire("ircMessage", {});
+      fire(
+        "ircMessage",
+        parseTwitchMessage(":tmi.twitch.tv PONG tmi.twitch.tv :tmi.twitch.tv"),
+      );
       // the drop is only noticed later, e.g. after the phone woke up
       jest.setSystemTime(new Date(1_300_000));
       fire("disconnect", false);
@@ -306,6 +310,77 @@ describe("TwitchChatSource page resume", () => {
     now.mockReturnValue(106_000);
     document.dispatchEvent(new Event("visibilitychange"));
     expect(client.irc.pingCheck).toHaveBeenCalledTimes(2);
+  });
+
+  describe("third-party emotes", () => {
+    /** A source with an emote loader whose requests the test answers */
+    function setupEmotes() {
+      const { client, fire } = stubClient();
+      const pending: ((emotes: EmoteMap) => void)[] = [];
+      const loadEmotes = mock(
+        () => new Promise<EmoteMap>((resolve) => pending.push(resolve)),
+      );
+      const source = new TwitchChatSource({
+        client: client as unknown as ChatClient,
+        loadEmotes,
+        ...fakePage(),
+      });
+      const events: unknown[] = [];
+      source.on("message", (m) =>
+        events.push(m.parts.map((p) => p.emoteName ?? p.content).join("|")),
+      );
+      source.on("messageRemoved", (id) => events.push(`removed ${id}`));
+      return { fire, loadEmotes, pending, events };
+    }
+
+    const kkona: EmoteMap = new Map([
+      [
+        "KKona",
+        { id: "k1", code: "KKona", url: "https://cdn/k1", provider: "bttv" },
+      ],
+    ]);
+
+    const privmsg = (id: string, text: string) =>
+      parseTwitchMessage(
+        `@emotes=;id=${id};room-id=123;user-id=9 :bob!bob@bob.tmi.twitch.tv PRIVMSG #Chan :${text}`,
+      );
+
+    it("starts loading a channel's emotes on ROOMSTATE", () => {
+      const { fire, loadEmotes } = setupEmotes();
+
+      fire(
+        "ircMessage",
+        parseTwitchMessage("@room-id=123 :tmi.twitch.tv ROOMSTATE #chan"),
+      );
+
+      expect(loadEmotes).toHaveBeenCalledWith("123");
+    });
+
+    it("holds messages and removals until the emotes are there", async () => {
+      const { fire, loadEmotes, pending, events } = setupEmotes();
+
+      fire("message", "chan", "bob", "hi KKona", privmsg("m1", "hi KKona"));
+      fire("messageRemove", "chan", "m1");
+      expect(loadEmotes).toHaveBeenCalledWith("123");
+      expect(events).toEqual([]);
+
+      pending[0](kkona);
+      await flush();
+
+      expect(events).toEqual(["hi |KKona", "removed m1"]);
+    });
+
+    it("passes messages through without a loader", () => {
+      const { fire, source } = setup();
+      const received = mock();
+      source.on("message", received);
+
+      fire("message", "chan", "bob", "KKona", privmsg("m1", "KKona"));
+
+      expect(received.mock.calls[0][0].parts).toEqual([
+        { type: MessagePartType.Text, content: "KKona" },
+      ]);
+    });
   });
 
   it("stops watching the page after disconnect", async () => {

@@ -14,6 +14,7 @@
     channelTag = true,
     timestamps = false,
     fontSize = 13,
+    hiddenEmotes = [],
     store = new ChatStore(),
     filter,
   }: {
@@ -24,6 +25,8 @@
     timestamps?: boolean;
     /** Text size in px */
     fontSize?: number;
+    /** Third-party emote providers whose emotes show as text */
+    hiddenEmotes?: readonly string[];
     store?: ChatStore;
     /** Hides channels; the store keeps their messages for when they return */
     filter?: ChannelFilter;
@@ -56,5 +59,6 @@
   {channelTag}
   {timestamps}
   {fontSize}
+  {hiddenEmotes}
   bind:following={store.following}
 />

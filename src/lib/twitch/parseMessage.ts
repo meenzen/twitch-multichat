@@ -7,13 +7,19 @@ import {
   type ParsedMessage,
 } from "#lib/chat/ChatMessage.ts";
 import { splitLinks } from "#lib/chat/links.ts";
+import type { EmoteMap } from "#lib/emotes/Emote.ts";
+import { splitEmotes } from "#lib/emotes/splitEmotes.ts";
 
 export type RawMessage = {
   message: ChatMessage;
   type: MessageType;
 };
 
-export function parseMessage(raw: RawMessage): ParsedMessage {
+/** `emotes`: third-party emotes of the channel */
+export function parseMessage(
+  raw: RawMessage,
+  emotes: EmoteMap = new Map(),
+): ParsedMessage {
   const parts: Array<MessagePart> = [];
 
   const messageContent = raw.message.text;
@@ -63,7 +69,7 @@ export function parseMessage(raw: RawMessage): ParsedMessage {
 
   return {
     type: raw.type,
-    parts: splitLinks(parts),
+    parts: splitLinks(splitEmotes(parts, emotes)),
     id: raw.message.id,
     channel: raw.message.target.replace(/^#/, "").toLowerCase(),
     userId: raw.message.userInfo.userId,

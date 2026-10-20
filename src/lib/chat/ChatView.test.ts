@@ -50,6 +50,31 @@ describe("ChatView", () => {
     expect(emote.getAttribute("src")).toBe(
       "https://static-cdn.jtvnw.net/emoticons/v2/25/default/dark/1.0",
     );
+    // the service worker only caches CORS responses
+    expect(emote.getAttribute("crossorigin")).toBe("anonymous");
+  });
+
+  it("renders third-party emotes from their URL unless hidden", async () => {
+    const bttv = {
+      type: MessagePartType.Emote,
+      content: "k1",
+      emoteName: "KKona",
+      emoteUrl: "https://cdn.betterttv.net/emote/k1/1x.webp",
+      emoteProvider: "bttv",
+    };
+    const view = render(ChatView, {
+      messages: [createMessage({ parts: [bttv] })],
+    });
+
+    const emote = screen.getByAltText("KKona") as HTMLImageElement;
+    expect(emote.getAttribute("src")).toBe(bttv.emoteUrl);
+    // the BetterTTV CDN sends no CORS headers
+    expect(emote.hasAttribute("crossorigin")).toBe(false);
+
+    await view.rerender({ hiddenEmotes: ["bttv"] });
+
+    expect(screen.queryByAltText("KKona")).toBeNull();
+    expect(screen.getByText("KKona")).toBeTruthy();
   });
 
   it("renders links that open in a new tab", () => {

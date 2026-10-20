@@ -2,15 +2,21 @@
   type Props = {
     id: string;
     name?: string;
+    /** Image of a third-party emote, Twitch emotes are found by id */
+    url?: string;
     animated?: boolean;
     dark?: boolean;
   };
 
-  let { id, name, animated = true, dark = true }: Props = $props();
+  let { id, name, url, animated = true, dark = true }: Props = $props();
 
   let src = $state("/emote.png");
 
   $effect(() => {
+    if (url) {
+      src = url;
+      return;
+    }
     const format = animated ? "default" : "static";
     const theme = dark ? "dark" : "light";
     const scale = "1.0";
@@ -18,7 +24,15 @@
   });
 </script>
 
-<img {src} alt={name} class="twitch-emote" />
+<!-- Twitch emotes load with CORS: the service worker can only cache CORS
+     responses. BetterTTV's CDN sends no CORS headers, a crossorigin image
+     would fail; its long max-age leaves caching to the browser. -->
+<img
+  {src}
+  alt={name}
+  crossorigin={url ? undefined : "anonymous"}
+  class="twitch-emote"
+/>
 
 <style>
   img {

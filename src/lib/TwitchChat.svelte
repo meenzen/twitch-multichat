@@ -1,7 +1,13 @@
 <script lang="ts">
   import * as Sentry from "@sentry/sveltekit";
   import { dev } from "$app/env";
-  import { fontSizes, type ChatSettings } from "#lib/settings/ChatSettings.ts";
+  import {
+    fontSizes,
+    hiddenEmoteProviders,
+    type ChatSettings,
+  } from "#lib/settings/ChatSettings.ts";
+  import { BttvEmotes } from "#lib/emotes/bttv.ts";
+  import { EmoteLoader } from "#lib/emotes/EmoteLoader.ts";
   import type { ChannelFilter } from "#lib/chat/ChannelFilter.svelte.ts";
   import Chat from "#lib/chat/Chat.svelte";
   import { ChatStore } from "#lib/chat/ChatStore.svelte.ts";
@@ -14,7 +20,12 @@
   }: { channels: string[]; settings: ChatSettings; filter?: ChannelFilter } =
     $props();
 
-  const source = new TwitchChatSource({ debug: dev });
+  // loaded even when hidden, so turning the setting on works right away
+  const emotes = new EmoteLoader([new BttvEmotes()]);
+  const source = new TwitchChatSource({
+    debug: dev,
+    loadEmotes: (channelId) => emotes.load(channelId),
+  });
   const store = new ChatStore({
     onRemove: (reason, count) => {
       const metric = {
@@ -43,4 +54,5 @@
   channelTag={settings.channelTag}
   timestamps={settings.timestamps}
   fontSize={fontSizes[settings.fontSize]}
+  hiddenEmotes={hiddenEmoteProviders(settings)}
 />

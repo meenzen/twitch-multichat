@@ -56,6 +56,14 @@ anonymous via `@twurple/chat`.
   `@lucide/svelte/icons/<name>` so only used icons are bundled.
 - `src/lib/twitch/`: the only place that touches twurple
   (`TwitchChatSource`, `parseMessage`).
+- `src/lib/emotes/`: third-party emotes (BetterTTV). An `EmoteProvider` per
+  service (`bttv.ts`, fetch injectable), `EmoteLoader` merges global and
+  channel emotes, `splitEmotes` turns words into emote parts at parse time.
+  `TwitchChatSource` starts loading on ROOMSTATE (channels are looked up by
+  `room-id`) and `EmoteGate` holds a channel's messages and removals until
+  its emotes are there (3 s timeout). Parts carry `emoteUrl` and
+  `emoteProvider`; the per-provider setting only hides them at render time
+  (`hiddenEmotes`), so toggling needs no reload.
 - `src/lib/fake/`: `FakeChatSource` (drive it by hand or call `stream()`) and
   seeded fixtures (`createMessage`, `randomMessages`).
 - `src/lib/components/modal/`: shared `Modal` plus `modalStack`. Only the top
@@ -169,6 +177,11 @@ anonymous via `@twurple/chat`.
 - The worker calls `skipWaiting()` and `clientsClaim()`. The page reloads on
   `controllerchange` only if a worker already controlled it; the first install
   is not an update.
+- `CacheFirst` does not store opaque (no-cors) responses, so cross-origin
+  images only land in a runtime cache when loaded with
+  `crossorigin="anonymous"` (Twitch emotes). That needs CORS headers from the
+  CDN; BetterTTV's CDN sends none, its images rely on the HTTP cache
+  (180 day `max-age`).
 - Static assets are precached with the app version as revision. Hashed build
   output has no revision.
 

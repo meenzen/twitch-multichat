@@ -14,7 +14,8 @@ precacheAndRoute(precacheEntries(immutable, assets, version));
 // clean old assets
 cleanupOutdatedCaches();
 
-// cache twitch emotes
+// cache twitch emotes. CacheFirst skips opaque responses, so this only works
+// because TwitchEmote loads them with crossorigin="anonymous".
 registerRoute(
   ({ url }) => isTwitchEmote(url),
   new CacheFirst({
