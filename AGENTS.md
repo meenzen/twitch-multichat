@@ -126,8 +126,11 @@ anonymous via `@twurple/chat`.
   `PreviewImage.svelte` is the image for every page: chat pages show their
   first channels (as many as `previewChannels.ts` estimates to fit), the
   landing page made-up ones.
-  `routes/images/preview.png/server.test.ts` renders the route and compares
-  the PNGs to `__snapshots__/` (see "Testing"). satori-html's CSS inliner
+  The route makes no requests: Inter (latin `.woff`, satori reads no woff2)
+  and the logo are bundled with `?inline`, and invalid channel names are
+  dropped, so no emoji reaches sveltekit-og, which fetches emoji from a CDN.
+  `routes/images/preview.png/server.test.ts` renders the route, fails on
+  any fetch and compares the PNGs to `__snapshots__/` (see "Testing"). satori-html's CSS inliner
   (ultrahtml) fails under Bun on every `<style>` ("evaluating
   'selector.type'"): Bun's transpiler escapes the `¶` in a regex literal
   whose `.source` the library string-replaces. `patches/ultrahtml@*.patch`
