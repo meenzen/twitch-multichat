@@ -1,20 +1,23 @@
 # Agent instructions
 
 Twitch Multichat: a SvelteKit 3 / Svelte 5 (runes) app that merges several
-Twitch chats into one view, deployed to Cloudflare. Chat is read-only and
-anonymous via `@twurple/chat`.
+Twitch chats into one view, deployed to Cloudflare Pages and packaged for
+NixOS (`flake.nix`, see "Nix package and NixOS module"). Chat is read-only
+and anonymous via `@twurple/chat`.
 
 ## Tooling
 
-- Everything runs inside devenv (Nix). Run commands as
-  `devenv shell -- bun run <script>`; `bun`/`node` are not on the host PATH.
-  If devenv serves a stale toolchain after a lock bump, add
-  `--refresh-eval-cache`.
-- `ci` (defined in `devenv.nix`) is the full pipeline and what GitHub Actions
-  runs: install, format, lint, check, unit tests, build, e2e tests. Run
-  `devenv shell -- ci` before pushing. It takes about 35 s.
-- Git hooks (prek) only run quick checks (whitespace, nix formatting). They do
-  not run `ci`.
+- Everything runs in the flake's dev shell (`nix/shell.nix`). Run commands
+  as `nix develop -c bun run <script>`; `bun`/`node` are not on the host
+  PATH. Development and the Nix package use the same nixpkgs, so the same
+  Bun.
+- `ci` (defined in `nix/shell.nix`) is the full pipeline and what GitHub
+  Actions runs: install, `bun.nix`, format, lint, check, unit tests, build,
+  e2e tests. Run `nix develop -c ci` before pushing. It takes about 35 s.
+  GitHub Actions also runs `nix flake check` (git hooks, package, VM test).
+- Git hooks (prek, `nix/hooks.nix`, installed when entering the dev shell)
+  only run quick checks (whitespace, nix formatting) and regenerate
+  `bun.nix` when `bun.lock` changes. They do not run `ci`.
 - Scripts: `bun run test` (unit), `bun run test:e2e`, `bun run check`
   (svelte-check + service worker `tsc`), `bun run lint`, `bun run format`.
 - Commits follow conventional commits (`feat:`, `fix:`, `test:`, `ci:`,
@@ -136,13 +139,61 @@ anonymous via `@twurple/chat`.
   whose `.source` the library string-replaces. `patches/ultrahtml@*.patch`
   fixes that; Node and workerd are unaffected.
 - `src/lib/cacheControl.ts`: Cache-Control per route for responses from the
-  Pages Function, applied in `hooks.server.ts`. Add new dynamic routes there.
+  Pages Function (and the Node server), applied in `hooks.server.ts`. Add new dynamic routes there.
   Pages runs Functions before its CDN cache, so only browser and scraper
   caches save requests (repeat requests from the same client). Chat pages
   are `no-cache`: their HTML references the current build's hashed scripts,
   and a cached copy could load a previous build after a deploy.
 - Design tokens live in `src/app.html` (`--background-color`,
   `--twitch-purple`, ...). Reuse them instead of hard-coding colours.
+
+## Nix package and NixOS module
+
+- `vite.config.ts` builds for Cloudflare by default; `ADAPTER=node` builds
+  the Node adapter server that `nix/package.nix` packages and runs with Bun.
+  `nix/module.nix` is `services.twitch-multichat`: the app on a unix socket,
+  optionally an nginx virtual host that serves the package's `public`
+  directory (static files and prerendered pages) and passes the rest to the
+  socket. `nix/test.nix` boots it in a VM:
+  `nix build -L .#checks.x86_64-linux.nixos`. It compares a preview image to
+  the unit test snapshot byte for byte.
+- The service runs without network (`PrivateNetwork`, `AF_UNIX` only). Keep
+  the server free of outgoing requests; it only renders pages and preview
+  images.
+- `bun.nix` (npm dependencies for Nix) is generated from `bun.lock` by
+  bun2nix: `bun2nix -o bun.nix` in the dev shell, also run by the git hook
+  and `ci`; CI fails if it is stale. On Renovate PRs, the `bun-nix` job in
+  `test.yml` commits it and starts the tests for that commit
+  (`workflow_dispatch`). bun2nix is
+  pinned to the commit of nix-community/bun2nix#110 (bun.lock version 2) in
+  `flake.nix`; switch to a release once it includes it.
+- Flakes only see files tracked by git: `git add -N` new files before
+  `nix build`.
+- CI pushes everything it builds to the Attic cache `main` on
+  attic.mnzn.dev (secret `ATTIC_TOKEN`), which the servers use as a
+  substituter. A deploy only finds the package there if it builds the same
+  derivation: the same commit (CI builds every push to `main`) and this
+  flake's own nixpkgs, so no `inputs.nixpkgs.follows` on this input.
+- Packaging pitfalls, all handled in `nix/package.nix`:
+  - `bun install` from bun2nix's cache ignores `patchedDependencies`; the
+    patches are applied to the cache instead (`patchedDependenciesToOverrides`).
+    Without them the preview image is empty (the ultrahtml bug under Bun).
+  - sharp's prebuilt binaries (enhanced-img, build time only) need
+    `libstdc++`, provided via `LD_LIBRARY_PATH` in the build.
+  - sveltekit-og loads resvg's `.wasm` from `node_modules` at runtime and
+    fetches it from unpkg when it is missing, so the package ships
+    `node_modules/@resvg/resvg-wasm`.
+- Bun as the runtime of adapter-node:
+  - `listen({ path, host, port })` throws in Bun when a socket path comes
+    with a host ("Cannot specify both hostname and unix"); the module sets
+    `HOST` and `PORT` to empty strings.
+  - systemd socket activation doesn't work: Bun's `listen({ fd: 3 })` reports
+    listening but never answers. The service creates its socket itself.
+  - Unix socket paths are limited to 108 bytes. A longer `SOCKET_PATH` (e.g.
+    in a scratch directory) creates a socket that nobody can connect to.
+- nginx: store files all have mtime 1, so nginx's `Last-Modified` and ETag
+  (mtime and size) can't tell versions apart. The virtual host disables
+  ETags and `If-Modified-Since` handling.
 
 ## Iterating on the chat UI
 
@@ -203,7 +254,7 @@ anonymous via `@twurple/chat`.
   - Close views with `view.close()` only. `Bun.WebView.closeAll()` stops the
     shared Chrome, and later views in the same test process then fail with
     "Chrome process closed the pipe" instead of starting a new one.
-  - devenv sets `BUN_CHROME_PATH` to a Chromium wrapper (Linux only). It
+  - The dev shell sets `BUN_CHROME_PATH` to a Chromium wrapper (Linux only). It
     clears `LD_LIBRARY_PATH`, because a host value can load libraries built
     for a newer glibc, and passes `--no-sandbox`, because Ubuntu 24.04 CI
     runners block the sandbox's user namespaces.

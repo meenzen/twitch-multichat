@@ -41,18 +41,59 @@ menu and add it as a browser source.
   streaming software
 - **Installable** as an app, updates itself after a new deployment
 
+## Self-hosting on NixOS
+
+The flake provides a package and a NixOS module. The app runs with Bun on a
+unix socket behind nginx, which serves the static files itself. The service
+needs no network access (it runs without any network interface) and is
+sandboxed by systemd.
+
+```nix
+{
+  inputs.twitch-multichat.url = "github:meenzen/twitch-multichat";
+
+  outputs = { nixpkgs, twitch-multichat, ... }: {
+    nixosConfigurations.server = nixpkgs.lib.nixosSystem {
+      modules = [
+        twitch-multichat.nixosModules.default
+        {
+          services.twitch-multichat = {
+            enable = true;
+            nginx = {
+              enable = true;
+              virtualHost = "multichat.example.com";
+            };
+          };
+          # TLS and anything else for the virtual host
+          services.nginx.virtualHosts."multichat.example.com" = {
+            enableACME = true;
+            forceSSL = true;
+          };
+        }
+      ];
+    };
+  };
+}
+```
+
+Without `nginx.enable`, point your reverse proxy at
+`services.twitch-multichat.socketPath`, add its user to
+`services.twitch-multichat.group` and set `services.twitch-multichat.origin`
+(or forward `X-Forwarded-Proto` and `X-Forwarded-Host`).
+
 ## Development
 
-Everything runs inside [devenv](https://devenv.sh), which provides Bun and a
-Chromium for the browser tests:
+Everything runs in the flake's dev shell, which provides Bun and a Chromium
+for the browser tests:
 
 ```bash
-devenv shell -- bun install
-devenv shell -- bun run dev      # development server
-devenv shell -- ci               # format, lint, check, test, build, e2e
+nix develop -c bun install
+nix develop -c bun run dev       # development server
+nix develop -c ci                # format, lint, check, test, build, e2e
 ```
 
 `/dev/chat` shows the chat with generated messages, no Twitch connection
-needed (e.g. `/dev/chat?rate=10`). The app is deployed to Cloudflare Pages.
+needed (e.g. `/dev/chat?rate=10`). The public instance runs on Cloudflare
+Pages.
 
 See [AGENTS.md](AGENTS.md) for the code layout, testing and known pitfalls.

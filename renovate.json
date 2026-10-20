@@ -1,14 +1,13 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["config:recommended"],
+  "gitIgnoredAuthors": [
+    "41898282+github-actions[bot]@users.noreply.github.com"
+  ],
   "lockFileMaintenance": {
     "enabled": true
   },
   "packageRules": [
-    {
-      "groupName": "sentry",
-      "matchPackageNames": ["@sentry/**"]
-    },
     {
       "groupName": "svelte",
       "matchPackageNames": ["@sveltejs/**", "svelte", "svelte-check"]

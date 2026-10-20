@@ -1,29 +1,13 @@
-import {
-  handleErrorWithSentry,
-  sentryHandle,
-  initCloudflareSentryHandle,
-} from "@sentry/sveltekit";
-import { sequence } from "@sveltejs/kit/hooks";
-import { dev } from "$app/env";
+import type { Handle } from "@sveltejs/kit/hooks";
 import { cacheControl } from "#lib/cacheControl.ts";
 
-export const handle = sequence(
-  initCloudflareSentryHandle({
-    dsn: "https://bf0e1a778faa45f43774793d79698924@o4508253646553088.ingest.de.sentry.io/4508253698064464",
-    tracesSampleRate: 1.0,
-    enabled: !dev,
-  }),
-  sentryHandle(),
-  async ({ event, resolve }) => {
-    const response = await resolve(event);
-    response.headers.set("Document-Policy", "js-profiling");
-    const cache = cacheControl(
-      event.request.method,
-      event.route.id,
-      response.status,
-    );
-    if (cache) response.headers.set("Cache-Control", cache);
-    return response;
-  },
-);
-export const handleError = handleErrorWithSentry();
+export const handle: Handle = async ({ event, resolve }) => {
+  const response = await resolve(event);
+  const cache = cacheControl(
+    event.request.method,
+    event.route.id,
+    response.status,
+  );
+  if (cache) response.headers.set("Cache-Control", cache);
+  return response;
+};
