@@ -30,3 +30,6 @@ devenv.local.yaml
 
 *.actual.png
 *.diff.png
+
+# Claude Code (agent worktrees)
+/.claude
