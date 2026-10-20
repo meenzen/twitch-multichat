@@ -110,3 +110,16 @@ export function settingsUrl(url: URL, settings: ChatSettings): URL {
   }
   return result;
 }
+
+/** Whether the parameters contain any setting, valid or not */
+export function hasSettings(params: Pick<URLSearchParams, "has">): boolean {
+  return keys.some((key) => params.has(codecs[key].param));
+}
+
+/** Query string (without `?`) of the settings that differ from the default */
+export function settingsQuery(settings: ChatSettings): string {
+  return settingsUrl(
+    new URL("http://localhost"),
+    settings,
+  ).searchParams.toString();
+}

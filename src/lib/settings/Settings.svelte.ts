@@ -50,3 +50,25 @@ export function persistInUrl(
     });
   });
 }
+
+/**
+ * Calls `save` whenever the settings change, until the returned function is
+ * called. Not for the initial values: settings from a shared link only
+ * become the user's own once they change something.
+ */
+export function saveOnChange(
+  settings: Settings,
+  save: (settings: ChatSettings) => void,
+): () => void {
+  let first = true;
+  return $effect.root(() => {
+    $effect(() => {
+      const values = $state.snapshot(settings.values);
+      if (first) {
+        first = false;
+        return;
+      }
+      save(values);
+    });
+  });
+}

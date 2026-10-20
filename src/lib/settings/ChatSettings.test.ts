@@ -1,8 +1,10 @@
 import { describe, expect, it } from "bun:test";
 import {
   defaultSettings,
+  hasSettings,
   hiddenEmoteProviders,
   parseSettings,
+  settingsQuery,
   settingsUrl,
 } from "./ChatSettings";
 
@@ -93,5 +95,28 @@ describe("settingsUrl", () => {
     expect(parseSettings(settingsUrl(base, settings).searchParams)).toEqual(
       settings,
     );
+  });
+});
+
+describe("hasSettings", () => {
+  it("is false without setting parameters", () => {
+    expect(hasSettings(new URLSearchParams("rate=10"))).toBe(false);
+  });
+
+  it("is true for any setting parameter, even an invalid one", () => {
+    expect(hasSettings(new URLSearchParams("size=gigantic"))).toBe(true);
+    expect(hasSettings(new URLSearchParams("overlay=true"))).toBe(true);
+  });
+});
+
+describe("settingsQuery", () => {
+  it("is empty for the defaults", () => {
+    expect(settingsQuery(defaultSettings)).toBe("");
+  });
+
+  it("lists the settings that differ from the default", () => {
+    expect(
+      settingsQuery({ ...defaultSettings, fontSize: "large", bttv: false }),
+    ).toBe("size=large&bttv=false");
   });
 });
