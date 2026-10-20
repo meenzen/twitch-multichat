@@ -77,6 +77,59 @@ describe("ChatView", () => {
     expect(screen.getByText("KKona")).toBeTruthy();
   });
 
+  describe("zero-width emotes", () => {
+    const rain = {
+      type: MessagePartType.Emote,
+      content: "r1",
+      emoteName: "RainTime",
+      emoteUrl: "https://cdn.7tv.app/emote/r1/1x.webp",
+      emoteProvider: "7tv",
+    };
+    const stacked = {
+      type: MessagePartType.Emote,
+      content: "25",
+      emoteName: "Kappa",
+      emoteOverlays: [rain],
+    };
+
+    it("stacks them on top of their emote", () => {
+      render(ChatView, { messages: [createMessage({ parts: [stacked] })] });
+
+      const base = screen.getByAltText("Kappa");
+      const overlay = screen.getByAltText("RainTime");
+      expect(base.parentElement).toBe(overlay.parentElement);
+      expect(base.parentElement?.classList.contains("emote-stack")).toBe(true);
+    });
+
+    it("shows hidden overlays as text after the emote", () => {
+      render(ChatView, {
+        messages: [createMessage({ parts: [stacked] })],
+        hiddenEmotes: ["7tv"],
+      });
+
+      expect(
+        screen.getByAltText("Kappa").parentElement?.className,
+      ).not.toContain("emote-stack");
+      expect(screen.queryByAltText("RainTime")).toBeNull();
+      expect(screen.getByText("RainTime").textContent).toBe(" RainTime");
+    });
+
+    it("shows overlays on their own when the emote below is hidden", () => {
+      render(ChatView, {
+        messages: [
+          createMessage({
+            parts: [{ ...rain, emoteProvider: "bttv", emoteOverlays: [rain] }],
+          }),
+        ],
+        hiddenEmotes: ["bttv"],
+      });
+
+      expect(screen.getByText("RainTime")).toBeTruthy();
+      const overlay = screen.getByAltText("RainTime");
+      expect(overlay.parentElement?.className).not.toContain("emote-stack");
+    });
+  });
+
   it("renders links that open in a new tab", () => {
     render(ChatView, {
       messages: [

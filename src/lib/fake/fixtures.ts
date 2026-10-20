@@ -7,6 +7,7 @@ import {
 } from "#lib/chat/ChatMessage.ts";
 import { splitLinks } from "#lib/chat/links.ts";
 import { bttvEmoteUrl } from "#lib/emotes/bttv.ts";
+import { sevenTvEmoteUrl } from "#lib/emotes/seventv.ts";
 import type { Emote } from "#lib/emotes/Emote.ts";
 import { splitEmotes } from "#lib/emotes/splitEmotes.ts";
 
@@ -47,9 +48,10 @@ const emotes = new Map(
   }),
 );
 
-// Real global BetterTTV emotes, found in the text like TwitchChatSource does
-const bttvEmotes = new Map(
-  Object.entries({
+// Real global BetterTTV and 7TV emotes, found in the text like
+// TwitchChatSource does
+const thirdPartyEmotes = new Map<string, Emote>([
+  ...Object.entries({
     FeelsBadMan: "566c9fc265dbbdab32ec053b",
     FeelsGoodMan: "566c9fde65dbbdab32ec053e",
     KKona: "566ca04265dbbdab32ec054a",
@@ -60,9 +62,31 @@ const bttvEmotes = new Map(
     code,
     { id, code, url: bttvEmoteUrl(id), provider: "bttv" },
   ]),
-);
+  ...Object.entries({
+    PepePls: "01GCMQJGB0000D8ZK13J8KVCDX",
+    peepoSad: "01GCS52CXG0004ZMF9GMF8X2AN",
+    FeelsDankMan: "01GD3WX9P8000FR6FMGA73ZC9Z",
+    WAYTOODANK: "01FGYPRTT0000BF1F0BAH6R39Q",
+    AYAYA: "01GE732B7R0002G1FA1JB1A2RR",
+    RainTime: "01FGH9W5BG00047CPSV86K549H",
+  }).map(([code, id]): [string, Emote] => [
+    code,
+    {
+      id,
+      code,
+      url: sevenTvEmoteUrl(id),
+      provider: "7tv",
+      zeroWidth: code === "RainTime",
+    },
+  ]),
+]);
 
-const emoteNames = [...emotes.keys(), ...bttvEmotes.keys()];
+const emoteNames = [
+  ...emotes.keys(),
+  ...[...thirdPartyEmotes.values()]
+    .filter((e) => !e.zeroWidth)
+    .map((e) => e.code),
+];
 
 const texts = [
   // reactions
@@ -137,6 +161,13 @@ const texts = [
   "SourPls SourPls SourPls",
   "KKona",
   "haHAA",
+  "PepePls PepePls PepePls",
+  "peepoSad",
+  "FeelsDankMan",
+  "WAYTOODANK",
+  "AYAYA AYAYA",
+  "FeelsDankMan RainTime",
+  "it's raining Kappa RainTime",
   "o7",
   "o7 o7 o7",
   "F",
@@ -371,7 +402,7 @@ export function textToParts(text: string): MessagePart[] {
       parts.push({ type: MessagePartType.Text, content: word });
     }
   }
-  return splitLinks(splitEmotes(parts, bttvEmotes));
+  return splitLinks(splitEmotes(parts, thirdPartyEmotes));
 }
 
 export function randomMessage(

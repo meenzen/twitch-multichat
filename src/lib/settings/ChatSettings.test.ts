@@ -16,7 +16,7 @@ describe("parseSettings", () => {
   it("reads every setting", () => {
     expect(
       parse(
-        "shadow=false&size=large&channel=false&timestamps=true&bttv=false&overlay=true",
+        "shadow=false&size=large&channel=false&timestamps=true&bttv=false&7tv=false&overlay=true",
       ),
     ).toEqual({
       shadow: false,
@@ -24,6 +24,7 @@ describe("parseSettings", () => {
       channelTag: false,
       timestamps: true,
       bttv: false,
+      sevenTv: false,
       overlay: true,
     });
   });
@@ -36,9 +37,14 @@ describe("parseSettings", () => {
 });
 
 describe("hiddenEmoteProviders", () => {
-  it("hides BetterTTV emotes when turned off", () => {
+  it("hides the emotes of providers that are turned off", () => {
     expect(hiddenEmoteProviders(defaultSettings)).toEqual([]);
-    expect(hiddenEmoteProviders({ bttv: false })).toEqual(["bttv"]);
+    expect(hiddenEmoteProviders({ bttv: false, sevenTv: true })).toEqual([
+      "bttv",
+    ]);
+    expect(hiddenEmoteProviders({ bttv: true, sevenTv: false })).toEqual([
+      "7tv",
+    ]);
   });
 });
 
@@ -81,6 +87,7 @@ describe("settingsUrl", () => {
       channelTag: false,
       timestamps: true,
       bttv: false,
+      sevenTv: false,
       overlay: true,
     };
     expect(parseSettings(settingsUrl(base, settings).searchParams)).toEqual(

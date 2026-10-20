@@ -47,6 +47,23 @@ describe("EmoteLoader", () => {
     expect(emotes.get("Clap")?.id).toBe("channel-clap");
   });
 
+  it("prefers any provider's channel emotes over global ones", async () => {
+    const first = fakeProvider(
+      async () => [emote("Clap", "first-global")],
+      async () => [emote("Clap", "first-channel"), emote("D:", "first-d")],
+    );
+    const second = fakeProvider(
+      async () => [emote("Clap", "second-global")],
+      async () => [emote("D:", "second-d")],
+    );
+
+    const emotes = await new EmoteLoader([first, second]).load("1");
+
+    expect(emotes.get("Clap")?.id).toBe("first-channel");
+    // same level: the later provider wins
+    expect(emotes.get("D:")?.id).toBe("second-d");
+  });
+
   it("fetches global emotes once for all channels", async () => {
     const provider = fakeProvider(async () => [emote("KKona")]);
     const loader = new EmoteLoader([provider]);

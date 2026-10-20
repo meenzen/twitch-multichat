@@ -24,6 +24,8 @@ export type ChatSettings = {
   timestamps: boolean;
   /** BetterTTV emotes as images instead of text */
   bttv: boolean;
+  /** 7TV emotes as images instead of text */
+  sevenTv: boolean;
   /** For streaming software: no top bar, transparent background */
   overlay: boolean;
 };
@@ -34,14 +36,18 @@ export const defaultSettings: Readonly<ChatSettings> = Object.freeze({
   channelTag: true,
   timestamps: false,
   bttv: true,
+  sevenTv: true,
   overlay: false,
 });
 
 /** Third-party emote providers whose emotes are shown as text */
 export function hiddenEmoteProviders(
-  settings: Pick<ChatSettings, "bttv">,
+  settings: Pick<ChatSettings, "bttv" | "sevenTv">,
 ): EmoteProviderName[] {
-  return settings.bttv ? [] : ["bttv"];
+  const hidden: EmoteProviderName[] = [];
+  if (!settings.bttv) hidden.push("bttv");
+  if (!settings.sevenTv) hidden.push("7tv");
+  return hidden;
 }
 
 type Codec<T> = {
@@ -70,6 +76,7 @@ const codecs: { [K in keyof ChatSettings]: Codec<ChatSettings[K]> } = {
   channelTag: boolean("channel"),
   timestamps: boolean("timestamps"),
   bttv: boolean("bttv"),
+  sevenTv: boolean("7tv"),
   overlay: boolean("overlay"),
 };
 

@@ -1,9 +1,9 @@
-// Third-party emotes (BetterTTV, later 7TV, FFZ, ...): words in a message
-// that the services' browser extensions show as images. Twitch itself only
-// sends plain text for them.
+// Third-party emotes (BetterTTV, 7TV, ...): words in a message that the
+// services' browser extensions show as images. Twitch itself only sends
+// plain text for them.
 
 /** Which service an emote comes from */
-export type EmoteProviderName = "bttv";
+export type EmoteProviderName = "bttv" | "7tv";
 
 export type Emote = {
   id: string;
@@ -12,6 +12,8 @@ export type Emote = {
   /** Image at 1x scale */
   url: string;
   provider: EmoteProviderName;
+  /** Drawn on top of the emote before it, e.g. 7TV's RainTime */
+  zeroWidth?: boolean;
 };
 
 /** Emotes usable in a channel, by code */

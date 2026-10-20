@@ -1,4 +1,5 @@
 import type { Emote, EmoteProvider } from "./Emote";
+import { defaultFetch, fetchJson, type Fetch } from "./fetchJson";
 
 // https://betterttv.com/developers/api
 const api = "https://api.betterttv.net/3";
@@ -10,8 +11,6 @@ type BttvUser = {
   sharedEmotes?: BttvEmote[];
 };
 
-export type Fetch = (url: string) => Promise<Response>;
-
 export function bttvEmoteUrl(id: string): string {
   return `https://cdn.betterttv.net/emote/${encodeURIComponent(id)}/1x.webp`;
 }
@@ -20,15 +19,18 @@ export function bttvEmoteUrl(id: string): string {
 export class BttvEmotes implements EmoteProvider {
   readonly name = "bttv";
 
-  constructor(private readonly fetch: Fetch = (url) => globalThis.fetch(url)) {}
+  constructor(private readonly fetch: Fetch = defaultFetch) {}
 
   async global(): Promise<Emote[]> {
-    return this.toEmotes(await this.get<BttvEmote[]>("/cached/emotes/global"));
+    return this.toEmotes(
+      await fetchJson<BttvEmote[]>(this.fetch, `${api}/cached/emotes/global`),
+    );
   }
 
   async channel(channelId: string): Promise<Emote[]> {
-    const user = await this.get<BttvUser>(
-      `/cached/users/twitch/${encodeURIComponent(channelId)}`,
+    const user = await fetchJson<BttvUser>(
+      this.fetch,
+      `${api}/cached/users/twitch/${encodeURIComponent(channelId)}`,
     );
     // 404: the channel never set up BetterTTV
     if (!user) return [];
@@ -36,15 +38,6 @@ export class BttvEmotes implements EmoteProvider {
       ...(user.sharedEmotes ?? []),
       ...(user.channelEmotes ?? []),
     ]);
-  }
-
-  private async get<T>(path: string): Promise<T | undefined> {
-    const response = await this.fetch(api + path);
-    if (response.status === 404) return undefined;
-    if (!response.ok) {
-      throw new Error(`BetterTTV ${path} responded with ${response.status}`);
-    }
-    return (await response.json()) as T;
   }
 
   private toEmotes(list: BttvEmote[] | undefined): Emote[] {
