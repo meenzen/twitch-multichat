@@ -7,7 +7,26 @@
   "lockFileMaintenance": {
     "enabled": true
   },
+  "nix": {
+    "enabled": true
+  },
   "packageRules": [
+    {
+      "groupName": "nix flake inputs",
+      "matchManagers": ["nix"]
+    },
+    {
+      "description": "Pinned to the commit of nix-community/bun2nix#110 until a release includes it, see flake.nix",
+      "matchManagers": ["nix"],
+      "matchDepNames": ["bun2nix"],
+      "enabled": false
+    },
+    {
+      "description": "Flake inputs get their own PR, keep flake.lock out of the bun.lock maintenance",
+      "matchManagers": ["nix"],
+      "matchUpdateTypes": ["lockFileMaintenance"],
+      "enabled": false
+    },
     {
       "groupName": "svelte",
       "matchPackageNames": ["@sveltejs/**", "svelte", "svelte-check"]

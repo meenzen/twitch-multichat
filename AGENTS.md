@@ -170,7 +170,10 @@ and anonymous via `@twurple/chat`.
   `test.yml` commits it and starts the tests for that commit
   (`workflow_dispatch`). bun2nix is
   pinned to the commit of nix-community/bun2nix#110 (bun.lock version 2) in
-  `flake.nix`; switch to a release once it includes it.
+  `flake.nix`; switch to a release once it includes it, and drop the rule
+  in `renovate.json` that skips it.
+- Renovate updates the flake inputs (`flake.lock`) in one grouped PR
+  ("nix flake inputs"), separate from the `bun.lock` maintenance.
 - Flakes only see files tracked by git: `git add -N` new files before
   `nix build`.
 - CI pushes everything it builds to the Attic cache `main` on
