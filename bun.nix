@@ -721,9 +721,9 @@
     url = "https://registry.npmjs.org/@sveltejs/adapter-cloudflare/-/adapter-cloudflare-8.0.0.tgz";
     hash = "sha512-68jVq1x4nya+/Dpg1NrWlz6LFWAX/F3DrsR8KQGl1bOt4G8oUp0kLLeMx+LI4AZQccGEmE7Nt2tOZwsParE6FA==";
   };
-  "@sveltejs/adapter-node@6.0.0" = fetchurl {
-    url = "https://registry.npmjs.org/@sveltejs/adapter-node/-/adapter-node-6.0.0.tgz";
-    hash = "sha512-s7muM4JmJ75OZ8o0G4VRhrEKdi8twuEm3t2o/qQsdlm12hKaX7S/CuUBuw3n983wB/IFBSpzG2ugX0xdGzbKwg==";
+  "@sveltejs/adapter-node@6.0.2" = fetchurl {
+    url = "https://registry.npmjs.org/@sveltejs/adapter-node/-/adapter-node-6.0.2.tgz";
+    hash = "sha512-LDCgko3cG727+fpiq0UzveID0MAG0DQ/+FOxpB9Ne0iCvUGslVtN+6irg+pXGDf+rZdW2k9UQB75tXmmDa0BfQ==";
   };
   "@sveltejs/enhanced-img@1.0.0" = fetchurl {
     url = "https://registry.npmjs.org/@sveltejs/enhanced-img/-/enhanced-img-1.0.0.tgz";
